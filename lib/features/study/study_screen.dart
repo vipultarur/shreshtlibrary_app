@@ -4,12 +4,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:lottie/lottie.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/features/study/widgets/control_button.dart';
 
 final currentSessionProvider = FutureProvider.autoDispose<StudySession?>((ref) {
   return ref.watch(studentApiProvider).currentStudySession();
@@ -17,6 +19,10 @@ final currentSessionProvider = FutureProvider.autoDispose<StudySession?>((ref) {
 
 final studyHistoryProvider = FutureProvider.autoDispose<List<StudySession>>((ref) {
   return ref.watch(studentApiProvider).studySessionHistory();
+});
+
+final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
+  return ref.watch(studentApiProvider).leaderboard();
 });
 
 class StudyScreen extends ConsumerStatefulWidget {
@@ -90,11 +96,14 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     }
   }
 
+  DateTime? _lastTickTime;
+
   void _startTracking() {
     _accelSub?.cancel();
     _ticker?.cancel();
 
     _lastMotionTime = DateTime.now(); // force initial wait
+    _lastTickTime = DateTime.now();
 
     _accelSub = userAccelerometerEventStream().listen((event) {
       final magnitude = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
@@ -111,6 +120,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     if (_session == null || _status == 'none') return;
 
     final now = DateTime.now();
+    final deltaSeconds = _lastTickTime != null ? now.difference(_lastTickTime!).inSeconds : 1;
+    _lastTickTime = now;
+    
     final secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
 
     setState(() {
@@ -121,13 +133,13 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           ref.read(notificationServiceProvider).startStudySessionNotification();
         }
       } else if (_status == 'active') {
-        _effectiveSeconds++;
+        _effectiveSeconds += deltaSeconds;
         if (secondsSinceMotion < 2) {
           _updateBackendStatus('paused');
           _status = 'paused';
         }
       } else if (_status == 'paused') {
-        _pausedSeconds++;
+        _pausedSeconds += deltaSeconds;
         if (secondsSinceMotion >= 60) {
           _updateBackendStatus('active');
           _status = 'active';
@@ -171,6 +183,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       });
       ref.invalidate(currentSessionProvider);
       ref.invalidate(studyHistoryProvider);
+      ref.invalidate(leaderboardProvider);
     } on ApiFailure catch (e) {
       if (!mounted) return;
       showSnack(context, e.message);
@@ -210,13 +223,33 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
-      title: 'Study Session',
-      child: _buildBody(),
+    return DefaultTabController(
+      length: 2,
+      child: PageScaffold(
+        title: 'Study Area',
+        child: Column(
+          children: [
+            const TabBar(
+              tabs: [
+                Tab(text: 'Tracker'),
+                Tab(text: 'Leaderboard'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildTrackerTab(),
+                  _buildLeaderboardTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildTrackerTab() {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(currentSessionProvider);
@@ -234,6 +267,98 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLeaderboardTab() {
+    return AsyncPane(
+      value: ref.watch(leaderboardProvider),
+      builder: (leaderboard) {
+        if (leaderboard.isEmpty) {
+          return const Center(child: Text('No data for this month.'));
+        }
+        return Column(
+          children: [
+            SizedBox(
+              height: 120,
+              child: Lottie.network(
+                'https://lottie.host/e2ba1b9f-6e82-4161-aa8f-28562725ad50/oQ5sF9k69L.json', // generic trophy
+                fit: BoxFit.contain,
+              ),
+            ),
+            const Text(
+              'Top Scholars',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: leaderboard.length,
+          itemBuilder: (context, index) {
+            final entry = leaderboard[index];
+            final theme = Theme.of(context);
+            
+            // Parse badge color from hex
+            Color badgeColor = Colors.grey;
+            try {
+              final hex = entry.levelInfo.badgeColor.replaceAll('#', '');
+              badgeColor = Color(int.parse('FF$hex', radix: 16));
+            } catch (_) {}
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: index < 3 ? badgeColor.withValues(alpha: 0.5) : Colors.transparent,
+                  width: index < 3 ? 2 : 0,
+                ),
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: CircleAvatar(
+                  backgroundColor: badgeColor.withValues(alpha: 0.2),
+                  child: Text(
+                    '#${entry.rank}',
+                    style: TextStyle(
+                      color: badgeColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  entry.student.fullName ?? 'Unknown',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  entry.levelInfo.title,
+                  style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      entry.hoursFormatted,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      'studied',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        ),
+        ],
+        );
+      },
     );
   }
 
@@ -358,7 +483,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _ControlButton(
+            ControlButton(
               icon: playPauseIcon,
               label: playPauseLabel,
               onTap: () {
@@ -373,7 +498,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
               },
             ),
             const SizedBox(width: 48), // Adjusted spacing to match image
-            _ControlButton(
+            ControlButton(
               icon: Icons.stop,
               label: 'Quit',
               onTap: _busy ? null : _endSession,
@@ -475,54 +600,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-class _ControlButton extends StatelessWidget {
-  const _ControlButton({
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = theme.colorScheme.primary;
-    
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: color.withValues(alpha: 0.1),
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Icon(
-                icon, 
-                size: 32, 
-                color: color,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

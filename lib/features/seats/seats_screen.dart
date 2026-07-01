@@ -5,6 +5,8 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
+import 'package:shreshtlibrary/features/seats/interactive_seat_map.dart';
+
 final seatsProvider = FutureProvider.autoDispose<List<Seat>>(
   (ref) => ref.watch(studentApiProvider).seats(),
 );
@@ -32,11 +34,7 @@ class SeatsScreen extends ConsumerWidget {
                 value: ref.watch(seatsProvider),
                 builder: (seats) => seats.isEmpty
                     ? const Text('No seats configured.')
-                    : Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: seats.map((seat) => _SeatChip(seat)).toList(),
-                      ),
+                    : InteractiveSeatMap(seats: seats),
               ),
             ),
             const SizedBox(height: 16),
@@ -68,26 +66,3 @@ class SeatsScreen extends ConsumerWidget {
   }
 }
 
-class _SeatChip extends StatelessWidget {
-  const _SeatChip(this.seat);
-
-  final Seat seat;
-
-  @override
-  Widget build(BuildContext context) {
-    final available = seat.status.toLowerCase() == 'available';
-    final color = available ? Colors.green : Colors.orange;
-    return Chip(
-      avatar: Icon(
-        Icons.event_seat,
-        color: color,
-      ),
-      backgroundColor: color.withValues(alpha: 0.1),
-      label: Text(
-        '${seat.floor}-${seat.row}-${seat.seatNumber}\n${seat.status}',
-        textAlign: TextAlign.center,
-        style: TextStyle(color: color),
-      ),
-    );
-  }
-}

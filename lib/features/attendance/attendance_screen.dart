@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 
 final attendanceLogsProvider =
     FutureProvider.autoDispose<List<AttendanceRecord>>((ref) {
@@ -235,28 +236,28 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: 2.2,
       children: [
-        _StatCard(
+        StatCard(
           icon: Icons.how_to_reg,
           iconColor: Colors.blue,
           iconBgColor: Colors.blue.shade50,
           value: daysPresent.toString(),
           label: 'Days Present',
         ),
-        _StatCard(
+        StatCard(
           icon: Icons.person_off,
           iconColor: Colors.red,
           iconBgColor: Colors.red.shade50,
           value: daysAbsent.toString(),
           label: 'Days Absent',
         ),
-        _StatCard(
+        StatCard(
           icon: Icons.access_time,
           iconColor: Colors.purple,
           iconBgColor: Colors.purple.shade50,
           value: lateMarks.toString(),
           label: 'Late Marks',
         ),
-        _StatCard(
+        StatCard(
           icon: Icons.hourglass_empty,
           iconColor: Colors.orange,
           iconBgColor: Colors.orange.shade50,
@@ -394,68 +395,6 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBgColor,
-    required this.value,
-    required this.label,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBgColor;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    label,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
@@ -90,6 +91,17 @@ class AuthController extends Notifier<AuthState> {
       final result = await action();
       await ref.read(tokenStoreProvider).save(result.tokens);
       state = AuthState.signedIn(user: result.user);
+      
+      // Register FCM token after successful login
+      try {
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token != null) {
+          await _api.registerDeviceToken(token);
+        }
+      } catch (_) {
+        // Ignore FCM errors during login
+      }
+      
       return true;
     } on ApiFailure catch (failure) {
       final fieldErrors = failure.errors is Map ? failure.errors as Map<String, dynamic> : null;

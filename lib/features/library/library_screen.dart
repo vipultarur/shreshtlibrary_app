@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +7,8 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/features/library/widgets/achiever_carousel.dart';
+import 'package:shreshtlibrary/features/library/widgets/review_form.dart';
 
 final libraryInfoProvider = FutureProvider.autoDispose<LibraryInfo>(
   (ref) => ref.watch(studentApiProvider).libraryInfo(),
@@ -120,7 +123,7 @@ class LibraryScreen extends ConsumerWidget {
                 value: ref.watch(featuredAchieversProvider),
                 builder: (rows) => rows.isEmpty
                     ? const Text('No featured achievers yet.')
-                    : _AchieverList(rows),
+                    : AchieverCarousel(rows),
               ),
             ),
             const SizedBox(height: 16),
@@ -130,7 +133,7 @@ class LibraryScreen extends ConsumerWidget {
                 value: ref.watch(achieversProvider),
                 builder: (rows) => rows.isEmpty
                     ? const Text('No achievers yet.')
-                    : _AchieverList(rows),
+                    : AchieverCarousel(rows),
               ),
             ),
             const SizedBox(height: 16),
@@ -146,7 +149,7 @@ class LibraryScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const _ReviewForm(),
+                  const ReviewForm(),
                   const SizedBox(height: 12),
                   AsyncPane(
                     value: ref.watch(reviewsProvider),
@@ -172,116 +175,6 @@ class LibraryScreen extends ConsumerWidget {
             ),
           ],
         ),
-    );
-  }
-}
-
-class _AchieverList extends StatelessWidget {
-  const _AchieverList(this.rows);
-
-  final List<Achiever> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: rows
-          .map(
-            (achiever) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: achiever.photo == null
-                  ? const CircleAvatar(child: Icon(Icons.emoji_events_outlined))
-                  : CircleAvatar(
-                      backgroundImage: CachedNetworkImageProvider(
-                        achiever.photo!,
-                      ),
-                    ),
-              title: Text(achiever.name),
-              subtitle: Text('${achiever.achievement} (${achiever.year})'),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _ReviewForm extends ConsumerStatefulWidget {
-  const _ReviewForm();
-
-  @override
-  ConsumerState<_ReviewForm> createState() => _ReviewFormState();
-}
-
-class _ReviewFormState extends ConsumerState<_ReviewForm> {
-  final _comment = TextEditingController();
-  int _rating = 5;
-  Map<String, dynamic> _fieldErrors = {};
-
-  @override
-  void dispose() {
-    _comment.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    setState(() => _fieldErrors = {});
-    try {
-      await ref
-          .read(studentApiProvider)
-          .submitReview(rating: _rating, comment: _comment.text.trim());
-      _comment.clear();
-      ref.invalidate(reviewsProvider);
-      ref.invalidate(reviewSummaryProvider);
-      if (mounted) showSnack(context, 'Review submitted for approval.');
-    } on ApiFailure catch (failure) {
-      if (mounted) {
-        if (failure.errors is Map<String, dynamic>) {
-          setState(() {
-            _fieldErrors = failure.errors as Map<String, dynamic>;
-          });
-        }
-        showSnack(context, failure.message);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        DropdownButtonFormField<int>(
-          initialValue: _rating,
-          items: [1, 2, 3, 4, 5]
-              .map(
-                (rating) => DropdownMenuItem(
-                  value: rating,
-                  child: Text('$rating stars'),
-                ),
-              )
-              .toList(),
-          onChanged: (value) => setState(() => _rating = value ?? 5),
-          decoration: InputDecoration(
-            labelText: 'Rating',
-            errorText: _fieldErrors['rating'] is List ? _fieldErrors['rating'][0] : _fieldErrors['rating']?.toString(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _comment,
-          decoration: InputDecoration(
-            labelText: 'Review',
-            errorText: _fieldErrors['comment'] is List ? _fieldErrors['comment'][0] : _fieldErrors['comment']?.toString(),
-          ),
-          maxLines: 3,
-        ),
-        const SizedBox(height: 10),
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton(
-            onPressed: _submit,
-            child: const Text('Submit review'),
-          ),
-        ),
-      ],
     );
   }
 }

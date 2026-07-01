@@ -110,7 +110,7 @@ class ApiClient {
     ErrorInterceptorHandler handler,
   ) async {
     final request = error.requestOptions;
-    final isRefresh = request.path.contains('/auth/token/refresh/');
+    final isRefresh = request.path.contains('/auth/token/refresh');
     final alreadyRetried = request.extra['retried'] == true;
 
     if (error.response?.statusCode == 401 && !isRefresh && !alreadyRetried) {
@@ -141,7 +141,7 @@ class ApiClient {
 
     _refreshFuture ??= _refreshDio
         .post<dynamic>(
-          '/auth/token/refresh/',
+          '/auth/token/refresh',
           data: {'refresh': tokens.refresh},
         )
         .then((response) async {

@@ -155,6 +155,7 @@ class StudentDashboard {
     required this.isHoliday,
     this.holidayTitle,
     this.holidayDescription,
+    this.razorpayKey,
   });
 
   final int studentId;
@@ -172,6 +173,7 @@ class StudentDashboard {
   final bool isHoliday;
   final String? holidayTitle;
   final String? holidayDescription;
+  final String? razorpayKey;
 
   factory StudentDashboard.fromJson(JsonMap json) {
     final expiryDialog = json['expiry_dialog'] as JsonMap?;
@@ -191,6 +193,7 @@ class StudentDashboard {
       isHoliday: boolean(json['is_holiday']),
       holidayTitle: optionalText(json['holiday_title']),
       holidayDescription: optionalText(json['holiday_description']),
+      razorpayKey: optionalText(json['razorpay_key']),
     );
   }
 
@@ -728,3 +731,47 @@ class HomeSlider {
     linkUrl: text(json['link_url']),
   );
 }
+
+class LevelInfo {
+  const LevelInfo({
+    required this.level,
+    required this.title,
+    required this.badgeColor,
+  });
+
+  final int level;
+  final String title;
+  final String badgeColor;
+
+  factory LevelInfo.fromJson(JsonMap json) => LevelInfo(
+    level: integer(json['level']),
+    title: text(json['title']),
+    badgeColor: text(json['badge_color']),
+  );
+}
+
+class LeaderboardEntry {
+  const LeaderboardEntry({
+    required this.rank,
+    required this.student,
+    required this.totalMinutes,
+    required this.hoursFormatted,
+    required this.levelInfo,
+  });
+
+  final int rank;
+  final StudentProfile student;
+  final int totalMinutes;
+  final String hoursFormatted;
+  final LevelInfo levelInfo;
+
+  factory LeaderboardEntry.fromJson(JsonMap json) => LeaderboardEntry(
+    rank: integer(json['rank']),
+    student: StudentProfile.fromJson(json['student'] as JsonMap? ?? const {}),
+    totalMinutes: integer(json['total_minutes']),
+    hoursFormatted: text(json['hours_formatted']),
+    levelInfo: LevelInfo.fromJson(json['level_info'] as JsonMap? ?? const {}),
+  );
+}
+
+

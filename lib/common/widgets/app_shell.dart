@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.child});
@@ -17,46 +18,120 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
+    final currentIndex = _indexForPath(path);
+
     return Scaffold(
-      body: SafeArea(child: child),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _indexForPath(path),
-        onDestinationSelected: (index) {
-          final route = switch (index) {
-            0 => '/home',
-            1 => '/attendance',
-            2 => '/payments',
-            3 => '/seats',
-            _ => '/profile',
-          };
-          context.go(route);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Home',
+      backgroundColor: const Color(0xFFF1EFFC),
+      body: child, // SafeArea handled by individual screens to allow full bleed if needed
+      extendBody: true,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.qr_code_scanner),
-            label: 'Attendance',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _NavBarItem(
+                iconPath: 'assets/icons/shared/home.svg',
+                label: 'Home',
+                isSelected: currentIndex == 0,
+                onTap: () => context.go('/home'),
+              ),
+              _NavBarItem(
+                iconPath: 'assets/icons/shared/calender.svg',
+                label: 'Attendance', // Changed label if calendar is used for attendance
+                isSelected: currentIndex == 1,
+                onTap: () => context.go('/attendance'),
+              ),
+              _NavBarItem(
+                iconPath: 'assets/icons/shared/target.svg',
+                label: 'Payments', // Used target for payments/plans
+                isSelected: currentIndex == 2,
+                onTap: () => context.go('/payments'),
+              ),
+              _NavBarItem(
+                iconPath: 'assets/icons/shared/bage.svg',
+                label: 'Seats', // Used badge for seats/leaderboard
+                isSelected: currentIndex == 3,
+                onTap: () => context.go('/seats'),
+              ),
+              _NavBarItem(
+                iconPath: 'assets/icons/shared/profile.svg',
+                label: 'Profile',
+                isSelected: currentIndex == 4,
+                onTap: () => context.go('/profile'),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.payments_outlined),
-            selectedIcon: Icon(Icons.payments),
-            label: 'Payments',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.event_seat_outlined),
-            selectedIcon: Icon(Icons.event_seat),
-            label: 'Seats',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavBarItem extends StatelessWidget {
+  const _NavBarItem({
+    required this.iconPath,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String iconPath;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? const Color(0xFF917CFF) : const Color(0xFFC4B8FF);
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: isSelected
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+            : const EdgeInsets.all(8),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: const Color(0xFFF1EFFC),
+                borderRadius: BorderRadius.circular(20),
+              )
+            : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              iconPath,
+              height: 24,
+              width: 24,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

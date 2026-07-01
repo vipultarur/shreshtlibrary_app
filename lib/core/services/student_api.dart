@@ -10,7 +10,7 @@ class StudentApi {
 
   Future<LoginResult> register(Map<String, dynamic> payload) async {
     final response = await _client.post<dynamic>(
-      '/auth/register/',
+      '/auth/register',
       data: payload,
     );
     return _client.unwrap(response, LoginResult.fromJson);
@@ -18,7 +18,7 @@ class StudentApi {
 
   Future<LoginResult> loginEmail(String email, String password) async {
     final response = await _client.post<dynamic>(
-      '/auth/login/email/',
+      '/auth/login/email',
       data: {'email': email, 'password': password},
     );
     return _client.unwrap(response, LoginResult.fromJson);
@@ -26,7 +26,7 @@ class StudentApi {
 
   Future<LoginResult> loginMobile(String mobile, String password) async {
     final response = await _client.post<dynamic>(
-      '/auth/login/mobile/',
+      '/auth/login/mobile',
       data: {'mobile': mobile, 'password': password},
     );
     return _client.unwrap(response, LoginResult.fromJson);
@@ -34,7 +34,7 @@ class StudentApi {
 
   Future<void> sendOtp(String mobile) async {
     final response = await _client.post<dynamic>(
-      '/auth/send-otp/',
+      '/auth/send-otp',
       data: {'mobile': mobile},
     );
     _client.unwrap(response, (_) => null);
@@ -42,7 +42,7 @@ class StudentApi {
 
   Future<LoginResult> verifyOtp(String mobile, String otp) async {
     final response = await _client.post<dynamic>(
-      '/auth/verify-otp/',
+      '/auth/verify-otp',
       data: {'mobile': mobile, 'otp': otp},
     );
     return _client.unwrap(response, LoginResult.fromJson);
@@ -50,7 +50,7 @@ class StudentApi {
 
   Future<void> forgotPassword(String email) async {
     final response = await _client.post<dynamic>(
-      '/auth/forgot-password/',
+      '/auth/forgot-password',
       data: {'email': email},
     );
     _client.unwrap(response, (_) => null);
@@ -58,7 +58,7 @@ class StudentApi {
 
   Future<void> resetPassword(String token, String password) async {
     final response = await _client.post<dynamic>(
-      '/auth/reset-password/',
+      '/auth/reset-password',
       data: {
         'token': token,
         'new_password': password,
@@ -69,12 +69,12 @@ class StudentApi {
   }
 
   Future<void> logout() async {
-    final response = await _client.post<dynamic>('/auth/logout/');
+    final response = await _client.post<dynamic>('/auth/logout');
     _client.unwrap(response, (_) => null);
   }
 
   Future<StudentDashboard> dashboard() async {
-    final response = await _client.get<dynamic>('/student/dashboard/');
+    final response = await _client.get<dynamic>('/student/dashboard');
     return _client.unwrap(
       response,
       (data) => StudentDashboard.fromJson(data as JsonMap? ?? const {}),
@@ -82,7 +82,7 @@ class StudentApi {
   }
 
   Future<StudentProfile> profile() async {
-    final response = await _client.get<dynamic>('/student/profile/');
+    final response = await _client.get<dynamic>('/student/profile');
     return _client.unwrap(
       response,
       (data) => StudentProfile.fromJson(data as JsonMap? ?? const {}),
@@ -91,7 +91,7 @@ class StudentApi {
 
   Future<StudentProfile> updateProfile(StudentProfile profile) async {
     final response = await _client.put<dynamic>(
-      '/student/profile/update/',
+      '/student/profile/update',
       data: profile.toUpdateJson(),
     );
     return _client.unwrap(
@@ -105,7 +105,7 @@ class StudentApi {
       'profile_photo': await MultipartFile.fromFile(filePath),
     });
     final response = await _client.post<dynamic>(
-      '/student/profile/photo/',
+      '/student/profile/photo',
       data: form,
     );
     return _client.unwrap(response, (data) {
@@ -115,7 +115,7 @@ class StudentApi {
   }
 
   Future<StudentIdCard> idCard() async {
-    final response = await _client.get<dynamic>('/student/id-card/');
+    final response = await _client.get<dynamic>('/student/id-card');
     return _client.unwrap(
       response,
       (data) => StudentIdCard.fromJson(data as JsonMap? ?? const {}),
@@ -123,7 +123,7 @@ class StudentApi {
   }
 
   Future<ReferralCode> referralCode() async {
-    final response = await _client.get<dynamic>('/student/referral/');
+    final response = await _client.get<dynamic>('/student/referral');
     return _client.unwrap(
       response,
       (data) => ReferralCode.fromJson(data as JsonMap? ?? const {}),
@@ -132,19 +132,19 @@ class StudentApi {
 
   Future<void> applyReferral(String code) async {
     final response = await _client.post<dynamic>(
-      '/student/referral/apply/',
+      '/student/referral/apply',
       data: {'code': code},
     );
     _client.unwrap(response, (_) => null);
   }
 
   Future<List<ReferralHistory>> referralHistory() async {
-    final response = await _client.get<dynamic>('/student/referral/history/');
+    final response = await _client.get<dynamic>('/student/referral/history');
     return _client.unwrapList(response, ReferralHistory.fromJson);
   }
 
   Future<QRCodeRecord> todayQr() async {
-    final response = await _client.get<dynamic>('/qr/today/');
+    final response = await _client.get<dynamic>('/qr/today');
     return _client.unwrap(
       response,
       (data) => QRCodeRecord.fromJson(data as JsonMap? ?? const {}),
@@ -153,7 +153,7 @@ class StudentApi {
 
   Future<AttendanceRecord> scanQr(String value) async {
     final response = await _client.post<dynamic>(
-      '/attendance/scan/',
+      '/attendance/scan',
       data: {'qr_hash': value},
     );
     return _client.unwrap(
@@ -163,27 +163,27 @@ class StudentApi {
   }
 
   Future<List<AttendanceRecord>> attendanceLogs() async {
-    final response = await _client.get<dynamic>('/attendance/logs/');
+    final response = await _client.get<dynamic>('/attendance/logs');
     return _client.unwrapList(response, AttendanceRecord.fromJson);
   }
 
   Future<List<HolidayRecord>> holidays() async {
-    final response = await _client.get<dynamic>('/holidays/');
+    final response = await _client.get<dynamic>('/holidays');
     return _client.unwrapList(response, HolidayRecord.fromJson);
   }
 
   Future<List<MembershipPlan>> plans() async {
-    final response = await _client.get<dynamic>('/memberships/plans/');
+    final response = await _client.get<dynamic>('/memberships/plans');
     return _client.unwrapList(response, MembershipPlan.fromJson);
   }
 
   Future<List<MembershipRecord>> memberships() async {
-    final response = await _client.get<dynamic>('/memberships/history/');
+    final response = await _client.get<dynamic>('/memberships/history');
     return _client.unwrapList(response, MembershipRecord.fromJson);
   }
 
   Future<List<PaymentRecord>> paymentHistory() async {
-    final response = await _client.get<dynamic>('/payments/history/');
+    final response = await _client.get<dynamic>('/payments/history');
     return _client.unwrapList(response, PaymentRecord.fromJson);
   }
 
@@ -193,7 +193,7 @@ class StudentApi {
     required String transactionId,
   }) async {
     final response = await _client.post<dynamic>(
-      '/payments/initiate/',
+      '/payments/initiate',
       data: {
         'plan_id': planId,
         'payment_mode': paymentMode,
@@ -207,17 +207,17 @@ class StudentApi {
   }
 
   Future<List<Seat>> seats() async {
-    final response = await _client.get<dynamic>('/seats/layout/');
+    final response = await _client.get<dynamic>('/seats/layout');
     return _client.unwrapList(response, Seat.fromJson);
   }
 
   Future<List<SeatAssignment>> seatHistory() async {
-    final response = await _client.get<dynamic>('/seats/history/');
+    final response = await _client.get<dynamic>('/seats/history');
     return _client.unwrapList(response, SeatAssignment.fromJson);
   }
 
   Future<StudySession?> currentStudySession() async {
-    final response = await _client.get<dynamic>('/study/session/current/');
+    final response = await _client.get<dynamic>('/study/session/current');
     return _client.unwrap(
       response,
       (data) {
@@ -228,7 +228,7 @@ class StudentApi {
   }
 
   Future<StudySession> startStudySession() async {
-    final response = await _client.post<dynamic>('/study/session/start/');
+    final response = await _client.post<dynamic>('/study/session/start');
     return _client.unwrap(
       response,
       (data) => StudySession.fromJson(data as JsonMap? ?? const {}),
@@ -241,7 +241,7 @@ class StudentApi {
     if (pausedMinutes != null) data['paused_minutes'] = pausedMinutes;
 
     final response = await _client.post<dynamic>(
-      '/study/session/update/',
+      '/study/session/update',
       data: data,
     );
     return _client.unwrap(
@@ -252,7 +252,7 @@ class StudentApi {
 
   Future<StudySession> endStudySession(int durationMinutes, int pausedMinutes) async {
     final response = await _client.post<dynamic>(
-      '/study/session/end/',
+      '/study/session/end',
       data: {
         'duration_minutes': durationMinutes,
         'paused_minutes': pausedMinutes,
@@ -265,30 +265,38 @@ class StudentApi {
   }
 
   Future<List<StudySession>> studySessionHistory() async {
-    final response = await _client.get<dynamic>('/study/session/history/');
+    final response = await _client.get<dynamic>('/study/session/history');
     return _client.unwrapList(response, StudySession.fromJson);
   }
 
+  Future<List<LeaderboardEntry>> leaderboard({String duration = 'month'}) async {
+    final response = await _client.get<dynamic>(
+      '/study/leaderboard',
+      query: {'duration': duration},
+    );
+    return _client.unwrapList(response, LeaderboardEntry.fromJson);
+  }
+
   Future<List<StudentNotification>> notifications() async {
-    final response = await _client.get<dynamic>('/notifications/list/');
+    final response = await _client.get<dynamic>('/notifications/list');
     return _client.unwrapList(response, StudentNotification.fromJson);
   }
 
   Future<void> markNotificationRead(int id) async {
-    final response = await _client.post<dynamic>('/notifications/read/$id/');
+    final response = await _client.post<dynamic>('/notifications/read/$id');
     _client.unwrap(response, (_) => null);
   }
 
   Future<void> registerDeviceToken(String token) async {
     final response = await _client.post<dynamic>(
-      '/notifications/register-device/',
+      '/notifications/register-device',
       data: {'token': token},
     );
     _client.unwrap(response, (_) => null);
   }
 
   Future<LibraryInfo> libraryInfo() async {
-    final response = await _client.get<dynamic>('/library/info/');
+    final response = await _client.get<dynamic>('/library/info');
     return _client.unwrap(
       response,
       (data) => LibraryInfo.fromJson(data as JsonMap? ?? const {}),
@@ -296,25 +304,25 @@ class StudentApi {
   }
 
   Future<List<Facility>> facilities() async {
-    final response = await _client.get<dynamic>('/library/facilities/');
+    final response = await _client.get<dynamic>('/library/facilities');
     return _client.unwrapList(response, Facility.fromJson);
   }
 
   Future<List<Achiever>> achievers({bool featured = false}) async {
-    final path = featured
-        ? '/library/achievers/featured/'
-        : '/library/achievers/';
-    final response = await _client.get<dynamic>(path);
+    final response = await _client.get<dynamic>(
+      '/library/achievers',
+      query: featured ? {'featured': 'true'} : null,
+    );
     return _client.unwrapList(response, Achiever.fromJson);
   }
 
   Future<List<ReviewRecord>> reviews() async {
-    final response = await _client.get<dynamic>('/library/reviews/');
+    final response = await _client.get<dynamic>('/library/reviews');
     return _client.unwrapList(response, ReviewRecord.fromJson);
   }
 
   Future<ReviewSummary> reviewSummary() async {
-    final response = await _client.get<dynamic>('/library/reviews/summary/');
+    final response = await _client.get<dynamic>('/library/reviews/summary');
     return _client.unwrap(
       response,
       (data) => ReviewSummary.fromJson(data as JsonMap? ?? const {}),
@@ -326,7 +334,7 @@ class StudentApi {
     required String comment,
   }) async {
     final response = await _client.post<dynamic>(
-      '/library/reviews/submit/',
+      '/library/reviews/submit',
       data: {'rating': rating, 'comment': comment},
     );
     return _client.unwrap(
@@ -335,7 +343,7 @@ class StudentApi {
     );
   }
   Future<List<HomeSlider>> sliders() async {
-    final response = await _client.get<dynamic>('/sliders/');
+    final response = await _client.get<dynamic>('/sliders');
     return _client.unwrapList(response, HomeSlider.fromJson);
   }
 }

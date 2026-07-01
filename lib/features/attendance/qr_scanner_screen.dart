@@ -7,6 +7,7 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'attendance_screen.dart';
+import 'scanner_overlay.dart';
 
 class QrScannerScreen extends ConsumerStatefulWidget {
   const QrScannerScreen({super.key});
@@ -49,6 +50,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
         children: [
           Expanded(
             child: Stack(
+              fit: StackFit.expand,
               children: [
                 MobileScanner(
                   onDetect: (capture) {
@@ -56,7 +58,17 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                     if (value != null) _submit(value);
                   },
                 ),
-                if (_busy) const Center(child: CircularProgressIndicator()),
+                // Scanner Overlay (Reticle)
+                CustomPaint(
+                  painter: ScannerOverlayPainter(
+                    borderColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                if (_busy) 
+                  Container(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
               ],
             ),
           ),
