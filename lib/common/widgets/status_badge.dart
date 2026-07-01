@@ -24,7 +24,7 @@ class StatusBadge extends StatelessWidget {
     } else if (upperStatus == 'ARRIVED LATE' || upperStatus == 'LATE') {
       innerBgColor = const Color(0xFFFDEBCC); // Light orange pill
       innerTextColor = const Color(0xFF914B00); // Dark brown text
-      displayStatus = 'Arrived late';
+      displayStatus = 'Present (Arrived Late)';
     } else if (upperStatus == 'ABSENT') {
       innerBgColor = const Color(0xFFFDE2E2); // Light pink pill
       innerTextColor = const Color(0xFF991515); // Dark red text

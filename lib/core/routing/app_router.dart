@@ -10,6 +10,8 @@ import 'package:shreshtlibrary/features/auth/presentation/screens/register_scree
 import 'package:shreshtlibrary/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:shreshtlibrary/features/home/home_screen.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart';
+import 'package:shreshtlibrary/features/library/achievers_screen.dart';
+import 'package:shreshtlibrary/features/library/facilities_screen.dart';
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart';
 import 'package:shreshtlibrary/features/payments/payments_screen.dart';
 import 'package:shreshtlibrary/features/profile/profile_screen.dart';
@@ -90,6 +92,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/library',
         builder: (context, state) => const LibraryScreen(),
+      ),
+      GoRoute(
+        path: '/achievers',
+        builder: (context, state) => const AchieversScreen(),
+      ),
+      GoRoute(
+        path: '/facilities',
+        builder: (context, state) => const FacilitiesScreen(),
       ),
     ],
   );

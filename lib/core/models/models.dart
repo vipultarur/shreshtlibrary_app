@@ -156,6 +156,9 @@ class StudentDashboard {
     this.holidayTitle,
     this.holidayDescription,
     this.razorpayKey,
+    this.attendanceStatus,
+    this.attendanceTime,
+    this.allowQrScan = false,
   });
 
   final int studentId;
@@ -174,6 +177,9 @@ class StudentDashboard {
   final String? holidayTitle;
   final String? holidayDescription;
   final String? razorpayKey;
+  final String? attendanceStatus;
+  final String? attendanceTime;
+  final bool allowQrScan;
 
   factory StudentDashboard.fromJson(JsonMap json) {
     final expiryDialog = json['expiry_dialog'] as JsonMap?;
@@ -194,6 +200,9 @@ class StudentDashboard {
       holidayTitle: optionalText(json['holiday_title']),
       holidayDescription: optionalText(json['holiday_description']),
       razorpayKey: optionalText(json['razorpay_key']),
+      attendanceStatus: optionalText(json['attendance_status']),
+      attendanceTime: optionalText(json['attendance_time']),
+      allowQrScan: boolean(json['allow_qr_scan']),
     );
   }
 

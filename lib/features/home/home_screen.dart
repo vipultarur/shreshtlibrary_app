@@ -100,6 +100,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             }
 
+            if (dash != null && !dash.allowQrScan) {
+              return const SizedBox.shrink();
+            }
+
             return ActionButtonPurple(
               label: 'Scan',
               icon: Icons.qr_code_scanner,
@@ -172,13 +176,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: dashboardAsync.when(
         data: (dashboard) {
-          // Logic for status badge
-          String status = dashboard.membershipStatus == 'PENDING' ? 'Pending' : 'Present';
-          if (dashboard.isHoliday) {
-            status = 'Holiday';
-          } else if (!dashboard.markedAttendanceToday) {
-             status = 'Absent';
-          } // Note: This logic is a placeholder. Adapt based on actual API data structure for attendance if needed.
+          String status = dashboard.attendanceStatus ?? (dashboard.markedAttendanceToday ? 'Present' : 'Absent');
+          if (dashboard.membershipStatus == 'PENDING') status = 'Pending';
+          if (dashboard.isHoliday) status = 'Holiday';
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(width: 12),
                   StatusBadge(
                     status: status,
-                    time: status == 'Present' || status == 'Arrived late' ? '09:00' : null,
+                    time: dashboard.attendanceTime,
                   ),
                 ],
               ),
@@ -329,8 +329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SectionHeader(
           title: 'Achievers',
           onViewAll: () {
-            // No direct route for achievers, maybe library info
-            context.push('/library');
+            context.push('/achievers');
           },
         ),
         SizedBox(
@@ -437,7 +436,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SectionHeader(
           title: 'Facilities',
           onViewAll: () {
-            context.push('/library');
+            context.push('/facilities');
           },
         ),
         SizedBox(
