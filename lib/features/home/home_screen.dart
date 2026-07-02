@@ -138,7 +138,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildHeader(WidgetRef ref) {
     final libraryInfoAsync = ref.watch(libraryInfoProvider);
-    final logoUrl = libraryInfoAsync.valueOrNull?.logoSquare;
+    final logoUrl = libraryInfoAsync.value?.logoSquare;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -193,8 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: dashboardAsync.when(
         data: (dashboard) {
-          String status = dashboard.attendanceStatus ?? (dashboard.markedAttendanceToday ? 'Present' : 'Absent');
-          if (dashboard.membershipStatus == 'PENDING') status = 'Pending';
+          String status = dashboard.attendanceStatus ?? (dashboard.markedAttendanceToday ? 'Present' : 'Pending');
           if (dashboard.isHoliday) status = 'Holiday';
 
           return Column(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:shreshtlibrary/features/library/library_screen.dart'; // for libraryInfoProvider
 
-class PageScaffold extends StatelessWidget {
+class PageScaffold extends ConsumerWidget {
   const PageScaffold({
     super.key,
     required this.title,
@@ -18,8 +20,9 @@ class PageScaffold extends StatelessWidget {
   final Future<void> Function()? onRefresh;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final logoUrl = ref.watch(libraryInfoProvider).value?.logoSquare;
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -33,10 +36,19 @@ class PageScaffold extends StatelessWidget {
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
               ),
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.cover,
-              ),
+              child: logoUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: logoUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.cover,
+                    ),
             ),
             const SizedBox(width: 12),
             Text(

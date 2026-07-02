@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/features/home/home_screen.dart'; // for dashboardProvider
 import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 
 final attendanceLogsProvider =
@@ -30,9 +31,16 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     return PageScaffold(
       title: 'Attendance',
       actions: [
-        IconButton(
-          onPressed: () => context.push('/attendance/scan'),
-          icon: const Icon(Icons.qr_code_scanner),
+        Consumer(
+          builder: (context, ref, _) {
+            final dash = ref.watch(dashboardProvider).value;
+            final showScan = dash?.allowQrScan ?? false;
+            if (!showScan) return const SizedBox.shrink();
+            return IconButton(
+              onPressed: () => context.push('/attendance/scan'),
+              icon: const Icon(Icons.qr_code_scanner),
+            );
+          },
         ),
       ],
       onRefresh: () async {
@@ -51,7 +59,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           }).toList();
 
           final daysPresent = currentMonthLogs.where((r) => r.isPresent).length;
-          final daysAbsent = currentMonthLogs.where((r) => !r.isPresent).length;
+          final daysAbsent = currentMonthLogs.where((r) => !r.isPresent && r.method != 'PENDING').length;
           final totalLateMarks = currentMonthLogs.where((r) => r.lateMark).length;
           final totalUnderTime = currentMonthLogs.where((r) => r.underTime).length;
 
@@ -154,10 +162,18 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     if (log != null) {
       if (log.isPresent) {
-        bgColor = const Color(0xFFE8F5E9); // Light Green
-        textColor = const Color(0xFF2E7D32);
+        if (log.lateMark) {
+          bgColor = const Color(0xFFFFF3E0); // Light orange for late
+          textColor = const Color(0xFFE65100);
+        } else {
+          bgColor = const Color(0xFFE8F5E9); // Light Green
+          textColor = const Color(0xFF2E7D32);
+        }
+      } else if (log.method == 'PENDING') {
+        bgColor = const Color(0xFFFFF8E1); // Light yellow for pending
+        textColor = const Color(0xFFF57F17);
       } else {
-        bgColor = const Color(0xFFFFEBEE); // Light Red
+        bgColor = const Color(0xFFFFEBEE); // Light Red for absent
         textColor = const Color(0xFFC62828);
       }
     }

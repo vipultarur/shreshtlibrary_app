@@ -586,6 +586,57 @@ class StudentNotification {
     eventDate: optionalText(json['event_date']),
     layout: text(json['layout'], 'text_only'),
     backgroundImage: imageUrl(json['background_image']),
+    images: (json['images'] as List<dynamic>?)?.map((e) => imageUrl(e) ?? '').where((e) => e.isNotEmpty).toList() ?? [],
+    displayMode: optionalText(json['display_mode']),
+  );
+}
+
+class LibraryInfo {
+  const LibraryInfo({
+    required this.name,
+    this.tagline,
+    this.description,
+    this.featureImage,
+    this.logoSquare,
+    this.address,
+    this.phonePrimary,
+    this.email,
+    this.rules,
+    this.facilities,
+    this.about,
+  });
+
+  final String name;
+  final String? tagline;
+  final String? description;
+  final String? featureImage;
+  final String? logoSquare;
+  final String? address;
+  final String? phonePrimary;
+  final String? email;
+  final String? rules;
+  final String? facilities;
+  final String? about;
+
+  factory LibraryInfo.fromJson(JsonMap json) => LibraryInfo(
+    name: text(json['name'], 'Shresht Library'),
+    tagline: optionalText(json['tagline']),
+    description: optionalText(json['description']),
+    featureImage: imageUrl(json['feature_image']),
+    logoSquare: imageUrl(json['logo_square']),
+    address: optionalText(json['address']),
+    phonePrimary: optionalText(json['phone_primary']),
+    email: optionalText(json['email']),
+    rules: optionalText(json['rules']),
+    facilities: optionalText(json['facilities']),
+    about: optionalText(json['about']),
+  );
+}
+
+class Facility {
+  const Facility({
+    required this.id,
+    required this.name,
     this.description,
     this.image,
     this.iconKey,
