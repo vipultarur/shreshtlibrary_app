@@ -346,6 +346,11 @@ class StudentApi {
     );
   }
 
+  Future<List<GalleryImage>> galleryImages() async {
+    final response = await _client.get<dynamic>('/library/gallery');
+    return _client.unwrapList(response, GalleryImage.fromJson);
+  }
+
   Future<ReviewRecord> submitReview({
     required int rating,
     required String comment,

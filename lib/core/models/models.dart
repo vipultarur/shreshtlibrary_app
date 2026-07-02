@@ -591,6 +591,7 @@ class StudentNotification {
   );
 }
 
+
 class LibraryInfo {
   const LibraryInfo({
     required this.name,
@@ -604,6 +605,28 @@ class LibraryInfo {
     this.rules,
     this.facilities,
     this.about,
+    this.history,
+    this.mission,
+    this.vision,
+    this.services,
+    this.coursesSupported,
+    this.membershipDetails,
+    this.registrationProcess,
+    this.requiredDocuments,
+    this.membershipBenefits,
+    this.libraryRules,
+    this.faq,
+    this.testimonials,
+    this.emergencyContact,
+    this.footerText,
+    this.whatsappNumber,
+    this.telegramUrl,
+    this.youtubeUrl,
+    this.facebookUrl,
+    this.instagramUrl,
+    this.latitude,
+    this.longitude,
+    this.googleMapUrl,
   });
 
   final String name;
@@ -617,6 +640,28 @@ class LibraryInfo {
   final String? rules;
   final String? facilities;
   final String? about;
+  final String? history;
+  final String? mission;
+  final String? vision;
+  final String? services;
+  final String? coursesSupported;
+  final String? membershipDetails;
+  final String? registrationProcess;
+  final String? requiredDocuments;
+  final String? membershipBenefits;
+  final String? libraryRules;
+  final String? faq;
+  final String? testimonials;
+  final String? emergencyContact;
+  final String? footerText;
+  final String? whatsappNumber;
+  final String? telegramUrl;
+  final String? youtubeUrl;
+  final String? facebookUrl;
+  final String? instagramUrl;
+  final double? latitude;
+  final double? longitude;
+  final String? googleMapUrl;
 
   factory LibraryInfo.fromJson(JsonMap json) => LibraryInfo(
     name: text(json['name'], 'Shresht Library'),
@@ -630,6 +675,28 @@ class LibraryInfo {
     rules: optionalText(json['rules']),
     facilities: optionalText(json['facilities']),
     about: optionalText(json['about']),
+    history: optionalText(json['history']),
+    mission: optionalText(json['mission']),
+    vision: optionalText(json['vision']),
+    services: optionalText(json['services']),
+    coursesSupported: optionalText(json['courses_supported']),
+    membershipDetails: optionalText(json['membership_details']),
+    registrationProcess: optionalText(json['registration_process']),
+    requiredDocuments: optionalText(json['required_documents']),
+    membershipBenefits: optionalText(json['membership_benefits']),
+    libraryRules: optionalText(json['library_rules']),
+    faq: optionalText(json['faq']),
+    testimonials: optionalText(json['testimonials']),
+    emergencyContact: optionalText(json['emergency_contact']),
+    footerText: optionalText(json['footer_text']),
+    whatsappNumber: optionalText(json['whatsapp_number']),
+    telegramUrl: optionalText(json['telegram_url']),
+    youtubeUrl: optionalText(json['youtube_url']),
+    facebookUrl: optionalText(json['facebook_url']),
+    instagramUrl: optionalText(json['instagram_url']),
+    latitude: decimal(json['latitude']) == 0 ? null : decimal(json['latitude']),
+    longitude: decimal(json['longitude']) == 0 ? null : decimal(json['longitude']),
+    googleMapUrl: optionalText(json['google_map_url']),
   );
 }
 
@@ -783,6 +850,30 @@ class LeaderboardEntry {
     totalMinutes: integer(json['total_minutes']),
     hoursFormatted: text(json['hours_formatted']),
     levelInfo: LevelInfo.fromJson(json['level_info'] as JsonMap? ?? const {}),
+  );
+}
+
+class GalleryImage {
+  const GalleryImage({
+    required this.id,
+    required this.imageUrl,
+    this.caption,
+    required this.order,
+    this.createdAt,
+  });
+
+  final int id;
+  final String imageUrl;
+  final String? caption;
+  final int order;
+  final String? createdAt;
+
+  factory GalleryImage.fromJson(JsonMap json) => GalleryImage(
+    id: integer(json['id']),
+    imageUrl: imageUrl(json['image_url']) ?? '',
+    caption: optionalText(json['caption']),
+    order: integer(json['order']),
+    createdAt: optionalText(json['created_at']),
   );
 }
 
