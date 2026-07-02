@@ -51,7 +51,7 @@ class LibraryScreen extends ConsumerWidget {
           AsyncPane(
               value: ref.watch(libraryInfoProvider),
               builder: (info) => SectionCard(
-                title: info.name,
+                title: 'Library Details',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -63,6 +63,33 @@ class LibraryScreen extends ConsumerWidget {
                           height: 160,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                        ),
+                      ),
+                    if (info.logoSquare != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16, bottom: 8),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage: CachedNetworkImageProvider(info.logoSquare!),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                info.name,
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (info.logoSquare == null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16, bottom: 8),
+                        child: Text(
+                          info.name,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                     if (info.tagline != null)
@@ -105,6 +132,18 @@ class LibraryScreen extends ConsumerWidget {
                         value: info.emergencyContact!,
                         icon: Icons.warning_amber_outlined,
                       ),
+                    if (info.openingTime != null && info.closingTime != null)
+                      InfoTile(
+                        label: 'Working Hours',
+                        value: '${info.openingTime} - ${info.closingTime} ${info.weeklyOff != null ? '(Off: ${info.weeklyOff})' : ''}',
+                        icon: Icons.access_time,
+                      ),
+                    if (info.website != null)
+                      InfoTile(
+                        label: 'Website',
+                        value: info.website!,
+                        icon: Icons.language,
+                      ),
                   ],
                 ),
               ),
@@ -115,6 +154,23 @@ class LibraryScreen extends ConsumerWidget {
               builder: (info) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (info.totalCapacity != null || info.statisticsDescription != null)
+                    SectionCard(
+                      title: 'Library Capacity & Stats',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (info.totalCapacity != null)
+                            Text('Total Capacity: ${info.totalCapacity} Seats', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          if (info.availableSeats != null)
+                            Text('Currently Available: ${info.availableSeats} Seats', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                          if (info.statisticsDescription != null) ...[
+                            const SizedBox(height: 8),
+                            Text(info.statisticsDescription!),
+                          ],
+                        ],
+                      ),
+                    ),
                   if (info.welcomeMessage != null || info.history != null || info.mission != null || info.vision != null)
                     SectionCard(
                       title: 'About Us',

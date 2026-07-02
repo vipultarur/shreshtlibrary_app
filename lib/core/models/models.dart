@@ -627,6 +627,13 @@ class LibraryInfo {
     this.latitude,
     this.longitude,
     this.googleMapUrl,
+    this.openingTime,
+    this.closingTime,
+    this.weeklyOff,
+    this.totalCapacity,
+    this.availableSeats,
+    this.website,
+    this.statisticsDescription,
   });
 
   final String name;
@@ -662,6 +669,13 @@ class LibraryInfo {
   final double? latitude;
   final double? longitude;
   final String? googleMapUrl;
+  final String? openingTime;
+  final String? closingTime;
+  final String? weeklyOff;
+  final int? totalCapacity;
+  final int? availableSeats;
+  final String? website;
+  final String? statisticsDescription;
 
   factory LibraryInfo.fromJson(JsonMap json) => LibraryInfo(
     name: text(json['name'], 'Shresht Library'),
@@ -697,6 +711,13 @@ class LibraryInfo {
     latitude: decimal(json['latitude']) == 0 ? null : decimal(json['latitude']),
     longitude: decimal(json['longitude']) == 0 ? null : decimal(json['longitude']),
     googleMapUrl: optionalText(json['google_map_url']),
+    openingTime: optionalText(json['opening_time']),
+    closingTime: optionalText(json['closing_time']),
+    weeklyOff: optionalText(json['weekly_off']),
+    totalCapacity: integer(json['total_capacity']),
+    availableSeats: integer(json['available_seats']),
+    website: optionalText(json['website']),
+    statisticsDescription: optionalText(json['statistics_description']),
   );
 }
 
