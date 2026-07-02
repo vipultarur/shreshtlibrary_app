@@ -279,7 +279,24 @@ class StudentApi {
 
   Future<List<StudentNotification>> notifications() async {
     final response = await _client.get<dynamic>('/notifications/list');
-    return _client.unwrapList(response, StudentNotification.fromJson);
+    return _client.unwrap(response, (data) {
+      // The API returns paginated data: { data: [...], count, total_pages }
+      if (data is Map<String, dynamic> && data.containsKey('data')) {
+        final rows = data['data'] as List<dynamic>? ?? const <Object?>[];
+        return rows
+            .whereType<Map<String, dynamic>>()
+            .map(StudentNotification.fromJson)
+            .toList();
+      }
+      // Fallback: if it's already a plain list
+      if (data is List) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map(StudentNotification.fromJson)
+            .toList();
+      }
+      return <StudentNotification>[];
+    });
   }
 
   Future<void> markNotificationRead(int id) async {

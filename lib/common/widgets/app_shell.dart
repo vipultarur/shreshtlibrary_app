@@ -26,8 +26,8 @@ class AppShell extends StatelessWidget {
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.fromLTRB(18, 0, 18, 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(40),
@@ -40,7 +40,7 @@ class AppShell extends StatelessWidget {
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _NavBarItem(
                 iconPath: 'assets/icons/shared/home.svg',
@@ -50,19 +50,19 @@ class AppShell extends StatelessWidget {
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/calender.svg',
-                label: 'Attendance', // Changed label if calendar is used for attendance
+                label: 'Attendance',
                 isSelected: currentIndex == 1,
                 onTap: () => context.go('/attendance'),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/target.svg',
-                label: 'Payments', // Used target for payments/plans
+                label: 'Study',
                 isSelected: currentIndex == 2,
                 onTap: () => context.go('/payments'),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/bage.svg',
-                label: 'Seats', // Used badge for seats/leaderboard
+                label: 'Leaderboard',
                 isSelected: currentIndex == 3,
                 onTap: () => context.go('/seats'),
               ),
@@ -103,14 +103,17 @@ class _NavBarItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: isSelected
-            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-            : const EdgeInsets.all(8),
+            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+            : const EdgeInsets.all(6),
         decoration: isSelected
             ? BoxDecoration(
-                color: const Color(0xFFF1EFFC),
-                borderRadius: BorderRadius.circular(20),
+                color: const Color(0xFFF4F2FF), // Very light purple background
+                borderRadius: BorderRadius.circular(30),
               )
-            : null,
+            : BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(30),
+              ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -120,13 +123,13 @@ class _NavBarItem extends StatelessWidget {
               width: 24,
             ),
             if (isSelected) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13,
                 ),
               ),
             ],

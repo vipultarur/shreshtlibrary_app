@@ -14,7 +14,6 @@ class HomeSliderWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
-    final theme = Theme.of(context);
 
     return dashboardAsync.when(
       data: (dashboard) {
@@ -44,11 +43,11 @@ class HomeSliderWidget extends ConsumerWidget {
             );
           },
           loading: () => const _SliderSkeleton(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
         );
       },
       loading: () => const _SliderSkeleton(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -92,7 +91,7 @@ class _SliderCard extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Colors.black.withOpacity(0.7),
+                Colors.black.withValues(alpha: 0.7),
               ],
             ),
           ),

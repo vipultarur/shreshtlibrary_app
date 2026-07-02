@@ -328,7 +328,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                   ),
                 ),
                 title: Text(
-                  entry.student.fullName ?? 'Unknown',
+                  entry.student.fullName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(

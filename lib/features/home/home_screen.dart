@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
-import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // for providers
 import 'package:shreshtlibrary/features/home/widgets/home_slider.dart'; // for homeSlidersProvider
@@ -26,51 +28,60 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _currentSliderIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC), // Lighter background below the curve
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(dashboardProvider);
-          ref.invalidate(homeSlidersProvider);
-          ref.invalidate(facilitiesProvider);
-          ref.invalidate(achieversProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFCBB9FF), // Purple top background
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(40),
-                    bottomRight: Radius.circular(40),
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(),
-                      _buildGreetingAndStatus(),
-                      _buildSlider(),
-                      const SizedBox(height: 12), // Reduced padding before the curve
-                    ],
-                  ),
+      backgroundColor: const Color(0xFFF1EFFC),
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFFCBB9FF),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            child: _buildHeader(ref),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(dashboardProvider);
+                ref.invalidate(homeSlidersProvider);
+                ref.invalidate(facilitiesProvider);
+                ref.invalidate(achieversProvider);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFCBB9FF),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(40),
+                          bottomRight: Radius.circular(40),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildGreetingAndStatus(),
+                          _buildSlider(),
+                          const SizedBox(height: 6),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildAchievers(),
+                    _buildFacilities(),
+                  ],
                 ),
               ),
-                const SizedBox(height: 16),
-                _buildAchievers(),
-                _buildFacilities(),
-              ],
             ),
           ),
-        ),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 70), // above bottom nav
@@ -100,7 +111,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             }
 
-            if (dash != null && !dash.allowQrScan) {
+            bool isScanActive = dash != null && dash.allowQrScan;
+
+            if (!isScanActive) {
               return const SizedBox.shrink();
             }
 
@@ -108,14 +121,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Scan',
               icon: Icons.qr_code_scanner,
               onTap: () {
-                if (dash != null) {
-                  if (dash.restrictedFeatures.contains('attendance')) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Attendance is restricted for non-premium members.')),
-                    );
-                  } else {
-                    context.push('/attendance/scan');
-                  }
+                if (dash.restrictedFeatures.contains('attendance')) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Attendance is restricted for non-premium members.')),
+                  );
+                } else {
+                  context.push('/attendance/scan');
                 }
               },
             );
@@ -125,7 +136,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(WidgetRef ref) {
+    final libraryInfoAsync = ref.watch(libraryInfoProvider);
+    final logoUrl = libraryInfoAsync.valueOrNull?.logoSquare;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -137,9 +151,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: 40,
                 height: 40,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFD4ED5B), // Yellowish green logo circle
                   shape: BoxShape.circle,
                 ),
+                clipBehavior: Clip.hardEdge,
+                child: logoUrl != null 
+                    ? Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (c, e, s) => Image.asset('assets/images/logo.png', fit: BoxFit.cover))
+                    : Image.asset('assets/images/logo.png', fit: BoxFit.cover),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -184,14 +201,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Good Morning',
+                'Good Moring',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF140C2C),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Text(
@@ -225,88 +242,124 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       data: (sliders) {
         if (sliders.isEmpty) return const SizedBox.shrink();
         
-        return Container(
-          margin: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 20),
-          height: 180,
-          child: Stack(
-            children: [
-              PageView.builder(
+        return Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(left: 20, right: 20),
+              height: 140,
+              child: CarouselSlider.builder(
+                options: CarouselOptions(
+                  height: 140,
+                  viewportFraction: 1.0,
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 4),
+                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                  autoPlayCurve: Curves.fastOutSlowIn,
+                  onPageChanged: (index, reason) {
+                    setState(() => _currentSliderIndex = index);
+                  },
+                ),
                 itemCount: sliders.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (context, index, realIndex) {
                   final slider = sliders[index];
-                  return Container(
+                  Widget slideContent = Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFFB5B3AE), // Grey placeholder
                       borderRadius: BorderRadius.circular(24),
                       image: slider.image != null && slider.image!.isNotEmpty
                           ? DecorationImage(
-                              image: CachedNetworkImageProvider(slider.image!),
+                              image: CachedNetworkImageProvider(
+                                slider.image!,
+                                errorListener: (_) {},
+                              ),
                               fit: BoxFit.cover,
                             )
                           : null,
                     ),
                     padding: const EdgeInsets.all(20),
                     alignment: Alignment.bottomLeft,
-                    child: (slider.image == null || slider.image!.isEmpty)
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Text(
-                                  slider.title.isEmpty ? 'title' : slider.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: Text(
-                                  slider.subtitle.isEmpty ? 'sub title' : slider.subtitle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8B7DF1).withValues(alpha: 0.85), // Primary color pill
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            slider.title.isEmpty ? 'title' : slider.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8B7DF1).withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            slider.subtitle.isEmpty ? 'sub title' : slider.subtitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
+                  
+                  if (slider.linkUrl.isNotEmpty) {
+                    return GestureDetector(
+                      onTap: () {
+                        launchUrlString(slider.linkUrl, mode: LaunchMode.externalApplication);
+                      },
+                      child: slideContent,
+                    );
+                  }
+                  return slideContent;
                 },
               ),
-              Positioned(
-                bottom: 12,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    sliders.isEmpty ? 4 : sliders.length,
-                    (index) => Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: index == 0 ? 12 : 8,
-                      height: 8,
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B7DF1).withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  sliders.isEmpty ? 4 : sliders.length,
+                  (index) {
+                    bool isActive = _currentSliderIndex == index;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      width: isActive ? 16 : 6,
+                      height: 6,
                       decoration: BoxDecoration(
-                        color: index == 0 ? const Color(0xFF2C2C54) : const Color(0xFF2C2C54).withValues(alpha: 0.5),
+                        color: const Color(0xFF2E1F63),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 2),
+          ],
         );
       },
       loading: () => Container(
@@ -317,7 +370,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -353,61 +406,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   final achievement = achievers[index].achievement;
 
                   return Container(
-                    width: 140,
+                    width: 120, // Adjusted width
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28), // Perfectly rounded card
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(6.0), // Tight even border
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: const Color(0xFFB5B3AE), // Grey placeholder for image
-                                borderRadius: BorderRadius.circular(16),
+                                color: const Color(0xFFAFAEA9), // Exact grey from image
+                                borderRadius: BorderRadius.circular(22), // Matching inner radius
                                 image: (photo != null && photo.isNotEmpty)
                                     ? DecorationImage(
-                                        image: CachedNetworkImageProvider(photo),
+                                        image: CachedNetworkImageProvider(
+                                          photo,
+                                          errorListener: (_) {},
+                                        ),
                                         fit: BoxFit.cover,
                                       )
                                     : null,
                               ),
                               alignment: Alignment.bottomCenter,
-                              padding: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 6), // Inner pill margin
                               child: Container(
-                                height: 24,
+                                height: 22,
                                 width: 90,
-                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: const Color(0xFF7CE495), // Light green pill
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Text(
-                                  achievement,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF140C2C),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        achievement,
+                                        style: const TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF140C2C), // Dark text color
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    SvgPicture.asset(
+                                      'assets/icons/shared/right.svg',
+                                      height: 14,
+                                      width: 14,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(top: 12, bottom: 4),
+                            padding: const EdgeInsets.only(top: 8, bottom: 0),
                             child: Text(
                               name,
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: Color(0xFF140C2C),
+                                color: Color(0xFF1E2442), // Exact dark blue text
                                 fontWeight: FontWeight.w900,
                                 fontSize: 14,
                               ),
@@ -421,7 +490,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ),
       ],
@@ -440,7 +509,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           },
         ),
         SizedBox(
-          height: 100, // Matches height for the square boxes
+          height: 140, // Increased height to accommodate larger cards
           child: facilitiesAsync.when(
             data: (facilities) {
               final listCount = facilities.length;
@@ -462,15 +531,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       children: [
                         Container(
-                          width: 70,
-                          height: 70,
+                          width: 100, // Increased from 70
+                          height: 100, // Increased from 70
                           decoration: BoxDecoration(
                             color: Colors.transparent, // Show background through
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white, width: 3),
                             image: (photo != null && photo.isNotEmpty)
                                 ? DecorationImage(
-                                    image: CachedNetworkImageProvider(photo),
+                                    image: CachedNetworkImageProvider(
+                                      photo,
+                                      errorListener: (_) {},
+                                    ),
                                     fit: BoxFit.cover,
                                   )
                                 : null,
@@ -484,7 +556,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           style: const TextStyle(
                             color: Color(0xFF140C2C),
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 13, // Increased from 12
                           ),
                         ),
                       ],
@@ -494,7 +566,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ),
         const SizedBox(height: 24),

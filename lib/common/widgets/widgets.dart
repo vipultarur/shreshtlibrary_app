@@ -24,12 +24,29 @@ class PageScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          title,
-          style: theme.textTheme.displayMedium?.copyWith(
-            fontSize: 20,
-            color: theme.appBarTheme.foregroundColor,
-          ),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: theme.textTheme.displayMedium?.copyWith(
+                fontSize: 20,
+                color: theme.appBarTheme.foregroundColor,
+              ),
+            ),
+          ],
         ),
         actions: actions,
         elevation: 0,
@@ -92,7 +109,7 @@ class SectionCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (action != null) action!,
+                  ?action,
                 ],
               ),
               const SizedBox(height: 16),

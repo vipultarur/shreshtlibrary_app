@@ -55,7 +55,7 @@ class HomeNotificationBanner extends ConsumerWidget {
                               if (promo.layout == 'background_image' && promo.backgroundImage != null)
                                 Positioned.fill(
                                   child: Image.network(promo.backgroundImage!,
-                                      fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                                      fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
                                 ),
                               if (promo.layout == 'background_image')
                                 Positioned.fill(
@@ -71,7 +71,7 @@ class HomeNotificationBanner extends ConsumerWidget {
                                       promo.images.first,
                                       height: promo.layout == 'half_image' ? 140 : 220,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                                     ),
                                   Padding(
                                     padding: const EdgeInsets.all(24),

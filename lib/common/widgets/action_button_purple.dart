@@ -9,14 +9,16 @@ class ActionButtonPurple extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: Opacity(
+        opacity: onTap == null ? 0.5 : 1.0,
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xFF917CFF), // Purple from the UI
@@ -46,6 +48,7 @@ class ActionButtonPurple extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

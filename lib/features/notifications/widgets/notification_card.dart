@@ -120,7 +120,7 @@ class NotificationCard extends ConsumerWidget {
             item.images.first,
             height: 140,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
         Padding(
           padding: const EdgeInsets.all(16.0),
@@ -159,7 +159,7 @@ class NotificationCard extends ConsumerWidget {
           Image.network(
             item.images.first,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
         if (item.linkUrl != null && item.linkUrl!.isNotEmpty)
           Padding(
@@ -178,7 +178,7 @@ class NotificationCard extends ConsumerWidget {
             child: Image.network(
               item.backgroundImage!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
         Positioned.fill(

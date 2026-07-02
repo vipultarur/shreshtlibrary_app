@@ -164,9 +164,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     if (isSelected) {
       border = Border.all(color: Colors.teal.shade100, width: 2);
-      if (bgColor == null) {
-        bgColor = Colors.teal.shade50;
-      }
+      bgColor ??= Colors.teal.shade50;
     }
 
     return Container(

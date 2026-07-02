@@ -2,8 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:shreshtlibrary/common/widgets/page_scaffold.dart';
-import 'package:shreshtlibrary/common/widgets/async_pane.dart';
+import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // For facilitiesProvider
 
 class FacilitiesScreen extends ConsumerWidget {
@@ -13,7 +12,6 @@ class FacilitiesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return PageScaffold(
       title: 'All Facilities',
-      showBack: true,
       onRefresh: () async {
         ref.invalidate(facilitiesProvider);
       },
@@ -24,9 +22,11 @@ class FacilitiesScreen extends ConsumerWidget {
             return const Center(child: Text('No facilities listed.'));
           }
           return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             itemCount: facilities.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final facility = facilities[index];
               return Container(
