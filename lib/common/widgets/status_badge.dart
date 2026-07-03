@@ -36,7 +36,7 @@ class StatusBadge extends StatelessWidget {
       innerBgColor = const Color(0xFF7CE495); // Light green pill
       innerTextColor = const Color(0xFF140C2C); // Dark text
       statusIcon = buildIcon(const Color(0xFF07A833), Icons.check);
-    } else if (upperStatus == 'ARRIVED LATE' || upperStatus == 'LATE') {
+    } else if (upperStatus.contains('LATE')) {
       innerBgColor = const Color(0xFFFDEBCC); // Light orange pill
       innerTextColor = const Color(0xFF914B00); // Dark brown text
       displayStatus = 'Present (Arrived Late)';
