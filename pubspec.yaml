@@ -37,6 +37,7 @@ dependencies:
   shimmer: ^3.0.0
   lottie: ^3.3.3
   flutter_svg: ^2.0.10
+  easy_date_timeline: ^2.0.9
 
 dev_dependencies:
   flutter_test:

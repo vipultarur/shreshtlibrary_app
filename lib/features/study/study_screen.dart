@@ -11,6 +11,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
+import 'package:easy_date_timeline/easy_date_timeline.dart';
 
 
 final studyHistoryProvider = FutureProvider.autoDispose<List<StudySession>>((ref) {
@@ -41,6 +42,8 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   
   int _effectiveSeconds = 0;
   int _pausedSeconds = 0;
+
+  DateTime _selectedHistoryDate = DateTime.now();
 
   late final NotificationService _notificationService;
 
@@ -290,11 +293,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 ),
                 RefreshIndicator(
                   onRefresh: _onRefresh,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 100),
-                    child: _buildHistoryTab(),
-                  ),
+                  child: _buildHistoryTab(),
                 ),
 
               ],
@@ -546,22 +545,95 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   Widget _buildHistoryTab() {
     final historyAsync = ref.watch(studyHistoryProvider);
 
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: historyAsync.when(
-        data: (history) {
-          if (history.isEmpty) return _buildEmptyState('No Study Sessions', Icons.history_toggle_off);
-          return ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: history.length,
-            separatorBuilder: (c, i) => const SizedBox(height: 12),
-            itemBuilder: (c, i) => _buildHistoryCard(history[i]),
-          );
-        },
-        loading: () => const _SkeletonBox(height: 100),
-        error: (e, s) => const Center(child: Text('Failed to load history')),
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+          child: IconTheme(
+            data: const IconThemeData(color: Color(0xFF140C2C)),
+            child: EasyDateTimeLine(
+              initialDate: _selectedHistoryDate,
+              onDateChange: (selectedDate) {
+              setState(() {
+                _selectedHistoryDate = selectedDate;
+              });
+            },
+            headerProps: const EasyHeaderProps(
+              monthPickerType: MonthPickerType.switcher,
+              dateFormatter: DateFormatter.fullDateDayAsStrMY(),
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              monthStyle: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            dayProps: EasyDayProps(
+              height: 70,
+              width: 60,
+              dayStructure: DayStructure.dayNumDayStr,
+              activeDayStyle: const DayStyle(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  color: Color(0xFF140C2C),
+                ),
+                dayNumStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                dayStrStyle: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              inactiveDayStyle: DayStyle(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(30)),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                dayNumStyle: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
+                dayStrStyle: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              todayStyle: DayStyle(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  color: Colors.white,
+                  border: Border.all(color: Color(0xFF140C2C), width: 1.5),
+                ),
+                dayNumStyle: TextStyle(color: Color(0xFF140C2C), fontSize: 18, fontWeight: FontWeight.bold),
+                dayStrStyle: TextStyle(color: Color(0xFF140C2C), fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+        ),
+        Expanded(
+          child: historyAsync.when(
+            data: (history) {
+              final filteredHistory = history.where((session) {
+                try {
+                  final start = DateTime.parse(session.startTime).toLocal();
+                  return start.year == _selectedHistoryDate.year &&
+                         start.month == _selectedHistoryDate.month &&
+                         start.day == _selectedHistoryDate.day;
+                } catch (_) {
+                  return false;
+                }
+              }).toList();
+
+              if (filteredHistory.isEmpty) {
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 50),
+                    _buildEmptyState('No Study Sessions on this date', Icons.history_toggle_off),
+                  ],
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: filteredHistory.length,
+                separatorBuilder: (c, i) => const SizedBox(height: 12),
+                itemBuilder: (c, i) => _buildHistoryCard(filteredHistory[i]),
+              );
+            },
+            loading: () => ListView(children: const [_SkeletonBox(height: 100)]),
+            error: (e, s) => ListView(children: const [Center(child: Text('Failed to load history'))]),
+          ),
+        ),
+      ],
     );
   }
 
@@ -614,15 +686,31 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
 
 
   Widget _buildEmptyState(String title, IconData icon) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF140C2C))),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFCBB9FF).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 54, color: const Color(0xFFCBB9FF)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Take a break, or start a new session!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.black38),
+          ),
         ],
       ),
     );

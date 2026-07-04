@@ -57,16 +57,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    if (_busy) return;
+
+    final firstName = _firstName.text.trim();
+    final lastName = _lastName.text.trim();
+    final email = _email.text.trim();
+    final mobile = _mobile.text.trim();
+    final dob = _dob.text.trim();
+    final password = _password.text;
+
+    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || mobile.isEmpty || dob.isEmpty || password.isEmpty) {
+      showSnack(context, 'Please fill in all required fields.');
+      return;
+    }
+
+    if (password.length < 6) {
+      showSnack(context, 'Password must be at least 6 characters long.');
+      return;
+    }
+
     setState(() => _busy = true);
     final ok = await ref.read(authControllerProvider.notifier).register({
-      'first_name': _firstName.text.trim(),
-      'last_name': _lastName.text.trim(),
-      'email': _email.text.trim(),
-      'mobile': _mobile.text.trim(),
-      'password': _password.text,
-      'confirm_password': _password.text,
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'mobile': mobile,
+      'password': password,
+      'confirm_password': password,
       'goal': _goal,
-      'dob': _dob.text.trim(),
+      'dob': dob,
       'caste': _caste.text.trim(),
       'address': _address.text.trim(),
       'parent_mobile': _parentMobile.text.trim(),
@@ -74,6 +93,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
+      showSnack(context, 'Registration successful!');
       context.go('/home');
     } else {
       _handleError(ref.read(authControllerProvider), 'Registration failed.');
@@ -96,7 +116,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
     final fieldErrors = auth.fieldErrors ?? const {};
-    final theme = Theme.of(context);
 
     String? errorFor(String field) {
       final fieldError = fieldErrors[field];
@@ -111,9 +130,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
+            const Text(
               'Step 1 of 2: Personal Info',
-              style: theme.textTheme.displayMedium,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -161,16 +180,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               onPressed: () {
                 setState(() => _step = 2);
               },
-              child: const Text('Continue'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF140C2C),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Already have an account?', style: theme.textTheme.bodyMedium),
+                const Text('Already have an account?', style: TextStyle(color: Colors.black54)),
                 TextButton(
                   onPressed: () => context.go('/login'),
-                  child: Text('Sign In', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                  child: const Text('Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -185,9 +213,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Step 2 of 2: Profile Details',
-            style: theme.textTheme.displayMedium,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -204,16 +232,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Study Goal',
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _goal,
                 items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal))).toList(),
                 onChanged: (value) => setState(() => _goal = value ?? 'Other'),
-                decoration: const InputDecoration(), // Inherits from theme
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+                  ),
+                ),
               ),
             ],
           ),
@@ -253,20 +297,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: _busy ? null : _register,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF140C2C),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
             child: _busy
                 ? const SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Create Account'),
+                : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () {
               setState(() => _step = 1);
             },
-            child: Text('Back to Step 1', style: TextStyle(color: theme.colorScheme.primary)),
+            child: const Text('Back to Step 1', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

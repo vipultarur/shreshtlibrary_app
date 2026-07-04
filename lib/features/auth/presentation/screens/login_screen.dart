@@ -41,18 +41,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (_busy) return;
+
+    final input = _email.text.trim();
+    final password = _password.text;
+
+    if (input.isEmpty) {
+      showSnack(context, 'Please enter your email or mobile number.');
+      return;
+    }
+
+    if (password.isEmpty) {
+      showSnack(context, 'Please enter your password.');
+      return;
+    }
+
     setState(() => _busy = true);
     final controller = ref.read(authControllerProvider.notifier);
     
-    final input = _email.text.trim();
     final isMobile = RegExp(r'^[0-9]+$').hasMatch(input);
     final ok = isMobile
-        ? await controller.loginMobile(input, _password.text)
-        : await controller.loginEmail(input, _password.text);
+        ? await controller.loginMobile(input, password)
+        : await controller.loginEmail(input, password);
         
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
+      showSnack(context, 'Login successful!');
       context.go('/home');
     } else {
       _handleError(ref.read(authControllerProvider), 'Login failed.');
@@ -64,7 +79,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final auth = ref.watch(authControllerProvider);
     final disabled = _busy || auth.isLoading;
     final fieldErrors = auth.fieldErrors ?? const {};
-    final theme = Theme.of(context);
 
     String? errorFor(String field) {
       final fieldError = fieldErrors[field];
@@ -78,9 +92,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Sign In',
-            style: theme.textTheme.displayMedium,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF140C2C),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -112,12 +130,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Checkbox(
                       value: _rememberMe,
                       onChanged: (v) => setState(() => _rememberMe = v ?? false),
-                      activeColor: theme.colorScheme.primary,
+                      activeColor: const Color(0xFF140C2C),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     ),
-                    Flexible(
+                    const Flexible(
                       child: Text(
                         'Remember me', 
-                        style: theme.textTheme.bodyMedium,
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -126,29 +145,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               TextButton(
                 onPressed: () => context.go('/forgot-password'),
-                child: Text('Forgot Password?', style: TextStyle(color: theme.colorScheme.primary)),
+                child: const Text('Forgot Password?', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
               ),
             ],
           ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: disabled ? null : _login,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF140C2C),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
             child: disabled
                 ? const SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Sign In'),
+                : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Don't have an account?", style: theme.textTheme.bodyMedium),
+              const Text("Don't have an account?", style: TextStyle(color: Colors.black54)),
               TextButton(
                 onPressed: () => context.go('/register'),
-                child: Text('Sign Up', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                child: const Text('Sign Up', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
               ),
             ],
           ),

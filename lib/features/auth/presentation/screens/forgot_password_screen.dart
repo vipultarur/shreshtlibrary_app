@@ -68,24 +68,26 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return AuthLayout(
       title: 'Recovery',
       subtitle: 'Reset your password securely',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Forgot Password?',
-            style: theme.textTheme.displayMedium,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF140C2C),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Enter your registered email address. We will send you a token to reset your password.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium,
+            style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 32),
           AuthTextField(
@@ -99,24 +101,33 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _request,
-            child: const Text('Send Reset Link'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF140C2C),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 32),
           Row(
             children: [
-              Expanded(child: Divider(color: theme.dividerColor)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('OR', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('OR', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
               ),
-              Expanded(child: Divider(color: theme.dividerColor)),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
             ],
           ),
           const SizedBox(height: 32),
-          Text(
+          const Text(
             'Already have a token? Enter it below with your new password.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium,
+            style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 24),
           AuthTextField(
@@ -140,15 +151,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ElevatedButton(
             onPressed: _reset,
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.secondary,
+              backgroundColor: const Color(0xFF2C1B54),
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
             ),
-            child: const Text('Reset Password'),
+            child: const Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => context.go('/login'),
-            child: Text('Back to Sign In', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+            child: const Text('Back to Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
           ),
         ],
       ),

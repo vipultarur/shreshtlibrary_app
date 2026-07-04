@@ -30,15 +30,15 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.w600,
+            color: Color(0xFF140C2C),
           ),
         ),
         const SizedBox(height: 8),
@@ -49,13 +49,33 @@ class AuthTextField extends StatelessWidget {
           readOnly: readOnly,
           onTap: onTap,
           maxLines: maxLines,
-          style: theme.textTheme.bodyLarge,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
             errorText: errorText,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+            ),
             suffixIcon: suffixIcon != null
                 ? IconButton(
-                    icon: Icon(suffixIcon, color: theme.colorScheme.primary),
+                    icon: Icon(suffixIcon, color: Colors.grey.shade600),
                     onPressed: onSuffixTap,
                   )
                 : null,

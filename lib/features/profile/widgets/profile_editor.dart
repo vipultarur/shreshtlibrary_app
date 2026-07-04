@@ -122,19 +122,79 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
   Widget build(BuildContext context) {
     final photo = widget.profile.profilePhoto;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CircleAvatar(
-          radius: 44,
-          backgroundImage: photo == null
-              ? null
-              : CachedNetworkImageProvider(photo),
-          child: photo == null ? const Icon(Icons.person, size: 44) : null,
+        Row(
+          children: [
+            Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(24),
+                    image: photo != null
+                        ? DecorationImage(
+                            image: CachedNetworkImageProvider(photo),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: photo == null ? const Icon(Icons.person, size: 50, color: Colors.grey) : null,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: _busy ? null : _uploadPhoto,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${widget.profile.firstName} ${widget.profile.lastName}'.trim(),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.profile.goal.isNotEmpty ? widget.profile.goal : 'No goal set',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        TextButton.icon(
-          onPressed: _busy ? null : _uploadPhoto,
-          icon: const Icon(Icons.photo_camera_outlined),
-          label: const Text('Upload photo'),
+        const SizedBox(height: 32),
+        const Text('About', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        const Text(
+          'Edit your personal information below to keep your profile up to date.',
+          style: TextStyle(fontSize: 14, color: Colors.black87),
         ),
+        const SizedBox(height: 24),
         TextField(
           controller: _firstName,
           decoration: InputDecoration(
