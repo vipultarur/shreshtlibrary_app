@@ -7,7 +7,7 @@ String text(Object? value, [String fallback = '']) =>
     value?.toString() ?? fallback;
 String? optionalText(Object? value) => value?.toString();
 
-String? imageUrl(Object? value) {
+String? resolveImageUrl(Object? value) {
   final path = value?.toString();
   if (path == null || path.isEmpty) return null;
   if (path.startsWith('http')) return path;
@@ -119,7 +119,7 @@ class StudentProfile {
       dob: optionalText(json['dob'] ?? json['date_of_birth']),
       caste: optionalText(json['caste']),
       address: optionalText(json['address']),
-      profilePhoto: imageUrl(
+      profilePhoto: resolveImageUrl(
         json['profile_photo'] ?? json['profile_image'],
       ),
       parentMobile: optionalText(json['parent_mobile']),
@@ -247,7 +247,7 @@ class StudentIdCard {
       email: text(json['email']),
       goal: text(json['goal']),
       dob: optionalText(json['dob']),
-      photoUrl: imageUrl(json['photo_url']),
+      photoUrl: resolveImageUrl(json['photo_url']),
       qrData: text(json['qr_data']),
     );
   }
@@ -585,8 +585,8 @@ class StudentNotification {
     linkButtonText: optionalText(json['link_button_text']),
     eventDate: optionalText(json['event_date']),
     layout: text(json['layout'], 'text_only'),
-    backgroundImage: imageUrl(json['background_image']),
-    images: (json['images'] as List<dynamic>?)?.map((e) => imageUrl(e) ?? '').where((e) => e.isNotEmpty).toList() ?? [],
+    backgroundImage: resolveImageUrl(json['background_image']),
+    images: (json['images'] as List<dynamic>?)?.map((e) => resolveImageUrl(e) ?? '').where((e) => e.isNotEmpty).toList() ?? [],
     displayMode: optionalText(json['display_mode']),
   );
 }
@@ -597,6 +597,7 @@ class LibraryInfo {
     required this.name,
     this.tagline,
     this.description,
+    this.welcomeMessage,
     this.featureImage,
     this.logoSquare,
     this.address,
@@ -639,6 +640,7 @@ class LibraryInfo {
   final String name;
   final String? tagline;
   final String? description;
+  final String? welcomeMessage;
   final String? featureImage;
   final String? logoSquare;
   final String? address;
@@ -681,8 +683,9 @@ class LibraryInfo {
     name: text(json['name'], 'Shresht Library'),
     tagline: optionalText(json['tagline']),
     description: optionalText(json['description']),
-    featureImage: imageUrl(json['feature_image']),
-    logoSquare: imageUrl(json['logo_square']),
+    welcomeMessage: optionalText(json['welcome_message']),
+    featureImage: resolveImageUrl(json['feature_image']),
+    logoSquare: resolveImageUrl(json['logo_square']),
     address: optionalText(json['address']),
     phonePrimary: optionalText(json['phone_primary']),
     email: optionalText(json['email']),
@@ -740,7 +743,7 @@ class Facility {
     id: integer(json['id']),
     name: text(json['name']),
     description: optionalText(json['description']),
-    image: imageUrl(json['image']),
+    image: resolveImageUrl(json['image']),
     iconKey: optionalText(json['icon_key']),
   );
 }
@@ -768,7 +771,7 @@ class Achiever {
     achievement: text(json['achievement']),
     year: integer(json['year']),
     goal: optionalText(json['goal']),
-    photo: imageUrl(json['photo']),
+    photo: resolveImageUrl(json['photo']),
   );
 }
 
@@ -827,7 +830,7 @@ class HomeSlider {
     id: integer(json['id']),
     title: text(json['title']),
     subtitle: text(json['subtitle']),
-    image: imageUrl(json['image']),
+    image: resolveImageUrl(json['image']),
     linkUrl: text(json['link_url']),
   );
 }
@@ -889,13 +892,16 @@ class GalleryImage {
   final int order;
   final String? createdAt;
 
-  factory GalleryImage.fromJson(JsonMap json) => GalleryImage(
-    id: integer(json['id']),
-    imageUrl: imageUrl(json['image_url']) ?? '',
-    caption: optionalText(json['caption']),
-    order: integer(json['order']),
-    createdAt: optionalText(json['created_at']),
-  );
+  factory GalleryImage.fromJson(JsonMap json) {
+    final parsedUrl = resolveImageUrl(json['image_url']) ?? '';
+    return GalleryImage(
+      id: integer(json['id']),
+      imageUrl: parsedUrl,
+      caption: optionalText(json['caption']),
+      order: integer(json['order']),
+      createdAt: optionalText(json['created_at']),
+    );
+  }
 }
 
 

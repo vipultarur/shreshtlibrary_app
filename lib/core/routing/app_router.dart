@@ -15,7 +15,7 @@ import 'package:shreshtlibrary/features/library/facilities_screen.dart';
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart';
 import 'package:shreshtlibrary/features/payments/payments_screen.dart';
 import 'package:shreshtlibrary/features/profile/profile_screen.dart';
-import 'package:shreshtlibrary/features/seats/seats_screen.dart';
+import 'package:shreshtlibrary/features/study/leaderboard_screen.dart';
 import 'package:shreshtlibrary/features/study/study_screen.dart';
 import 'package:shreshtlibrary/common/widgets/app_shell.dart';
 
@@ -67,12 +67,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AttendanceScreen(),
           ),
           GoRoute(
-            path: '/payments',
-            builder: (context, state) => const PaymentsScreen(),
+            path: '/study',
+            builder: (context, state) => const StudyScreen(),
           ),
           GoRoute(
-            path: '/seats',
-            builder: (context, state) => const SeatsScreen(),
+            path: '/leaderboard',
+            builder: (context, state) => const LeaderboardScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -84,7 +84,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/attendance/scan',
         builder: (context, state) => const QrScannerScreen(),
       ),
-      GoRoute(path: '/study', builder: (context, state) => const StudyScreen()),
+      GoRoute(
+        path: '/payments',
+        builder: (context, state) => const PaymentsScreen(),
+      ),
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),

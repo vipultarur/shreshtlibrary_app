@@ -12,12 +12,14 @@ class PageScaffold extends ConsumerWidget {
     required this.child,
     this.actions,
     this.onRefresh,
+    this.scrollable = true,
   });
 
   final String title;
   final Widget child;
   final List<Widget>? actions;
   final Future<void> Function()? onRefresh;
+  final bool scrollable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,14 +66,19 @@ class PageScaffold extends ConsumerWidget {
         elevation: 0,
         backgroundColor: theme.appBarTheme.backgroundColor,
       ),
-      body: RefreshIndicator(
-        onRefresh: onRefresh ?? () async {},
-        color: theme.colorScheme.primary,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          children: [child],
-        ),
-      ),
+      body: scrollable
+          ? RefreshIndicator(
+              onRefresh: onRefresh ?? () async {},
+              color: theme.colorScheme.primary,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                children: [child],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: child,
+            ),
     );
   }
 }

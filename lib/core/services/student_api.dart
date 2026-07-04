@@ -167,6 +167,11 @@ class StudentApi {
     return _client.unwrapList(response, AttendanceRecord.fromJson);
   }
 
+  Future<void> checkoutAttendance() async {
+    final response = await _client.post<dynamic>('/attendance/checkout');
+    _client.unwrap(response, (_) => null);
+  }
+
   Future<List<HolidayRecord>> holidays() async {
     final response = await _client.get<dynamic>('/holidays');
     return _client.unwrapList(response, HolidayRecord.fromJson);

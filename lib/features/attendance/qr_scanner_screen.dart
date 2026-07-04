@@ -276,7 +276,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                         final value = capture.barcodes.firstOrNull?.rawValue;
                         if (value != null && !_busy) _submit(value);
                       },
-                      errorBuilder: (context, error, child) {
+                      errorBuilder: (context, error) {
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.all(32),

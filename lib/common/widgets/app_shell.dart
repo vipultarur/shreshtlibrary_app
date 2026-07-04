@@ -9,8 +9,8 @@ class AppShell extends StatelessWidget {
 
   int _indexForPath(String path) {
     if (path.startsWith('/attendance')) return 1;
-    if (path.startsWith('/payments')) return 2;
-    if (path.startsWith('/seats')) return 3;
+    if (path.startsWith('/study')) return 2;
+    if (path.startsWith('/leaderboard')) return 3;
     if (path.startsWith('/profile')) return 4;
     return 0;
   }
@@ -58,13 +58,13 @@ class AppShell extends StatelessWidget {
                 iconPath: 'assets/icons/shared/target.svg',
                 label: 'Study',
                 isSelected: currentIndex == 2,
-                onTap: () => context.go('/payments'),
+                onTap: () => context.go('/study'),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/bage.svg',
                 label: 'Leaderboard',
                 isSelected: currentIndex == 3,
-                onTap: () => context.go('/seats'),
+                onTap: () => context.go('/leaderboard'),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/profile.svg',

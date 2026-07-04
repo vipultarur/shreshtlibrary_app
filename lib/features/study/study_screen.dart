@@ -3,27 +3,20 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sensors_plus/sensors_plus.dart';
-import 'package:lottie/lottie.dart';
 
-import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
-import 'package:shreshtlibrary/common/widgets/widgets.dart';
-import 'package:shreshtlibrary/features/study/widgets/control_button.dart';
 
-final currentSessionProvider = FutureProvider.autoDispose<StudySession?>((ref) {
-  return ref.watch(studentApiProvider).currentStudySession();
-});
 
 final studyHistoryProvider = FutureProvider.autoDispose<List<StudySession>>((ref) {
   return ref.watch(studentApiProvider).studySessionHistory();
 });
 
-final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
-  return ref.watch(studentApiProvider).leaderboard();
-});
 
 class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});
@@ -32,18 +25,20 @@ class StudyScreen extends ConsumerStatefulWidget {
   ConsumerState<StudyScreen> createState() => _StudyScreenState();
 }
 
-class _StudyScreenState extends ConsumerState<StudyScreen> {
+class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   StudySession? _session;
   bool _busy = false;
-
+  String _status = 'loading'; // loading, none, starting, active, paused
+  
   StreamSubscription? _accelSub;
   Timer? _ticker;
-
-  String _status = 'loading'; // loading, none, starting, active, paused
-  DateTime? _lastMotionTime;
-  
   StreamSubscription? _actionSub;
-
+  
+  DateTime? _lastMotionTime;
+  DateTime? _lastTickTime;
+  
   int _effectiveSeconds = 0;
   int _pausedSeconds = 0;
 
@@ -52,10 +47,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _notificationService = ref.read(notificationServiceProvider);
-    _loadSession();
     
-    // Listen for notification actions
+    _loadSession();
+
     _actionSub = _notificationService.actionStream.listen((action) {
       if (action == 'stop_session') {
         _endSession();
@@ -65,6 +61,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _accelSub?.cancel();
     _ticker?.cancel();
     _actionSub?.cancel();
@@ -85,30 +82,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         });
         _startTracking();
       } else {
-        setState(() {
-          _status = 'none';
-        });
+        setState(() => _status = 'none');
       }
     } catch (e) {
       if (!mounted) return;
-      showSnack(context, 'Failed to load session: $e');
       setState(() => _status = 'none');
     }
   }
-
-  DateTime? _lastTickTime;
 
   void _startTracking() {
     _accelSub?.cancel();
     _ticker?.cancel();
 
-    _lastMotionTime = DateTime.now(); // force initial wait
+    _lastMotionTime = DateTime.now();
     _lastTickTime = DateTime.now();
 
     _accelSub = userAccelerometerEventStream().listen((event) {
       final magnitude = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
       if (magnitude > 1.5) {
-        // Significant motion detected
         _lastMotionTime = DateTime.now();
       }
     });
@@ -130,7 +121,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         if (secondsSinceMotion >= 60) {
           _updateBackendStatus('active');
           _status = 'active';
-          ref.read(notificationServiceProvider).startStudySessionNotification();
+          _notificationService.startStudySessionNotification();
         }
       } else if (_status == 'active') {
         _effectiveSeconds += deltaSeconds;
@@ -143,7 +134,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         if (secondsSinceMotion >= 60) {
           _updateBackendStatus('active');
           _status = 'active';
-          ref.read(notificationServiceProvider).startStudySessionNotification();
+          _notificationService.startStudySessionNotification();
         }
       }
     });
@@ -156,8 +147,40 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
         durationMinutes: _effectiveSeconds ~/ 60,
         pausedMinutes: _pausedSeconds ~/ 60,
       );
-    } catch (_) {
-      // Ignore background errors
+    } catch (_) {}
+  }
+
+  Future<void> _startNewSession() async {
+    setState(() => _busy = true);
+    try {
+      final logs = await ref.read(studentApiProvider).attendanceLogs();
+      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final todayLog = logs.firstWhere(
+        (l) => l.date == todayStr, 
+        orElse: () => const AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false)
+      );
+      
+      if (todayLog.timeOut != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot start a new session after checking out.')));
+        return;
+      }
+
+      final session = await ref.read(studentApiProvider).startStudySession();
+      if (!mounted) return;
+      setState(() {
+        _session = session;
+        _status = 'starting';
+        _effectiveSeconds = session.durationMinutes * 60;
+        _pausedSeconds = session.pausedMinutes * 60;
+      });
+      _startTracking();
+      ref.invalidate(studyHistoryProvider);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start session: $e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -166,7 +189,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     try {
       _accelSub?.cancel();
       _ticker?.cancel();
-      ref.read(notificationServiceProvider).stopStudySessionNotification();
+      _notificationService.stopStudySessionNotification();
       
       final durMin = _effectiveSeconds ~/ 60;
       final pauMin = _pausedSeconds ~/ 60;
@@ -174,46 +197,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       await ref.read(studentApiProvider).endStudySession(durMin, pauMin);
       
       if (!mounted) return;
-      showSnack(context, 'Study session completed!');
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Study session completed!')));
       setState(() {
         _session = null;
         _status = 'none';
         _effectiveSeconds = 0;
         _pausedSeconds = 0;
       });
-      ref.invalidate(currentSessionProvider);
       ref.invalidate(studyHistoryProvider);
-      ref.invalidate(leaderboardProvider);
-    } on ApiFailure catch (e) {
+
+    } catch (e) {
       if (!mounted) return;
-      showSnack(context, e.message);
-      _startTracking(); // Resume if failed
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to end session.')));
+      _startTracking();
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _startNewSession() async {
-    setState(() => _busy = true);
-    try {
-      final session = await ref.read(studentApiProvider).startStudySession();
-      if (!mounted) return;
-      setState(() {
-        _session = session;
-        _status = session.status;
-        _effectiveSeconds = session.durationMinutes * 60;
-        _pausedSeconds = session.pausedMinutes * 60;
-      });
-      _startTracking();
-      ref.invalidate(currentSessionProvider);
-      ref.invalidate(studyHistoryProvider);
-    } catch (e) {
-      if (!mounted) return;
-      showSnack(context, 'Failed to start session: $e');
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
 
   String _formatTime(int seconds) {
     final m = seconds ~/ 60;
@@ -221,187 +222,188 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _onRefresh() async {
+
+    ref.invalidate(studyHistoryProvider);
+
+    await _loadSession();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: PageScaffold(
-        title: 'Study Area',
-        child: Column(
-          children: [
-            const TabBar(
-              tabs: [
-                Tab(text: 'Tracker'),
-                Tab(text: 'Leaderboard'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildTrackerTab(),
-                  _buildLeaderboardTab(),
-                ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1EFFC),
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFFCBB9FF),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            child: _buildHeader(),
+          ),
+          Container(
+            color: const Color(0xFFCBB9FF),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1EFFC),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+              ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: const Color(0xFF140C2C),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey.shade600,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  dividerColor: Colors.transparent,
+                  tabs: const [
+                    Tab(text: 'Tracker'),
+                    Tab(text: 'History'),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 100),
+                    child: _buildTrackerTab(),
+                  ),
+                ),
+                RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 100),
+                    child: _buildHistoryTab(),
+                  ),
+                ),
+
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Study Area',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF140C2C),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTrackerTab() {
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(currentSessionProvider);
-        ref.invalidate(studyHistoryProvider);
-        await _loadSession();
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 32),
-        child: Column(
-          children: [
-            _buildActiveSessionView(),
-            const Divider(height: 1, thickness: 1),
-            _buildHistoryView(),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 16),
+        _buildActiveSessionView(),
+      ],
     );
   }
 
-  Widget _buildLeaderboardTab() {
-    return AsyncPane(
-      value: ref.watch(leaderboardProvider),
-      builder: (leaderboard) {
-        if (leaderboard.isEmpty) {
-          return const Center(child: Text('No data for this month.'));
-        }
-        return Column(
-          children: [
-            SizedBox(
-              height: 120,
-              child: Lottie.network(
-                'https://lottie.host/e2ba1b9f-6e82-4161-aa8f-28562725ad50/oQ5sF9k69L.json', // generic trophy
-                fit: BoxFit.contain,
-              ),
-            ),
-            const Text(
-              'Top Scholars',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: leaderboard.length,
-          itemBuilder: (context, index) {
-            final entry = leaderboard[index];
-            final theme = Theme.of(context);
-            
-            // Parse badge color from hex
-            Color badgeColor = Colors.grey;
-            try {
-              final hex = entry.levelInfo.badgeColor.replaceAll('#', '');
-              badgeColor = Color(int.parse('FF$hex', radix: 16));
-            } catch (_) {}
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: index < 3 ? badgeColor.withValues(alpha: 0.5) : Colors.transparent,
-                  width: index < 3 ? 2 : 0,
-                ),
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: CircleAvatar(
-                  backgroundColor: badgeColor.withValues(alpha: 0.2),
-                  child: Text(
-                    '#${entry.rank}',
-                    style: TextStyle(
-                      color: badgeColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                title: Text(
-                  entry.student.fullName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  entry.levelInfo.title,
-                  style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      entry.hoursFormatted,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      'studied',
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-        ),
-        ],
-        );
-      },
-    );
-  }
 
   Widget _buildActiveSessionView() {
     if (_status == 'loading') {
       return const SizedBox(
         height: 300,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: CircularProgressIndicator(color: Color(0xFF8B7DF1))),
       );
     }
 
     if (_status == 'none') {
-      return SizedBox(
-        height: 300,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.timer_off_outlined, size: 64, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text(
-                'No active study session.',
-                style: Theme.of(context).textTheme.titleLarge,
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1EFFC),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
+              child: const Icon(Icons.timer, size: 64, color: Color(0xFF8B7DF1)),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Ready to Focus?',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF140C2C),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Start an anti-distraction study session. If you move your phone, tracking pauses.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, height: 1.5),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
                 onPressed: _busy ? null : _startNewSession,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Start New Session'),
+                icon: const Icon(Icons.play_arrow, color: Colors.white),
+                label: const Text('Start New Session', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  backgroundColor: const Color(0xFF140C2C),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    Color primaryColor = Theme.of(context).colorScheme.primary;
+    Color primaryColor = const Color(0xFF8B7DF1);
     bool isPaused = _status == 'paused' || _status == 'starting';
-    IconData playPauseIcon = isPaused ? Icons.play_arrow : Icons.pause;
-    String playPauseLabel = isPaused ? 'Resume' : 'Pause';
 
     final now = DateTime.now();
     final int secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
@@ -417,27 +419,38 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
       centerText = _formatTime(_effectiveSeconds);
     } else {
       progressValue = reverseCountdown / 60.0;
-      progressColor = Colors.amber; // Yellow progress
+      progressColor = Colors.orange; // Amber/Yellow equivalent
       centerText = _formatTime(reverseCountdown);
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: 32),
-        // Timer Circle
-        Center(
-          child: SizedBox(
-            width: 280,
-            height: 280,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 240,
+            height: 240,
             child: Stack(
               fit: StackFit.expand,
               children: [
                 CircularProgressIndicator(
                   value: progressValue,
-                  strokeWidth: 20,
+                  strokeWidth: 16,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: progressColor.withValues(alpha: 0.15),
+                  backgroundColor: progressColor.withValues(alpha: 0.1),
                   color: progressColor,
                 ),
                 Center(
@@ -446,20 +459,29 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
                     children: [
                       Text(
                         centerText,
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 64,
-                          letterSpacing: 2,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 56,
+                          letterSpacing: -1,
+                          color: Color(0xFF140C2C),
                         ),
                       ),
                       if (isPaused) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          _status == 'starting' ? 'STARTING...' : 'PAUSED',
-                          style: TextStyle(
-                            color: progressColor,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: progressColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _status == 'starting' ? 'STARTING' : 'PAUSED',
+                            style: TextStyle(
+                              color: progressColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
                       ],
@@ -469,137 +491,160 @@ class _StudyScreenState extends ConsumerState<StudyScreen> {
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 48),
-        // Extra application elements
-        Text(
-          'Paused Time: ${_formatTime(_pausedSeconds)}',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 64),
-        // Controls
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ControlButton(
-              icon: playPauseIcon,
-              label: playPauseLabel,
-              onTap: () {
-                if (_status == 'active') {
-                  _updateBackendStatus('paused');
-                  setState(() => _status = 'paused');
-                } else if (_status == 'paused') {
-                  _lastMotionTime = null; // Prevent immediate re-pause
-                  _updateBackendStatus('active');
-                  setState(() => _status = 'active');
-                }
-              },
-            ),
-            const SizedBox(width: 48), // Adjusted spacing to match image
-            ControlButton(
-              icon: Icons.stop,
-              label: 'Quit',
-              onTap: _busy ? null : _endSession,
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
-
-  Widget _buildHistoryView() {
-    return AsyncPane(
-      value: ref.watch(studyHistoryProvider),
-      builder: (history) {
-        if (history.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Center(
-              child: Text(
-                'No study history found.',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.pause_circle_outline, color: Colors.grey, size: 16),
+              const SizedBox(width: 8),
               Text(
-                'Study History',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: history.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final session = history[index];
-                  // Format the start time
-                  DateTime? startTime;
-                  try {
-                    startTime = DateTime.parse(session.startTime);
-                  } catch (_) {}
-                  
-                  final dateStr = startTime != null ? '${startTime.day}/${startTime.month}/${startTime.year}' : 'Unknown Date';
-                  final timeStr = startTime != null ? '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}' : '--:--';
-                  
-                  final h = session.durationMinutes ~/ 60;
-                  final m = session.durationMinutes % 60;
-                  final durationStr = '${h > 0 ? '${h}h ' : ''}${m}m';
-
-                  return Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.indigo.shade50,
-                        child: Icon(Icons.history, color: Colors.indigo.shade400),
-                      ),
-                      title: Text(
-                        dateStr,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text('Started at $timeStr'),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            durationStr,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.green,
-                            ),
-                          ),
-                          const Text(
-                            'Studied',
-                            style: TextStyle(fontSize: 10, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                'Total Paused: ${_formatTime(_pausedSeconds)}',
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildControlButton(
+                icon: Icons.stop,
+                label: 'Quit',
+                color: Colors.redAccent,
+                onTap: _busy ? null : _endSession,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlButton({required IconData icon, required String label, required Color color, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 110,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryTab() {
+    final historyAsync = ref.watch(studyHistoryProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: historyAsync.when(
+        data: (history) {
+          if (history.isEmpty) return _buildEmptyState('No Study Sessions', Icons.history_toggle_off);
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: history.length,
+            separatorBuilder: (c, i) => const SizedBox(height: 12),
+            itemBuilder: (c, i) => _buildHistoryCard(history[i]),
+          );
+        },
+        loading: () => const _SkeletonBox(height: 100),
+        error: (e, s) => const Center(child: Text('Failed to load history')),
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(StudySession session) {
+    DateTime? startTime;
+    try { startTime = DateTime.parse(session.startTime); } catch (_) {}
+    
+    final dateStr = startTime != null ? DateFormat('MMM dd, yyyy').format(startTime) : 'Unknown Date';
+    final timeStr = startTime != null ? DateFormat('hh:mm a').format(startTime) : '--:--';
+    
+    final h = session.durationMinutes ~/ 60;
+    final m = session.durationMinutes % 60;
+    final durationStr = '${h > 0 ? '${h}h ' : ''}${m}m';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.check_circle, color: Color(0xFF2E7D32)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF140C2C))),
+                const SizedBox(height: 2),
+                Text('Started at $timeStr', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(durationStr, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF140C2C))),
+              const Text('Studied', style: TextStyle(color: Colors.grey, fontSize: 11)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildEmptyState(String title, IconData icon) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      child: Column(
+        children: [
+          Icon(icon, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF140C2C))),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  final double height;
+  const _SkeletonBox({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.black12,
+      highlightColor: Colors.white24,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
     );
   }
 }
