@@ -19,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _busy = false;
   bool _obscurePassword = true;
   bool _rememberMe = true;
+  final Map<String, String> _clientErrors = {};
 
   @override
   void dispose() {
@@ -36,7 +37,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else if (errors.isEmpty) {
       showSnack(context, auth.error ?? defaultMsg);
     } else {
-      showSnack(context, 'Please correct the errors in the form.');
+      // Don't show snack for field errors, as they are shown below the text fields
     }
   }
 
@@ -46,13 +47,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final input = _email.text.trim();
     final password = _password.text;
 
+    setState(() {
+      _clientErrors.clear();
+    });
+
+    bool hasError = false;
+
     if (input.isEmpty) {
-      showSnack(context, 'Please enter your email or mobile number.');
-      return;
+      _clientErrors['email'] = 'Email or mobile number is required';
+      hasError = true;
+    } else {
+      final isMobile = RegExp(r'^[0-9]+$').hasMatch(input);
+      if (isMobile && !RegExp(r'^[0-9]{10}$').hasMatch(input)) {
+        _clientErrors['email'] = 'Enter a valid 10-digit mobile number';
+        hasError = true;
+      } else if (!isMobile && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input)) {
+        _clientErrors['email'] = 'Enter a valid email address';
+        hasError = true;
+      }
     }
 
     if (password.isEmpty) {
-      showSnack(context, 'Please enter your password.');
+      _clientErrors['password'] = 'Password is required';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setState(() {});
       return;
     }
 
@@ -81,6 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final fieldErrors = auth.fieldErrors ?? const {};
 
     String? errorFor(String field) {
+      if (_clientErrors.containsKey(field)) return _clientErrors[field];
       final fieldError = fieldErrors[field];
       if (fieldError is List && fieldError.isNotEmpty) return fieldError.first.toString();
       return fieldError?.toString();

@@ -73,6 +73,14 @@ class AuthTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
             ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+            ),
             suffixIcon: suffixIcon != null
                 ? IconButton(
                     icon: Icon(suffixIcon, color: Colors.grey.shade600),

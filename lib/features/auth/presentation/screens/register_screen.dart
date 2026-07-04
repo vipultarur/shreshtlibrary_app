@@ -24,8 +24,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _parentMobile = TextEditingController();
   final _password = TextEditingController();
   String _goal = 'Other';
+  String _gender = 'Other';
   bool _busy = false;
   bool _obscurePassword = true;
+  final Map<String, String> _clientErrors = {};
 
   static const goals = [
     'UPSC', 'GPSC', 'CONSTABLE', 'Banking', 'Army',
@@ -51,7 +53,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } else if (errors.isEmpty) {
       showSnack(context, auth.error ?? defaultMsg);
     } else {
-      showSnack(context, 'Please correct the errors in the form.');
+      // Don't show snack for field errors, as they are shown below the text fields
     }
   }
 
@@ -65,13 +67,47 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final dob = _dob.text.trim();
     final password = _password.text;
 
-    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || mobile.isEmpty || dob.isEmpty || password.isEmpty) {
-      showSnack(context, 'Please fill in all required fields.');
-      return;
+    setState(() {
+      _clientErrors.clear();
+    });
+
+    bool hasError = false;
+
+    if (firstName.isEmpty) { _clientErrors['first_name'] = 'First name is required'; hasError = true; }
+    if (lastName.isEmpty) { _clientErrors['last_name'] = 'Last name is required'; hasError = true; }
+    
+    if (email.isEmpty) {
+      _clientErrors['email'] = 'Email is required';
+      hasError = true;
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      _clientErrors['email'] = 'Enter a valid email address';
+      hasError = true;
     }
 
-    if (password.length < 6) {
-      showSnack(context, 'Password must be at least 6 characters long.');
+    if (mobile.isEmpty) {
+      _clientErrors['mobile'] = 'Mobile number is required';
+      hasError = true;
+    } else if (!RegExp(r'^[0-9]{10}$').hasMatch(mobile)) {
+      _clientErrors['mobile'] = 'Enter a valid 10-digit mobile number';
+      hasError = true;
+    }
+
+    if (dob.isEmpty) { _clientErrors['dob'] = 'Birthday is required'; hasError = true; }
+    
+    if (password.isEmpty) {
+      _clientErrors['password'] = 'Password is required';
+      hasError = true;
+    } else if (password.length < 6) {
+      _clientErrors['password'] = 'Password must be at least 6 characters long';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setState(() {});
+      if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile'))) {
+        setState(() => _step = 1);
+        showSnack(context, 'Please fix errors in Step 1');
+      }
       return;
     }
 
@@ -84,6 +120,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'password': password,
       'confirm_password': password,
       'goal': _goal,
+      'gender': _gender,
       'dob': dob,
       'address': _address.text.trim(),
       'parent_mobile': _parentMobile.text.trim(),
@@ -94,7 +131,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       showSnack(context, 'Registration successful!');
       context.go('/home');
     } else {
-      _handleError(ref.read(authControllerProvider), 'Registration failed.');
+      final auth = ref.read(authControllerProvider);
+      final fieldErrors = auth.fieldErrors ?? {};
+      if (_step == 2 && (fieldErrors.containsKey('first_name') || fieldErrors.containsKey('last_name') || fieldErrors.containsKey('email') || fieldErrors.containsKey('mobile'))) {
+        setState(() => _step = 1);
+        showSnack(context, 'Please fix errors in Step 1');
+      } else {
+        _handleError(auth, 'Registration failed.');
+      }
     }
   }
 
@@ -116,6 +160,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final fieldErrors = auth.fieldErrors ?? const {};
 
     String? errorFor(String field) {
+      if (_clientErrors.containsKey(field)) return _clientErrors[field];
       final fieldError = fieldErrors[field];
       if (fieldError is List && fieldError.isNotEmpty) return fieldError.first.toString();
       return fieldError?.toString();
@@ -239,6 +284,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 initialValue: _goal,
                 items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal))).toList(),
                 onChanged: (value) => setState(() => _goal = value ?? 'Other'),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Gender',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _gender,
+                items: const [
+                  DropdownMenuItem(value: 'Male', child: Text('Male')),
+                  DropdownMenuItem(value: 'Female', child: Text('Female')),
+                  DropdownMenuItem(value: 'Other', child: Text('Other')),
+                ],
+                onChanged: (value) => setState(() => _gender = value ?? 'Other'),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,

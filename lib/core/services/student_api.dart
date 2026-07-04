@@ -69,7 +69,11 @@ class StudentApi {
   }
 
   Future<void> logout() async {
-    final response = await _client.post<dynamic>('/auth/logout');
+    final tokens = await _client.tokenStore.read();
+    final response = await _client.post<dynamic>(
+      '/auth/logout',
+      data: {'refresh': tokens?.refresh ?? ''},
+    );
     _client.unwrap(response, (_) => null);
   }
 
