@@ -20,7 +20,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _email = TextEditingController();
   final _mobile = TextEditingController();
   final _dob = TextEditingController();
-  final _caste = TextEditingController();
   final _address = TextEditingController();
   final _parentMobile = TextEditingController();
   final _password = TextEditingController();
@@ -36,7 +35,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     for (final controller in [
-      _firstName, _lastName, _email, _mobile, _dob, _caste, _address, _parentMobile, _password,
+      _firstName, _lastName, _email, _mobile, _dob, _address, _parentMobile, _password,
     ]) {
       controller.dispose();
     }
@@ -86,7 +85,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'confirm_password': password,
       'goal': _goal,
       'dob': dob,
-      'caste': _caste.text.trim(),
       'address': _address.text.trim(),
       'parent_mobile': _parentMobile.text.trim(),
     });
@@ -260,13 +258,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          AuthTextField(
-            label: 'Caste (Optional)',
-            hint: 'E.g. General, OBC, SC, ST',
-            controller: _caste,
-            errorText: errorFor('caste'),
           ),
           const SizedBox(height: 16),
           AuthTextField(
