@@ -18,6 +18,40 @@ import 'package:shreshtlibrary/features/profile/profile_screen.dart';
 import 'package:shreshtlibrary/features/study/leaderboard_screen.dart';
 import 'package:shreshtlibrary/features/study/study_screen.dart';
 import 'package:shreshtlibrary/common/widgets/app_shell.dart';
+import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
+
+class ProtectedRoute extends ConsumerWidget {
+  const ProtectedRoute({
+    super.key,
+    required this.feature,
+    required this.child,
+  });
+  
+  final String feature;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardAsync = ref.watch(dashboardProvider);
+    
+    return dashboardAsync.when(
+      data: (dashboard) {
+        if (dashboard.restrictedFeatures.contains(feature)) {
+          return RestrictedFeatureScreen(dashboard: dashboard, feature: feature);
+        }
+        return child;
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (_, __) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: const Center(
+          child: Text('Failed to load permissions. Please check your connection and try again.'),
+        ),
+      ),
+    );
+  }
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authControllerProvider);
@@ -64,15 +98,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/attendance',
-            builder: (context, state) => const AttendanceScreen(),
+            builder: (context, state) => const ProtectedRoute(
+              feature: 'attendance',
+              child: AttendanceScreen(),
+            ),
           ),
           GoRoute(
             path: '/study',
-            builder: (context, state) => const StudyScreen(),
+            builder: (context, state) => const ProtectedRoute(
+              feature: 'study',
+              child: StudyScreen(),
+            ),
           ),
           GoRoute(
             path: '/leaderboard',
-            builder: (context, state) => const LeaderboardScreen(),
+            builder: (context, state) => const ProtectedRoute(
+              feature: 'study',
+              child: LeaderboardScreen(),
+            ),
           ),
           GoRoute(
             path: '/profile',
@@ -82,19 +125,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/attendance/scan',
-        builder: (context, state) => const QrScannerScreen(),
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'attendance',
+          child: QrScannerScreen(),
+        ),
       ),
       GoRoute(
         path: '/payments',
-        builder: (context, state) => const PaymentsScreen(),
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'payments',
+          child: PaymentsScreen(),
+        ),
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'notifications',
+          child: NotificationsScreen(),
+        ),
       ),
       GoRoute(
         path: '/library',
-        builder: (context, state) => const LibraryScreen(),
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'library_info',
+          child: LibraryScreen(),
+        ),
       ),
       GoRoute(
         path: '/achievers',

@@ -8,6 +8,7 @@ import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
+import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 
 final profileProvider = FutureProvider.autoDispose<StudentProfile>(
   (ref) => ref.watch(studentApiProvider).profile(),
@@ -46,13 +47,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'My profile',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        'My profile',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final dashAsync = ref.watch(dashboardProvider);
+                          final status = dashAsync.value?.membershipStatus ?? 'Loading...';
+                          return StatusBadge(status: status, time: null);
+                        },
+                      ),
+                    ],
                   ),
                   Row(
                     children: [

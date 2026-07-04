@@ -1,11 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shreshtlibrary/core/services/providers.dart';
 
-class AppShell extends StatelessWidget {
+
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.child});
 
   final Widget child;
+
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(dashboardProvider);
+    }
+  }
 
   int _indexForPath(String path) {
     if (path.startsWith('/attendance')) return 1;
@@ -19,10 +46,13 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final currentIndex = _indexForPath(path);
+    final dashboardState = ref.watch(dashboardProvider);
+
+
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1EFFC),
-      body: child, // SafeArea handled by individual screens to allow full bleed if needed
+      body: widget.child, // SafeArea handled by individual screens to allow full bleed if needed
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -117,11 +147,11 @@ class _NavBarItem extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset(
-              iconPath,
-              height: 24,
-              width: 24,
-            ),
+              SvgPicture.asset(
+                iconPath,
+                height: 24,
+                width: 24,
+              ),
             if (isSelected) ...[
               const SizedBox(width: 4),
               Text(

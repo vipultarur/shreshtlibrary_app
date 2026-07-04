@@ -120,13 +120,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     final secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
 
     setState(() {
-      if (_status == 'starting') {
-        if (secondsSinceMotion >= 60) {
-          _updateBackendStatus('active');
-          _status = 'active';
-          _notificationService.startStudySessionNotification();
-        }
-      } else if (_status == 'active') {
+      if (_status == 'active') {
         _effectiveSeconds += deltaSeconds;
         if (secondsSinceMotion < 2) {
           _updateBackendStatus('paused');
@@ -173,10 +167,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       if (!mounted) return;
       setState(() {
         _session = session;
-        _status = 'starting';
+        _status = 'active';
         _effectiveSeconds = session.durationMinutes * 60;
         _pausedSeconds = session.pausedMinutes * 60;
       });
+      _notificationService.startStudySessionNotification();
       _startTracking();
       ref.invalidate(studyHistoryProvider);
     } catch (e) {

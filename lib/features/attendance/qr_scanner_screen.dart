@@ -7,7 +7,8 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/features/home/home_screen.dart'; // dashboardProvider
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
-import 'attendance_screen.dart';
+
+import 'package:shreshtlibrary/features/attendance/attendance_screen.dart'; // attendanceLogsProvider
 import 'scanner_overlay.dart';
 
 class QrScannerScreen extends ConsumerStatefulWidget {

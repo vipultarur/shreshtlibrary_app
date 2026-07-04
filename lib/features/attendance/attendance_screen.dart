@@ -71,7 +71,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   Consumer(
                     builder: (context, ref, _) {
                       final dash = ref.watch(dashboardProvider).value;
-                      final showScan = dash?.allowQrScan ?? false;
+                      final isRestricted = dash?.restrictedFeatures.contains('attendance') ?? false;
+                      final showScan = !isRestricted && (dash?.allowQrScan ?? false);
                       
                       final logsOpt = ref.watch(attendanceLogsProvider).value;
                       final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../firebase_options.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
@@ -11,7 +12,9 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   debugPrint("Handling a background message: ${message.messageId}");
 }
 
@@ -41,9 +44,11 @@ class NotificationService {
     try {
       // Initialize Firebase (Assuming flutterfire configure was run)
       try {
-        await Firebase.initializeApp();
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
       } catch (e) {
-        debugPrint("Firebase not initialized yet. Run flutterfire configure: $e");
+        debugPrint("Firebase already initialized or error: $e");
       }
 
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

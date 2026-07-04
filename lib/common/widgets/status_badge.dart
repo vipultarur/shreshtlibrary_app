@@ -53,6 +53,18 @@ class StatusBadge extends StatelessWidget {
       innerBgColor = const Color(0xFFFDEBCC); // Light orange pill
       innerTextColor = const Color(0xFFD66900); // Dark orange text
       statusIcon = buildIcon(const Color(0xFFE65100), Icons.hourglass_bottom);
+    } else if (upperStatus == 'LIVE' || upperStatus == 'ACTIVE') {
+      innerBgColor = const Color(0xFFE2FBE8); // Light green
+      innerTextColor = const Color(0xFF0C8A2C); // Dark green
+      statusIcon = buildIcon(const Color(0xFF18A03A), Icons.verified);
+    } else if (upperStatus == 'EXPIRED') {
+      innerBgColor = const Color(0xFFFEE2E2); // Light red
+      innerTextColor = const Color(0xFFB91C1C); // Dark red
+      statusIcon = buildIcon(const Color(0xFFDC2626), Icons.warning_amber_rounded);
+    } else if (upperStatus == 'SUSPENDED') {
+      innerBgColor = const Color(0xFFFCE7F3); // Light pink
+      innerTextColor = const Color(0xFFBE185D); // Dark pink
+      statusIcon = buildIcon(const Color(0xFFE11D48), Icons.block);
     } else {
       innerBgColor = Colors.grey.shade200;
       innerTextColor = Colors.grey.shade800;

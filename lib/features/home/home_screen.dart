@@ -15,10 +15,7 @@ import 'package:shreshtlibrary/features/home/widgets/home_slider.dart'; // for h
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/common/widgets/section_header.dart';
 import 'package:shreshtlibrary/common/widgets/action_button_purple.dart';
-
-final dashboardProvider = FutureProvider.autoDispose<StudentDashboard>((ref) {
-  return ref.watch(studentApiProvider).dashboard();
-});
+import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart'; // Add this for later
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -111,9 +108,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             }
 
+            bool isRestricted = dash != null && dash.restrictedFeatures.contains('attendance');
             bool isScanActive = dash != null && dash.allowQrScan;
 
-            if (!isScanActive) {
+            // Hide completely if restricted or outside of scanning time
+            if (isRestricted || !isScanActive) {
               return const SizedBox.shrink();
             }
 
@@ -121,13 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Scan',
               icon: Icons.qr_code_scanner,
               onTap: () {
-                if (dash.restrictedFeatures.contains('attendance')) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Attendance is restricted for non-premium members.')),
-                  );
-                } else {
-                  context.push('/attendance/scan');
-                }
+                context.push('/attendance/scan');
               },
             );
           },
@@ -177,7 +170,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: IconButton(
               icon: const Icon(Icons.notifications_none, color: Color(0xFF140C2C)),
               onPressed: () {
-                context.push('/notifications');
+                final dash = ref.read(dashboardProvider).value;
+                if (dash != null && dash.restrictedFeatures.contains('notifications')) {
+                  showRestrictionDialog(context, dash);
+                } else {
+                  context.push('/notifications');
+                }
               },
             ),
           ),
@@ -225,6 +223,142 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
+              if (dashboard.membershipStatus == 'PENDING') ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.hourglass_top_rounded, color: Colors.orange.shade700, size: 32),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pending Activation',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade900,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Please purchase a plan or contact admin to activate.',
+                              style: TextStyle(
+                                color: Colors.orange.shade800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () => context.push('/payments'),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.orange.shade100,
+                          foregroundColor: Colors.orange.shade900,
+                        ),
+                        child: const Text('Plans'),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (dashboard.membershipStatus == 'SUSPENDED') ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.pink.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.block, color: Colors.pink.shade700, size: 32),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dashboard.expiryDialogTitle ?? 'Account Suspended',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.pink.shade900,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dashboard.expiryDialogMessage ?? 'Your account has been suspended by the administrator.',
+                              style: TextStyle(
+                                color: Colors.pink.shade800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (dashboard.membershipStatus == 'EXPIRED') ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 32),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dashboard.expiryDialogTitle ?? 'Membership Expired',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red.shade900,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dashboard.expiryDialogMessage ?? 'Your membership has expired. Please renew to continue accessing library features.',
+                              style: TextStyle(
+                                color: Colors.red.shade800,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: () => context.push('/payments'),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.red.shade100,
+                          foregroundColor: Colors.red.shade900,
+                        ),
+                        child: const Text('Renew'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           );
         },
@@ -236,6 +370,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSlider() {
     final slidersAsync = ref.watch(homeSlidersProvider);
+    final dashboardAsync = ref.watch(dashboardProvider);
+
+    final isRestricted = dashboardAsync.value?.restrictedFeatures.contains('sliders') ?? false;
+    if (isRestricted) {
+      return const SizedBox.shrink();
+    }
 
     return slidersAsync.when(
       data: (sliders) {
@@ -388,7 +528,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 180,
           child: achieversAsync.when(
             data: (achievers) {
-              // Creating some dummy list if empty to match UI request (or display placeholder)
               final listCount = achievers.length;
 
               if (listCount == 0) {
