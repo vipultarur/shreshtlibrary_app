@@ -42,6 +42,8 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   
   int _effectiveSeconds = 0;
   int _pausedSeconds = 0;
+  int _accumulatedMilliseconds = 0;
+  bool _isUpdatingBackend = false;
 
   DateTime _selectedHistoryDate = DateTime.now();
 
@@ -99,6 +101,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
 
     _lastMotionTime = DateTime.now();
     _lastTickTime = DateTime.now();
+    _accumulatedMilliseconds = 0;
 
     _accelSub = userAccelerometerEventStream().listen((event) {
       final magnitude = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
@@ -111,24 +114,28 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   }
 
   void _onTick(Timer timer) {
-    if (_session == null || _status == 'none') return;
+    if (_session == null || _status == 'none' || _busy) return;
 
     final now = DateTime.now();
-    final deltaSeconds = _lastTickTime != null ? now.difference(_lastTickTime!).inSeconds : 1;
+    final deltaMs = _lastTickTime != null ? now.difference(_lastTickTime!).inMilliseconds : 1000;
     _lastTickTime = now;
+    
+    _accumulatedMilliseconds += deltaMs;
+    int deltaSeconds = _accumulatedMilliseconds ~/ 1000;
+    _accumulatedMilliseconds %= 1000;
     
     final secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
 
     setState(() {
       if (_status == 'active') {
         _effectiveSeconds += deltaSeconds;
-        if (secondsSinceMotion < 2) {
+        if (secondsSinceMotion < 2 && !_isUpdatingBackend) {
           _updateBackendStatus('paused');
           _status = 'paused';
         }
       } else if (_status == 'paused') {
         _pausedSeconds += deltaSeconds;
-        if (secondsSinceMotion >= 60) {
+        if (secondsSinceMotion >= 60 && !_isUpdatingBackend) {
           _updateBackendStatus('active');
           _status = 'active';
           _notificationService.startStudySessionNotification();
@@ -138,13 +145,20 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   }
 
   Future<void> _updateBackendStatus(String newStatus) async {
+    if (_busy || _isUpdatingBackend) return;
+    _isUpdatingBackend = true;
     try {
       await ref.read(studentApiProvider).updateStudySessionStatus(
         newStatus,
         durationMinutes: _effectiveSeconds ~/ 60,
         pausedMinutes: _pausedSeconds ~/ 60,
       );
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      if (mounted) {
+        _isUpdatingBackend = false;
+      }
+    }
   }
 
   Future<void> _startNewSession() async {
