@@ -46,7 +46,6 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final currentIndex = _indexForPath(path);
-    final dashboardState = ref.watch(dashboardProvider);
 
 
 

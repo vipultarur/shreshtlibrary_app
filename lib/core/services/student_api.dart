@@ -16,6 +16,14 @@ class StudentApi {
     return _client.unwrap(response, LoginResult.fromJson);
   }
 
+  Future<void> checkAvailability({String? email, String? mobile}) async {
+    final response = await _client.post<dynamic>(
+      '/auth/check-availability',
+      data: {'email': email ?? '', 'mobile': mobile ?? ''},
+    );
+    _client.unwrap(response, (_) => null);
+  }
+
   Future<LoginResult> loginEmail(String email, String password) async {
     final response = await _client.post<dynamic>(
       '/auth/login/email',

@@ -6,7 +6,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

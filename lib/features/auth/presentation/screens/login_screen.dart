@@ -59,10 +59,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else {
       final isMobile = RegExp(r'^[0-9]+$').hasMatch(input);
       if (isMobile && !RegExp(r'^[0-9]{10}$').hasMatch(input)) {
-        _clientErrors['email'] = 'Enter a valid 10-digit mobile number';
+        _clientErrors['email'] = 'Mobile number must contain exactly 10 digits.';
         hasError = true;
       } else if (!isMobile && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input)) {
-        _clientErrors['email'] = 'Enter a valid email address';
+        _clientErrors['email'] = 'Please enter a valid email address.';
         hasError = true;
       }
     }
@@ -130,6 +130,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             controller: _email,
             suffixIcon: Icons.person_outline,
             errorText: errorFor('email') ?? errorFor('mobile') ?? errorFor('username'),
+            onChanged: (val) {
+              if (_clientErrors.isNotEmpty) {
+                setState(() => _clientErrors.clear());
+              }
+            },
           ),
           const SizedBox(height: 20),
           AuthTextField(
@@ -140,6 +145,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
             errorText: errorFor('password'),
+            onChanged: (val) {
+              if (_clientErrors.containsKey('password')) {
+                setState(() => _clientErrors.remove('password'));
+              }
+            },
           ),
           const SizedBox(height: 16),
           Row(

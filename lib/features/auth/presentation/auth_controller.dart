@@ -68,6 +68,9 @@ class AuthController extends Notifier<AuthState> {
     return _completeLogin(() => _api.register(payload));
   }
 
+  Future<void> checkAvailability({String? email, String? mobile}) =>
+      _api.checkAvailability(email: email, mobile: mobile);
+
   Future<void> sendOtp(String mobile) => _api.sendOtp(mobile);
 
   Future<void> forgotPassword(String email) => _api.forgotPassword(email);

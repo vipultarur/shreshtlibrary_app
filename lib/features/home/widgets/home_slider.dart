@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/models/models.dart';
 import '../../../core/services/providers.dart';
 
-import '../home_screen.dart';
 
 class HomeSliderWidget extends ConsumerWidget {
   const HomeSliderWidget({super.key});

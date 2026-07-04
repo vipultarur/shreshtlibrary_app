@@ -5,7 +5,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
-import 'package:shreshtlibrary/features/home/home_screen.dart'; // dashboardProvider
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 
 import 'package:shreshtlibrary/features/attendance/attendance_screen.dart'; // attendanceLogsProvider

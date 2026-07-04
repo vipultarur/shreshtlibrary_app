@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AuthTextField extends StatelessWidget {
   final String label;
@@ -12,6 +13,9 @@ class AuthTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final int maxLines;
+  final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
+  final FocusNode? focusNode;
 
   const AuthTextField({
     super.key,
@@ -26,6 +30,9 @@ class AuthTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.maxLines = 1,
+    this.onChanged,
+    this.inputFormatters,
+    this.focusNode,
   });
 
   @override
@@ -48,6 +55,9 @@ class AuthTextField extends StatelessWidget {
           keyboardType: keyboardType,
           readOnly: readOnly,
           onTap: onTap,
+          onChanged: onChanged,
+          inputFormatters: inputFormatters,
+          focusNode: focusNode,
           maxLines: maxLines,
           style: const TextStyle(
             fontSize: 16,

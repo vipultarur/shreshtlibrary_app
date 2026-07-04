@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart'; // keep old showSnack import
+import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
@@ -34,6 +36,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     'Teacher', 'Railway', 'SSC', 'CA', 'Other',
   ];
 
+  final _firstNameFocus = FocusNode();
+  final _lastNameFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _mobileFocus = FocusNode();
+  final _dobFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailFocus.addListener(_onEmailFocusChange);
+    _mobileFocus.addListener(_onMobileFocusChange);
+  }
+
+  void _onEmailFocusChange() {
+    if (!_emailFocus.hasFocus && _email.text.trim().isNotEmpty) {
+      _checkAvailability(email: _email.text.trim());
+    }
+  }
+
+  void _onMobileFocusChange() {
+    if (!_mobileFocus.hasFocus && _mobile.text.trim().isNotEmpty) {
+      _checkAvailability(mobile: _mobile.text.trim());
+    }
+  }
+
+  Future<void> _checkAvailability({String? email, String? mobile}) async {
+    if (email != null && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) email = null;
+    if (mobile != null && !RegExp(r'^[0-9]{10}$').hasMatch(mobile)) mobile = null;
+
+    if (email == null && mobile == null) return;
+
+    try {
+      await ref.read(authControllerProvider.notifier).checkAvailability(email: email, mobile: mobile);
+    } catch (e) {
+      if (e is ApiFailure && e.errors != null && e.errors is Map<String, dynamic>) {
+        final errorsMap = e.errors as Map<String, dynamic>;
+        setState(() {
+          if (email != null && errorsMap['email'] != null) {
+            final msg = errorsMap['email'] is List ? errorsMap['email'][0] : errorsMap['email'];
+            _clientErrors['email'] = msg.toString();
+          }
+          if (mobile != null && errorsMap['mobile'] != null) {
+            final msg = errorsMap['mobile'] is List ? errorsMap['mobile'][0] : errorsMap['mobile'];
+            _clientErrors['mobile'] = msg.toString();
+          }
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     for (final controller in [
@@ -41,6 +94,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ]) {
       controller.dispose();
     }
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _mobileFocus.dispose();
+    _dobFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -67,39 +126,53 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final dob = _dob.text.trim();
     final password = _password.text;
 
+    final duplicateMobile = _clientErrors['mobile'] == 'Mobile number already exists.';
+    final duplicateEmail = _clientErrors['email'] == 'Email already exists.';
+
     setState(() {
       _clientErrors.clear();
+      if (duplicateMobile) _clientErrors['mobile'] = 'Mobile number already exists.';
+      if (duplicateEmail) _clientErrors['email'] = 'Email already exists.';
     });
 
     bool hasError = false;
+    FocusNode? firstErrorFocus;
 
-    if (firstName.isEmpty) { _clientErrors['first_name'] = 'First name is required'; hasError = true; }
-    if (lastName.isEmpty) { _clientErrors['last_name'] = 'Last name is required'; hasError = true; }
+    void addError(String field, String message, FocusNode focusNode) {
+      if (!_clientErrors.containsKey(field)) {
+        _clientErrors[field] = message;
+      }
+      hasError = true;
+      firstErrorFocus ??= focusNode;
+    }
+
+    if (firstName.isEmpty) { addError('first_name', 'First name is required', _firstNameFocus); }
+    if (lastName.isEmpty) { addError('last_name', 'Last name is required', _lastNameFocus); }
     
     if (email.isEmpty) {
-      _clientErrors['email'] = 'Email is required';
-      hasError = true;
+      addError('email', 'Email is required', _emailFocus);
     } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      _clientErrors['email'] = 'Enter a valid email address';
+      addError('email', 'Please enter a valid email address.', _emailFocus);
+    } else if (duplicateEmail) {
       hasError = true;
+      firstErrorFocus ??= _emailFocus;
     }
 
     if (mobile.isEmpty) {
-      _clientErrors['mobile'] = 'Mobile number is required';
-      hasError = true;
+      addError('mobile', 'Mobile number is required', _mobileFocus);
     } else if (!RegExp(r'^[0-9]{10}$').hasMatch(mobile)) {
-      _clientErrors['mobile'] = 'Enter a valid 10-digit mobile number';
+      addError('mobile', 'Mobile number must be exactly 10 digits.', _mobileFocus);
+    } else if (duplicateMobile) {
       hasError = true;
+      firstErrorFocus ??= _mobileFocus;
     }
 
-    if (dob.isEmpty) { _clientErrors['dob'] = 'Birthday is required'; hasError = true; }
+    if (dob.isEmpty) { addError('dob', 'Birthday is required', _dobFocus); }
     
     if (password.isEmpty) {
-      _clientErrors['password'] = 'Password is required';
-      hasError = true;
+      addError('password', 'Password is required', _passwordFocus);
     } else if (password.length < 6) {
-      _clientErrors['password'] = 'Password must be at least 6 characters long';
-      hasError = true;
+      addError('password', 'Password must be at least 6 characters long', _passwordFocus);
     }
 
     if (hasError) {
@@ -108,6 +181,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         setState(() => _step = 1);
         showSnack(context, 'Please fix errors in Step 1');
       }
+      firstErrorFocus?.requestFocus();
       return;
     }
 
@@ -186,6 +260,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     label: 'First Name',
                     hint: 'John',
                     controller: _firstName,
+                    focusNode: _firstNameFocus,
                     errorText: errorFor('first_name'),
                   ),
                 ),
@@ -195,6 +270,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     label: 'Last Name',
                     hint: 'Doe',
                     controller: _lastName,
+                    focusNode: _lastNameFocus,
                     errorText: errorFor('last_name'),
                   ),
                 ),
@@ -205,18 +281,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               label: 'Email Address',
               hint: 'john.doe@example.com',
               controller: _email,
+              focusNode: _emailFocus,
               keyboardType: TextInputType.emailAddress,
               suffixIcon: Icons.email_outlined,
               errorText: errorFor('email'),
+              onChanged: (val) {
+                if (_clientErrors.containsKey('email')) {
+                  setState(() => _clientErrors.remove('email'));
+                }
+              },
             ),
             const SizedBox(height: 16),
             AuthTextField(
               label: 'Mobile Number',
               hint: 'Your mobile number',
               controller: _mobile,
+              focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
               suffixIcon: Icons.phone_android,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
               errorText: errorFor('mobile'),
+              onChanged: (val) {
+                if (_clientErrors.containsKey('mobile')) {
+                  setState(() => _clientErrors.remove('mobile'));
+                }
+                if (val.length == 10) {
+                  _checkAvailability(mobile: val);
+                }
+              },
             ),
             const SizedBox(height: 32),
             ElevatedButton(
@@ -266,6 +361,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             label: 'Birthday',
             hint: 'YYYY-MM-DD',
             controller: _dob,
+            focusNode: _dobFocus,
             readOnly: true,
             onTap: _pickDob,
             suffixIcon: Icons.calendar_today_outlined,
@@ -362,6 +458,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             label: 'Password',
             hint: '********',
             controller: _password,
+            focusNode: _passwordFocus,
             obscureText: _obscurePassword,
             suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),

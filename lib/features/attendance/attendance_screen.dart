@@ -7,7 +7,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
-import 'package:shreshtlibrary/features/home/home_screen.dart'; // for dashboardProvider
 import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 
 final attendanceLogsProvider =

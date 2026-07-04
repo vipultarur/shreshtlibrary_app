@@ -43,7 +43,7 @@ class ProtectedRoute extends ConsumerWidget {
         return child;
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (_, __) => Scaffold(
+      error: (error, stack) => Scaffold(
         appBar: AppBar(title: const Text('Error')),
         body: const Center(
           child: Text('Failed to load permissions. Please check your connection and try again.'),
