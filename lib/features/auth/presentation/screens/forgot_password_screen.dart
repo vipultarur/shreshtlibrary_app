@@ -102,15 +102,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ElevatedButton(
             onPressed: _request,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF140C2C),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFF917CFF),
+              foregroundColor: const Color(0xFF140C2C),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               elevation: 0,
             ),
-            child: const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 32),
           Row(
@@ -145,21 +145,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             obscureText: _obscurePassword,
             suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
-            errorText: _fieldErrors['password'] is List ? _fieldErrors['password'][0] : _fieldErrors['password']?.toString(),
+            errorText: _fieldErrors['new_password'] is List ? _fieldErrors['new_password'][0] : (_fieldErrors['new_password'] ?? _fieldErrors['password'])?.toString(),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _reset,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2C1B54),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFF917CFF),
+              foregroundColor: const Color(0xFF140C2C),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               elevation: 0,
             ),
-            child: const Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 24),
           TextButton(

@@ -69,23 +69,23 @@ class AuthTextField extends StatelessWidget {
             hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
             errorText: errorText,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: const Color(0xFFF1EFFC),
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.redAccent),
+              borderSide: const BorderSide(color: Colors.redAccent, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

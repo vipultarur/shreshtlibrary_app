@@ -330,15 +330,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 setState(() => _step = 2);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF140C2C),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF917CFF),
+                foregroundColor: const Color(0xFF140C2C),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 0,
               ),
-              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
             ),
             const SizedBox(height: 16),
             Row(
@@ -485,19 +485,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onChanged: (value) => setState(() => _goal = value ?? 'Other'),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: const Color(0xFFF1EFFC),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
+                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
+                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+                          borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
                         ),
                       ),
                     ),
@@ -563,8 +563,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ElevatedButton(
             onPressed: _busy ? null : _register,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF140C2C),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFF917CFF),
+              foregroundColor: const Color(0xFF140C2C),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -575,9 +575,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
                   )
-                : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 12),
           TextButton(

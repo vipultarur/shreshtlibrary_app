@@ -124,21 +124,25 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       labelText: label,
       errorText: errorText,
       filled: true,
-      fillColor: const Color(0xFFF6F6F6),
+      fillColor: const Color(0xFFF1EFFC),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF140C2C), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: Colors.red, width: 1),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      labelStyle: TextStyle(color: Colors.grey.shade600),
+      labelStyle: const TextStyle(color: Color(0xFF140C2C)),
     );
   }
 
@@ -221,25 +225,37 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _firstName,
-          decoration: _buildInputDecoration(
-            'First name',
-            _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _lastName,
-          decoration: _buildInputDecoration(
-            'Last name',
-            _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _firstName,
+                style: const TextStyle(color: Colors.black87),
+                decoration: _buildInputDecoration(
+                  'First name',
+                  _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextField(
+                controller: _lastName,
+                style: const TextStyle(color: Colors.black87),
+                decoration: _buildInputDecoration(
+                  'Last name',
+                  _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _email,
           keyboardType: TextInputType.emailAddress,
+          style: const TextStyle(color: Colors.black87),
           decoration: _buildInputDecoration(
             'Email',
             _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
@@ -248,6 +264,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         const SizedBox(height: 16),
         TextField(
           controller: _goal,
+          style: const TextStyle(color: Colors.black87),
           decoration: _buildInputDecoration(
             'Goal (e.g. UPSC, SSC)',
             _fieldErrors['goal'] is List ? _fieldErrors['goal'][0] : _fieldErrors['goal']?.toString(),
@@ -256,6 +273,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         const SizedBox(height: 16),
         TextField(
           controller: _dob,
+          style: const TextStyle(color: Colors.black87),
           decoration: _buildInputDecoration(
             'Date of Birth (YYYY-MM-DD)',
             _fieldErrors['dob'] is List ? _fieldErrors['dob'][0] : _fieldErrors['dob']?.toString(),
@@ -265,6 +283,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         TextField(
           controller: _parentMobile,
           keyboardType: TextInputType.phone,
+          style: const TextStyle(color: Colors.black87),
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(10),
@@ -277,6 +296,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         const SizedBox(height: 16),
         TextField(
           controller: _caste,
+          style: const TextStyle(color: Colors.black87),
           decoration: _buildInputDecoration(
             'Caste',
             _fieldErrors['caste'] is List ? _fieldErrors['caste'][0] : _fieldErrors['caste']?.toString(),
@@ -286,6 +306,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         TextField(
           controller: _address,
           maxLines: 3,
+          style: const TextStyle(color: Colors.black87),
           decoration: _buildInputDecoration(
             'Address',
             _fieldErrors['address'] is List ? _fieldErrors['address'][0] : _fieldErrors['address']?.toString(),
@@ -297,7 +318,8 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           child: FilledButton(
             onPressed: _busy ? null : _save,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF140C2C),
+              backgroundColor: const Color(0xFF917CFF),
+              foregroundColor: const Color(0xFF140C2C),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -306,11 +328,11 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
                   )
                 : const Text(
                     'Save Changes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF140C2C)),
                   ),
           ),
         ),

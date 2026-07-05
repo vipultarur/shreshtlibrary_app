@@ -185,8 +185,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ElevatedButton(
             onPressed: disabled ? null : _login,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF140C2C),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFF917CFF),
+              foregroundColor: const Color(0xFF140C2C),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -197,9 +197,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
                   )
-                : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 24),
           Row(
