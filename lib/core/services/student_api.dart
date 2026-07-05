@@ -40,13 +40,21 @@ class StudentApi {
     return _client.unwrap(response, LoginResult.fromJson);
   }
 
-  Future<void> sendOtp(String mobile) async {
-    final response = await _client.post<dynamic>(
-      '/auth/send-otp',
-      data: {'mobile': mobile},
-    );
-    _client.unwrap(response, (_) => null);
-  }
+    Future<void> sendOtp(String mobile) async {
+      final response = await _client.post<dynamic>(
+        '/auth/send-otp',
+        data: {'mobile': mobile},
+      );
+      _client.unwrap(response, (_) => null);
+    }
+
+    Future<void> sendRegisterOtp(String mobile) async {
+      final response = await _client.post<dynamic>(
+        '/auth/send-register-otp',
+        data: {'mobile': mobile},
+      );
+      _client.unwrap(response, (_) => null);
+    }
 
   Future<LoginResult> verifyOtp(String mobile, String otp) async {
     final response = await _client.post<dynamic>(
@@ -56,18 +64,19 @@ class StudentApi {
     return _client.unwrap(response, LoginResult.fromJson);
   }
 
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword(String identifier) async {
     final response = await _client.post<dynamic>(
       '/auth/forgot-password',
-      data: {'email': email},
+      data: {'identifier': identifier},
     );
     _client.unwrap(response, (_) => null);
   }
 
-  Future<void> resetPassword(String token, String password) async {
+  Future<void> resetPassword(String identifier, String token, String password) async {
     final response = await _client.post<dynamic>(
       '/auth/reset-password',
       data: {
+        'identifier': identifier,
         'token': token,
         'new_password': password,
         'confirm_password': password,

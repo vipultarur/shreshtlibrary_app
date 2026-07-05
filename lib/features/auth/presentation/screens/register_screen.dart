@@ -21,6 +21,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _lastName = TextEditingController();
   final _email = TextEditingController();
   final _mobile = TextEditingController();
+  final _otp = TextEditingController();
   final _dob = TextEditingController();
   final _address = TextEditingController();
   final _parentMobile = TextEditingController();
@@ -31,6 +32,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _busy = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _otpSent = false;
+  bool _sendingOtp = false;
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
@@ -42,6 +45,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _lastNameFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _mobileFocus = FocusNode();
+  final _otpFocus = FocusNode();
   final _dobFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmPasswordFocus = FocusNode();
@@ -93,7 +97,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     for (final controller in [
-      _firstName, _lastName, _email, _mobile, _dob, _address, _parentMobile, _password, _confirmPassword,
+      _firstName, _lastName, _email, _mobile, _otp, _dob, _address, _parentMobile, _password, _confirmPassword,
     ]) {
       controller.dispose();
     }
@@ -101,6 +105,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _lastNameFocus.dispose();
     _emailFocus.dispose();
     _mobileFocus.dispose();
+    _otpFocus.dispose();
     _dobFocus.dispose();
     _passwordFocus.dispose();
     _confirmPasswordFocus.dispose();
@@ -120,6 +125,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  Future<void> _sendOtp() async {
+    if (_sendingOtp) return;
+    final mobile = _mobile.text.trim();
+    if (mobile.length != 10) {
+      setState(() => _clientErrors['mobile'] = 'Enter a valid 10-digit mobile number.');
+      return;
+    }
+    setState(() {
+      _sendingOtp = true;
+      _clientErrors.remove('mobile');
+      _clientErrors.remove('otp');
+    });
+    try {
+      await ref.read(authControllerProvider.notifier).sendRegisterOtp(mobile);
+      if (mounted) {
+        setState(() => _otpSent = true);
+        showSnack(context, 'OTP sent to your WhatsApp successfully!');
+      }
+    } on ApiFailure catch (e) {
+      if (mounted) {
+        if (e.errors is Map<String, dynamic> && (e.errors as Map<String, dynamic>).containsKey('mobile')) {
+           final msg = (e.errors as Map<String, dynamic>)['mobile'];
+           setState(() => _clientErrors['mobile'] = msg is List ? msg[0] : msg.toString());
+        } else {
+           showSnack(context, e.message);
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _sendingOtp = false);
+    }
+  }
+
   Future<void> _register() async {
     if (_busy) return;
 
@@ -127,6 +164,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final lastName = _lastName.text.trim();
     final email = _email.text.trim();
     final mobile = _mobile.text.trim();
+    final otp = _otp.text.trim();
     final dob = _dob.text.trim();
     final password = _password.text;
     final confirmPassword = _confirmPassword.text;
@@ -171,6 +209,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       hasError = true;
       firstErrorFocus ??= _mobileFocus;
     }
+    
+    if (otp.isEmpty) {
+      addError('otp', 'OTP is required.', _otpFocus);
+    }
 
     if (dob.isEmpty) { addError('dob', 'Birthday is required', _dobFocus); }
     
@@ -188,7 +230,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (hasError) {
       setState(() {});
-      if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile'))) {
+      if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile') || _clientErrors.containsKey('otp'))) {
         setState(() => _step = 1);
         showSnack(context, 'Please fix errors in Step 1');
       }
@@ -202,6 +244,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'last_name': lastName,
       'email': email,
       'mobile': mobile,
+      'otp': otp,
       'password': password,
       'confirm_password': confirmPassword,
       'goal': _goal,
@@ -218,7 +261,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } else {
       final auth = ref.read(authControllerProvider);
       final fieldErrors = auth.fieldErrors ?? {};
-      if (_step == 2 && (fieldErrors.containsKey('first_name') || fieldErrors.containsKey('last_name') || fieldErrors.containsKey('email') || fieldErrors.containsKey('mobile'))) {
+      if (_step == 2 && (fieldErrors.containsKey('first_name') || fieldErrors.containsKey('last_name') || fieldErrors.containsKey('email') || fieldErrors.containsKey('mobile') || fieldErrors.containsKey('otp'))) {
         setState(() => _step = 1);
         showSnack(context, 'Please fix errors in Step 1');
       } else {
@@ -324,7 +367,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            const SizedBox(height: 24),
+            if (_otpSent) ...[
+              const SizedBox(height: 12),
+              AuthTextField(
+                label: 'OTP (Sent to WhatsApp)',
+                hint: 'Enter 6-digit OTP',
+                controller: _otp,
+                focusNode: _otpFocus,
+                keyboardType: TextInputType.number,
+                suffixIcon: Icons.message_outlined,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
+                ],
+                errorText: errorFor('otp'),
+                onChanged: (val) {
+                  if (_clientErrors.containsKey('otp')) {
+                    setState(() => _clientErrors.remove('otp'));
+                  }
+                },
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _sendOtp,
+                  child: _sendingOtp 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Send Verification OTP', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 setState(() => _step = 2);

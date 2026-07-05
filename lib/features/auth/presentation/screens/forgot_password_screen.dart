@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
-  final _email = TextEditingController();
+  final _identifier = TextEditingController();
   final _token = TextEditingController();
   final _password = TextEditingController();
   bool _obscurePassword = true;
@@ -23,7 +23,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    _email.dispose();
+    _identifier.dispose();
     _token.dispose();
     _password.dispose();
     super.dispose();
@@ -32,8 +32,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _request() async {
     setState(() => _fieldErrors = {});
     try {
-      await ref.read(authControllerProvider.notifier).forgotPassword(_email.text.trim());
-      if (mounted) showSnack(context, 'Password reset request sent. Please check your email.');
+      final identifier = _identifier.text.trim();
+      await ref.read(authControllerProvider.notifier).forgotPassword(identifier);
+      if (mounted) {
+        final isEmail = identifier.contains('@');
+        showSnack(context, isEmail ? 'Password reset link sent to your email.' : 'Password reset OTP sent to your WhatsApp.');
+      }
     } on ApiFailure catch (failure) {
       if (mounted) {
         if (failure.errors is Map<String, dynamic>) {
@@ -49,7 +53,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _reset() async {
     setState(() => _fieldErrors = {});
     try {
-      await ref.read(authControllerProvider.notifier).resetPassword(_token.text.trim(), _password.text);
+      await ref.read(authControllerProvider.notifier).resetPassword(_identifier.text.trim(), _token.text.trim(), _password.text);
       if (mounted) {
         showSnack(context, 'Password reset successfully. You can now login.');
         context.go('/login');
@@ -85,18 +89,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Enter your registered email address. We will send you a token to reset your password.',
+            'Enter your registered email address or mobile number. We will send you a reset link or OTP to reset your password.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 32),
           AuthTextField(
-            label: 'Email Address',
-            hint: 'john.doe@example.com',
-            controller: _email,
+            label: 'Email Address or Mobile Number',
+            hint: 'john.doe@example.com or 9999999999',
+            controller: _identifier,
             keyboardType: TextInputType.emailAddress,
-            suffixIcon: Icons.email_outlined,
-            errorText: _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
+            suffixIcon: Icons.account_circle_outlined,
+            errorText: _fieldErrors['identifier'] is List ? _fieldErrors['identifier'][0] : (_fieldErrors['identifier'] ?? _fieldErrors['email'])?.toString(),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -125,14 +129,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 32),
           const Text(
-            'Already have a token? Enter it below with your new password.',
+            'Already have a token or OTP? Enter it below with your new password.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 24),
           AuthTextField(
-            label: 'Reset Token',
-            hint: 'Enter the token',
+            label: 'Reset Token or OTP',
+            hint: 'Enter the token or OTP',
             controller: _token,
             suffixIcon: Icons.vpn_key_outlined,
             errorText: _fieldErrors['token'] is List ? _fieldErrors['token'][0] : _fieldErrors['token']?.toString(),

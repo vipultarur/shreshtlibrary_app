@@ -72,11 +72,13 @@ class AuthController extends Notifier<AuthState> {
       _api.checkAvailability(email: email, mobile: mobile);
 
   Future<void> sendOtp(String mobile) => _api.sendOtp(mobile);
+  
+  Future<void> sendRegisterOtp(String mobile) => _api.sendRegisterOtp(mobile);
 
-  Future<void> forgotPassword(String email) => _api.forgotPassword(email);
+  Future<void> forgotPassword(String identifier) => _api.forgotPassword(identifier);
 
-  Future<void> resetPassword(String token, String password) =>
-      _api.resetPassword(token, password);
+  Future<void> resetPassword(String identifier, String token, String password) =>
+      _api.resetPassword(identifier, token, password);
 
   Future<void> logout() async {
     try {
