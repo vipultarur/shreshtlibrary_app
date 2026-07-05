@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,6 +35,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _otpSent = false;
   bool _sendingOtp = false;
+  Timer? _resendTimer;
+  int _resendSeconds = 0;
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
@@ -96,6 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     for (final controller in [
       _firstName, _lastName, _email, _mobile, _otp, _dob, _address, _parentMobile, _password, _confirmPassword,
     ]) {
@@ -140,7 +144,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       await ref.read(authControllerProvider.notifier).sendRegisterOtp(mobile);
       if (mounted) {
-        setState(() => _otpSent = true);
+        setState(() {
+          _otpSent = true;
+          _resendSeconds = 40;
+        });
+        _resendTimer?.cancel();
+        _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          setState(() {
+            if (_resendSeconds > 0) {
+              _resendSeconds--;
+            } else {
+              timer.cancel();
+            }
+          });
+        });
         showSnack(context, 'OTP sent to your WhatsApp successfully!');
       }
     } on ApiFailure catch (e) {
@@ -386,6 +407,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     setState(() => _clientErrors.remove('otp'));
                   }
                 },
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _resendSeconds > 0 || _sendingOtp ? null : _sendOtp,
+                  child: _sendingOtp 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(
+                          _resendSeconds > 0 ? 'Resend OTP in ${_resendSeconds}s' : 'Resend OTP', 
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _resendSeconds > 0 ? Colors.grey : Theme.of(context).colorScheme.primary,
+                          )
+                        ),
+                ),
               ),
             ] else ...[
               const SizedBox(height: 8),

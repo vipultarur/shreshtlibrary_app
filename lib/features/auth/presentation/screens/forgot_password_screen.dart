@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,10 +20,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _token = TextEditingController();
   final _password = TextEditingController();
   bool _obscurePassword = true;
+  bool _requesting = false;
+  Timer? _resendTimer;
+  int _resendSeconds = 0;
   Map<String, dynamic> _fieldErrors = {};
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     _identifier.dispose();
     _token.dispose();
     _password.dispose();
@@ -30,16 +35,39 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   Future<void> _request() async {
-    setState(() => _fieldErrors = {});
+    if (_requesting || _resendSeconds > 0) return;
+    setState(() {
+      _fieldErrors = {};
+      _requesting = true;
+    });
     try {
       final identifier = _identifier.text.trim();
       await ref.read(authControllerProvider.notifier).forgotPassword(identifier);
       if (mounted) {
+        setState(() {
+          _requesting = false;
+          _resendSeconds = 40;
+        });
+        _resendTimer?.cancel();
+        _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          setState(() {
+            if (_resendSeconds > 0) {
+              _resendSeconds--;
+            } else {
+              timer.cancel();
+            }
+          });
+        });
         final isEmail = identifier.contains('@');
         showSnack(context, isEmail ? 'Password reset link sent to your email.' : 'Password reset OTP sent to your WhatsApp.');
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
+        setState(() => _requesting = false);
         if (failure.errors is Map<String, dynamic>) {
           setState(() {
             _fieldErrors = failure.errors as Map<String, dynamic>;
@@ -104,7 +132,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: _request,
+            onPressed: _requesting || _resendSeconds > 0 ? null : _request,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF917CFF),
               foregroundColor: const Color(0xFF140C2C),
@@ -114,7 +142,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               ),
               elevation: 0,
             ),
-            child: const Text('Send Reset Link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+            child: _requesting
+                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2))
+                : Text(
+                    _resendSeconds > 0 ? 'Resend in ${_resendSeconds}s' : 'Send Reset Link or OTP',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  ),
           ),
           const SizedBox(height: 32),
           Row(
