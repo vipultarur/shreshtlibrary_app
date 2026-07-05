@@ -16,6 +16,8 @@ class AuthTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
   final FocusNode? focusNode;
+  final Color? borderColor;
+  final Color? iconColor;
 
   const AuthTextField({
     super.key,
@@ -33,6 +35,8 @@ class AuthTextField extends StatelessWidget {
     this.onChanged,
     this.inputFormatters,
     this.focusNode,
+    this.borderColor,
+    this.iconColor,
   });
 
   @override
@@ -73,15 +77,15 @@ class AuthTextField extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+              borderSide: BorderSide(color: borderColor ?? const Color(0xFFCBB9FF), width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+              borderSide: BorderSide(color: borderColor ?? const Color(0xFFCBB9FF), width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
+              borderSide: BorderSide(color: borderColor ?? const Color(0xFF917CFF), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -93,7 +97,7 @@ class AuthTextField extends StatelessWidget {
             ),
             suffixIcon: suffixIcon != null
                 ? IconButton(
-                    icon: Icon(suffixIcon, color: Colors.grey.shade600),
+                    icon: Icon(suffixIcon, color: iconColor ?? Colors.grey.shade600),
                     onPressed: onSuffixTap,
                   )
                 : null,

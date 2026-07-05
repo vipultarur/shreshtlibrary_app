@@ -56,6 +56,14 @@ class StudentApi {
       _client.unwrap(response, (_) => null);
     }
 
+    Future<void> verifyRegisterOtp(String mobile, String otp) async {
+      final response = await _client.post<dynamic>(
+        '/auth/verify-register-otp',
+        data: {'mobile': mobile, 'otp': otp},
+      );
+      _client.unwrap(response, (_) => null);
+    }
+
   Future<LoginResult> verifyOtp(String mobile, String otp) async {
     final response = await _client.post<dynamic>(
       '/auth/verify-otp',

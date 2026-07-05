@@ -35,6 +35,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _otpSent = false;
   bool _sendingOtp = false;
+  bool _verifyingOtp = false;
+  bool _otpVerified = false;
   Timer? _resendTimer;
   int _resendSeconds = 0;
   final Map<String, String> _clientErrors = {};
@@ -175,6 +177,48 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } finally {
       if (mounted) setState(() => _sendingOtp = false);
+    }
+  }
+
+  Future<void> _verifyOtp() async {
+    if (_verifyingOtp) return;
+    final mobile = _mobile.text.trim();
+    final otp = _otp.text.trim();
+    
+    if (otp.isEmpty) {
+      setState(() => _clientErrors['otp'] = 'OTP is required.');
+      return;
+    }
+    if (otp.length != 6) {
+      setState(() => _clientErrors['otp'] = 'Enter a valid 6-digit OTP.');
+      return;
+    }
+
+    setState(() {
+      _verifyingOtp = true;
+      _clientErrors.remove('otp');
+    });
+
+    try {
+      await ref.read(authControllerProvider.notifier).verifyRegisterOtp(mobile, otp);
+      if (mounted) {
+        setState(() {
+          _otpVerified = true;
+          _resendTimer?.cancel();
+        });
+        showSnack(context, 'Mobile number verified successfully!');
+      }
+    } on ApiFailure catch (e) {
+      if (mounted) {
+        if (e.errors is Map<String, dynamic> && (e.errors as Map<String, dynamic>).containsKey('otp')) {
+           final msg = (e.errors as Map<String, dynamic>)['otp'];
+           setState(() => _clientErrors['otp'] = msg is List ? msg[0] : msg.toString());
+        } else {
+           setState(() => _clientErrors['otp'] = e.message);
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _verifyingOtp = false);
     }
   }
 
@@ -373,7 +417,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _mobile,
               focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
-              suffixIcon: Icons.phone_android,
+              suffixIcon: _otpVerified ? Icons.check_circle : Icons.phone_android,
+              iconColor: _otpVerified ? Colors.green : null,
+              borderColor: _otpVerified ? Colors.green : null,
+              readOnly: _otpVerified,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(10),
@@ -388,7 +435,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            if (_otpSent) ...[
+            if (_otpVerified)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text('Verified', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+            if (_otpSent && !_otpVerified) ...[
               const SizedBox(height: 12),
               AuthTextField(
                 label: 'OTP (Sent to WhatsApp)',
@@ -409,22 +461,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _resendSeconds > 0 || _sendingOtp ? null : _sendOtp,
-                  child: _sendingOtp 
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(
-                          _resendSeconds > 0 ? 'Resend OTP in ${_resendSeconds}s' : 'Resend OTP', 
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _resendSeconds > 0 ? Colors.grey : Theme.of(context).colorScheme.primary,
-                          )
-                        ),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: _resendSeconds > 0 || _sendingOtp || _verifyingOtp ? null : _sendOtp,
+                    child: _sendingOtp 
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Text(
+                            _resendSeconds > 0 ? 'Resend OTP in ${_resendSeconds}s' : 'Resend OTP', 
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _resendSeconds > 0 ? Colors.grey : Theme.of(context).colorScheme.primary,
+                            )
+                          ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _verifyingOtp ? null : _verifyOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _verifyingOtp
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Verify OTP'),
+                  ),
+                ],
               ),
-            ] else ...[
+            ] else if (!_otpVerified) ...[
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,

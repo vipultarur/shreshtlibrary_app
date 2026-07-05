@@ -64,6 +64,17 @@ class AuthController extends Notifier<AuthState> {
     return _completeLogin(() => _api.verifyOtp(mobile, otp));
   }
 
+  Future<void> verifyRegisterOtp(String mobile, String otp) async {
+    state = const AuthState.loading();
+    try {
+      await _api.verifyRegisterOtp(mobile, otp);
+      state = const AuthState.signedOut();
+    } on ApiFailure catch (e) {
+      state = AuthState.signedOut(e.message, e.errors is Map<String, dynamic> ? e.errors as Map<String, dynamic> : null);
+      rethrow;
+    }
+  }
+
   Future<bool> register(Map<String, dynamic> payload) {
     return _completeLogin(() => _api.register(payload));
   }
