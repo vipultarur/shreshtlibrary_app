@@ -327,7 +327,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final auth = ref.read(authControllerProvider);
       final fieldErrors = auth.fieldErrors ?? {};
       if (_step == 2 && (fieldErrors.containsKey('first_name') || fieldErrors.containsKey('last_name') || fieldErrors.containsKey('email') || fieldErrors.containsKey('mobile') || fieldErrors.containsKey('otp'))) {
-        setState(() => _step = 1);
+        setState(() {
+          _step = 1;
+          if (fieldErrors.containsKey('mobile') || fieldErrors.containsKey('otp')) {
+            _otpVerified = false;
+            _otpSent = false;
+          }
+        });
         showSnack(context, 'Please fix errors in Step 1');
       } else {
         _handleError(auth, 'Registration failed.');
@@ -420,13 +426,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               suffixIcon: _otpVerified ? Icons.check_circle : Icons.phone_android,
               iconColor: _otpVerified ? Colors.green : null,
               borderColor: _otpVerified ? Colors.green : null,
-              readOnly: _otpVerified,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(10),
               ],
               errorText: errorFor('mobile'),
               onChanged: (val) {
+                if (_otpVerified || _otpSent) {
+                  setState(() {
+                    _otpVerified = false;
+                    _otpSent = false;
+                    _otp.clear();
+                  });
+                }
                 if (_clientErrors.containsKey('mobile')) {
                   setState(() => _clientErrors.remove('mobile'));
                 }
@@ -506,6 +518,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
+                if (!_otpVerified) {
+                  showSnack(context, 'Please verify your mobile number first.');
+                  return;
+                }
                 setState(() => _step = 2);
               },
               style: ElevatedButton.styleFrom(
