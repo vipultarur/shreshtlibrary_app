@@ -21,8 +21,8 @@ class AuthLayout extends StatelessWidget {
           Container(
             color: const Color(0xFFCBB9FF),
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 40,
-              bottom: 40,
+              top: MediaQuery.of(context).padding.top + 20,
+              bottom: 24,
               left: 30,
               right: 30,
             ),
@@ -64,7 +64,7 @@ class AuthLayout extends StatelessWidget {
                   topRight: Radius.circular(40),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(24),
                   child: child,
                 ),
               ),

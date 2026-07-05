@@ -25,10 +25,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _address = TextEditingController();
   final _parentMobile = TextEditingController();
   final _password = TextEditingController();
+  final _confirmPassword = TextEditingController();
   String _goal = 'Other';
-  String _gender = 'Other';
+  String _gender = 'Male';
   bool _busy = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
@@ -42,6 +44,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _mobileFocus = FocusNode();
   final _dobFocus = FocusNode();
   final _passwordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
 
   @override
   void initState() {
@@ -90,7 +93,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     for (final controller in [
-      _firstName, _lastName, _email, _mobile, _dob, _address, _parentMobile, _password,
+      _firstName, _lastName, _email, _mobile, _dob, _address, _parentMobile, _password, _confirmPassword,
     ]) {
       controller.dispose();
     }
@@ -100,6 +103,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _mobileFocus.dispose();
     _dobFocus.dispose();
     _passwordFocus.dispose();
+    _confirmPasswordFocus.dispose();
     super.dispose();
   }
 
@@ -125,6 +129,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final mobile = _mobile.text.trim();
     final dob = _dob.text.trim();
     final password = _password.text;
+    final confirmPassword = _confirmPassword.text;
 
     final duplicateMobile = _clientErrors['mobile'] == 'Mobile number already exists.';
     final duplicateEmail = _clientErrors['email'] == 'Email already exists.';
@@ -175,6 +180,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       addError('password', 'Password must be at least 6 characters long', _passwordFocus);
     }
 
+    if (confirmPassword.isEmpty) {
+      addError('confirm_password', 'Confirm password is required', _confirmPasswordFocus);
+    } else if (password != confirmPassword) {
+      addError('confirm_password', 'Passwords do not match', _confirmPasswordFocus);
+    }
+
     if (hasError) {
       setState(() {});
       if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile'))) {
@@ -192,7 +203,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       'email': email,
       'mobile': mobile,
       'password': password,
-      'confirm_password': password,
+      'confirm_password': confirmPassword,
       'goal': _goal,
       'gender': _gender,
       'dob': dob,
@@ -252,7 +263,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -276,7 +287,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             AuthTextField(
               label: 'Email Address',
               hint: 'john.doe@example.com',
@@ -291,7 +302,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             AuthTextField(
               label: 'Mobile Number',
               hint: 'Your mobile number',
@@ -313,7 +324,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
                 setState(() => _step = 2);
@@ -329,7 +340,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -356,96 +367,160 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
-          AuthTextField(
-            label: 'Birthday',
-            hint: 'YYYY-MM-DD',
-            controller: _dob,
-            focusNode: _dobFocus,
-            readOnly: true,
-            onTap: _pickDob,
-            suffixIcon: Icons.calendar_today_outlined,
-            errorText: errorFor('dob'),
-          ),
-          const SizedBox(height: 16),
-          Column(
+          const SizedBox(height: 20),
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Study Goal',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+              Expanded(
+                child: AuthTextField(
+                  label: 'Birthday',
+                  hint: 'YYYY-MM-DD',
+                  controller: _dob,
+                  focusNode: _dobFocus,
+                  readOnly: true,
+                  onTap: _pickDob,
+                  suffixIcon: Icons.calendar_today_outlined,
+                  errorText: errorFor('dob'),
+                ),
               ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _goal,
-                items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal))).toList(),
-                onChanged: (value) => setState(() => _goal = value ?? 'Other'),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
-                  ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gender',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _gender = 'Male'),
+                              behavior: HitTestBehavior.opaque,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Radio<String>(
+                                    value: 'Male',
+                                    groupValue: _gender,
+                                    onChanged: (val) => setState(() => _gender = val!),
+                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    fillColor: WidgetStateProperty.resolveWith((states) {
+                                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
+                                      return Colors.grey.shade400;
+                                    }),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Flexible(
+                                    child: Text('Male', style: TextStyle(fontSize: 13, color: Colors.black), overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _gender = 'Female'),
+                              behavior: HitTestBehavior.opaque,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Radio<String>(
+                                    value: 'Female',
+                                    groupValue: _gender,
+                                    onChanged: (val) => setState(() => _gender = val!),
+                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    fillColor: WidgetStateProperty.resolveWith((states) {
+                                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
+                                      return Colors.grey.shade400;
+                                    }),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Flexible(
+                                    child: Text('Female', style: TextStyle(fontSize: 13, color: Colors.black), overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Column(
+          const SizedBox(height: 12),
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Gender',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Study Goal',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      initialValue: _goal,
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF140C2C)),
+                      style: const TextStyle(color: Colors.black, fontSize: 14),
+                      items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal, style: const TextStyle(color: Colors.black)))).toList(),
+                      onChanged: (value) => setState(() => _goal = value ?? 'Other'),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _gender,
-                items: const [
-                  DropdownMenuItem(value: 'Male', child: Text('Male')),
-                  DropdownMenuItem(value: 'Female', child: Text('Female')),
-                  DropdownMenuItem(value: 'Other', child: Text('Other')),
-                ],
-                onChanged: (value) => setState(() => _gender = value ?? 'Other'),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 2),
-                  ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: AuthTextField(
+                  label: 'Parent Mobile',
+                  hint: 'Optional',
+                  controller: _parentMobile,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  errorText: errorFor('parent_mobile'),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          AuthTextField(
-            label: 'Parent Mobile (Optional)',
-            hint: 'Emergency Contact',
-            controller: _parentMobile,
-            keyboardType: TextInputType.phone,
-            errorText: errorFor('parent_mobile'),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           AuthTextField(
             label: 'Full Address',
             hint: 'Your Home Address',
@@ -453,18 +528,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             maxLines: 2,
             errorText: errorFor('address'),
           ),
-          const SizedBox(height: 16),
-          AuthTextField(
-            label: 'Password',
-            hint: '********',
-            controller: _password,
-            focusNode: _passwordFocus,
-            obscureText: _obscurePassword,
-            suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
-            errorText: errorFor('password'),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AuthTextField(
+                  label: 'Password',
+                  hint: '********',
+                  controller: _password,
+                  focusNode: _passwordFocus,
+                  obscureText: _obscurePassword,
+                  suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  errorText: errorFor('password'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: AuthTextField(
+                  label: 'Confirm Pass',
+                  hint: '********',
+                  controller: _confirmPassword,
+                  focusNode: _confirmPasswordFocus,
+                  obscureText: _obscureConfirmPassword,
+                  suffixIcon: _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  onSuffixTap: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  errorText: errorFor('confirm_password'),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _busy ? null : _register,
             style: ElevatedButton.styleFrom(
@@ -484,7 +579,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   )
                 : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           TextButton(
             onPressed: () {
               setState(() => _step = 1);

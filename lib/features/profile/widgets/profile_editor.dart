@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -118,152 +119,200 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     }
   }
 
+  InputDecoration _buildInputDecoration(String label, String? errorText) {
+    return InputDecoration(
+      labelText: label,
+      errorText: errorText,
+      filled: true,
+      fillColor: const Color(0xFFF6F6F6),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF140C2C), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      labelStyle: TextStyle(color: Colors.grey.shade600),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final photo = widget.profile.profilePhoto;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(24),
-                    image: photo != null
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(photo),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                  child: photo == null ? const Icon(Icons.person, size: 50, color: Colors.grey) : null,
+        Center(
+          child: Stack(
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade100, width: 4),
+                  image: photo != null && photo.isNotEmpty
+                      ? DecorationImage(
+                          image: CachedNetworkImageProvider(photo),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _busy ? null : _uploadPhoto,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(Icons.edit, size: 14, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${widget.profile.firstName} ${widget.profile.lastName}'.trim(),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.profile.goal.isNotEmpty ? widget.profile.goal : 'No goal set',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
+                child: photo == null || photo.isEmpty
+                    ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                    : null,
               ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: _busy ? null : _uploadPhoto,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF140C2C),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Text(
+            '${widget.profile.firstName} ${widget.profile.lastName}'.trim(),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-          ],
+          ),
+        ),
+        Center(
+          child: Text(
+            widget.profile.email,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
         ),
         const SizedBox(height: 32),
-        const Text('About', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
         const Text(
-          'Edit your personal information below to keep your profile up to date.',
-          style: TextStyle(fontSize: 14, color: Colors.black87),
+          'Personal Information',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         TextField(
           controller: _firstName,
-          decoration: InputDecoration(
-            labelText: 'First name',
-            errorText: _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
+          decoration: _buildInputDecoration(
+            'First name',
+            _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _lastName,
-          decoration: InputDecoration(
-            labelText: 'Last name',
-            errorText: _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
+          decoration: _buildInputDecoration(
+            'Last name',
+            _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _email,
-          decoration: InputDecoration(
-            labelText: 'Email',
-            errorText: _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
+          keyboardType: TextInputType.emailAddress,
+          decoration: _buildInputDecoration(
+            'Email',
+            _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _goal,
-          decoration: InputDecoration(
-            labelText: 'Goal',
-            errorText: _fieldErrors['goal'] is List ? _fieldErrors['goal'][0] : _fieldErrors['goal']?.toString(),
+          decoration: _buildInputDecoration(
+            'Goal (e.g. UPSC, SSC)',
+            _fieldErrors['goal'] is List ? _fieldErrors['goal'][0] : _fieldErrors['goal']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _dob,
-          decoration: InputDecoration(
-            labelText: 'DOB YYYY-MM-DD',
-            errorText: _fieldErrors['dob'] is List ? _fieldErrors['dob'][0] : _fieldErrors['dob']?.toString(),
+          decoration: _buildInputDecoration(
+            'Date of Birth (YYYY-MM-DD)',
+            _fieldErrors['dob'] is List ? _fieldErrors['dob'][0] : _fieldErrors['dob']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _parentMobile,
-          decoration: InputDecoration(
-            labelText: 'Parent mobile',
-            errorText: _fieldErrors['parent_mobile'] is List ? _fieldErrors['parent_mobile'][0] : _fieldErrors['parent_mobile']?.toString(),
+          keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
+          decoration: _buildInputDecoration(
+            'Parent Mobile Number',
+            _fieldErrors['parent_mobile'] is List ? _fieldErrors['parent_mobile'][0] : _fieldErrors['parent_mobile']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _caste,
-          decoration: InputDecoration(
-            labelText: 'Caste',
-            errorText: _fieldErrors['caste'] is List ? _fieldErrors['caste'][0] : _fieldErrors['caste']?.toString(),
+          decoration: _buildInputDecoration(
+            'Caste',
+            _fieldErrors['caste'] is List ? _fieldErrors['caste'][0] : _fieldErrors['caste']?.toString(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         TextField(
           controller: _address,
-          decoration: InputDecoration(
-            labelText: 'Address',
-            errorText: _fieldErrors['address'] is List ? _fieldErrors['address'][0] : _fieldErrors['address']?.toString(),
+          maxLines: 3,
+          decoration: _buildInputDecoration(
+            'Address',
+            _fieldErrors['address'] is List ? _fieldErrors['address'][0] : _fieldErrors['address']?.toString(),
           ),
-          maxLines: 2,
         ),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: _busy ? null : _save,
-          icon: const Icon(Icons.save_outlined),
-          label: const Text('Save profile'),
+        const SizedBox(height: 32),
+        SizedBox(
+          height: 56,
+          child: FilledButton(
+            onPressed: _busy ? null : _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF140C2C),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: _busy
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Text(
+                    'Save Changes',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+          ),
         ),
       ],
     );

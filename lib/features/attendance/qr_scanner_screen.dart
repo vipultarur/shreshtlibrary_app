@@ -73,7 +73,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
         // Use result fields for the status badge
         String st = 'Present';
         if (result.lateMark) {
-            st = 'Present (Arrived Late)';
+            st = 'Arrived Late';
         }
         _successStatus = st;
         _successTime = result.timeIn;
