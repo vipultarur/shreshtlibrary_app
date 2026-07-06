@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -125,10 +126,12 @@ class AuthController extends Notifier<AuthState> {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
+        debugPrint('[FCM] Registering token with backend...');
         await _api.registerDeviceToken(token);
+        debugPrint('[FCM] ✅ Token registered successfully!');
       }
-    } catch (_) {
-      // Silently ignore — will retry on next launch
+    } catch (e) {
+      debugPrint('[FCM] ❌ Token registration failed: $e');
     }
   }
 
