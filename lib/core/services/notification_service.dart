@@ -79,6 +79,7 @@ Future<void> _showRichNotification({
   String linkButtonText = 'View Details',
 }) async {
   StyleInformation? styleInformation;
+  AndroidBitmap<Object>? largeIconBitmap;
 
   if (imageUrl.isNotEmpty) {
     try {
@@ -94,9 +95,10 @@ Future<void> _showRichNotification({
       );
       final file = File(filePath);
       if (await file.exists()) {
+        largeIconBitmap = FilePathAndroidBitmap(file.path);
         styleInformation = BigPictureStyleInformation(
           FilePathAndroidBitmap(file.path),
-          largeIcon: FilePathAndroidBitmap(file.path),
+          hideExpandedLargeIcon: true,
           contentTitle: title,
           summaryText: body,
           htmlFormatContentTitle: false,
@@ -139,6 +141,7 @@ Future<void> _showRichNotification({
         playSound: true,
         enableVibration: true,
         icon: '@drawable/ic_notification',
+        largeIcon: largeIconBitmap,
         styleInformation: styleInformation,
         actions: actions,
       ),
