@@ -14,8 +14,10 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 // ─── Background handler (top-level, @pragma required) ────────────────────────
+// This fires when the app is BACKGROUND or TERMINATED and a data-only FCM
+// message arrives. It creates a local notification manually.
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final plugin = FlutterLocalNotificationsPlugin();
@@ -24,8 +26,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await plugin.initialize(
       settings: const InitializationSettings(android: androidSettings));
 
-  final androidPlugin = plugin
-      .resolvePlatformSpecificImplementation<
+  final androidPlugin =
+      plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
@@ -39,26 +41,22 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     ),
   );
 
-  // Use notification payload first, fallback to data map
-  final String title = message.notification?.title ??
-      message.data['title'] ??
-      'Shresht Library';
+  final String title =
+      message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
   final String body =
       message.notification?.body ?? message.data['body'] ?? '';
   final String subtitle = message.data['subtitle'] ?? '';
-  final String imageUrl = message.notification?.android?.imageUrl ??
-      message.data['image_url'] ?? '';
+  final String imageUrl =
+      message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
   final String linkUrl = message.data['link_url'] ?? '';
   final String linkButtonText =
-      message.data['link_button_text']?.isNotEmpty == true
+      (message.data['link_button_text'] ?? '').isNotEmpty
           ? message.data['link_button_text']!
           : 'View Details';
 
-  // Build the display body: subtitle on first line, message body after
-  final String displayBody =
-      subtitle.isNotEmpty ? '$subtitle\n$body' : body;
-
+  final String displayBody = subtitle.isNotEmpty ? '$subtitle\n$body' : body;
   final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
   await _showRichNotification(
     plugin: plugin,
     id: id,
@@ -82,7 +80,6 @@ Future<void> _showRichNotification({
 }) async {
   StyleInformation? styleInformation;
 
-  // Try to download and attach the image
   if (imageUrl.isNotEmpty) {
     try {
       final dio = Dio();
@@ -111,7 +108,6 @@ Future<void> _showRichNotification({
     }
   }
 
-  // Fall back to BigText so long subtitles + body are fully visible
   styleInformation ??= BigTextStyleInformation(
     body,
     contentTitle: title,
@@ -210,8 +206,8 @@ class NotificationService {
             options: DefaultFirebaseOptions.currentPlatform);
       } catch (_) {}
 
-      FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
+      // Register the background handler FIRST (before anything else)
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
       const AndroidInitializationSettings androidSettings =
           AndroidInitializationSettings('@drawable/ic_notification');
@@ -219,7 +215,8 @@ class NotificationService {
       await flutterLocalNotificationsPlugin.initialize(
         settings: const InitializationSettings(android: androidSettings),
         onDidReceiveNotificationResponse: (NotificationResponse r) {
-          final id = r.actionId ?? (r.payload != null ? 'payload:${r.payload}' : null);
+          final id = r.actionId ??
+              (r.payload != null ? 'payload:${r.payload}' : null);
           if (id != null) _actionStreamController.add(id);
         },
         onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
@@ -233,7 +230,9 @@ class NotificationService {
         await androidPlugin.createNotificationChannel(_adminChannel);
         await androidPlugin.createNotificationChannel(_sessionChannel);
         await androidPlugin.createNotificationChannel(_defaultChannel);
-        await androidPlugin.requestNotificationsPermission();
+        // Request notification permission (Android 13+)
+        final granted = await androidPlugin.requestNotificationsPermission();
+        debugPrint('[FCM] Notification permission granted: $granted');
       }
 
       await FirebaseMessaging.instance.requestPermission(
@@ -243,14 +242,23 @@ class NotificationService {
         provisional: false,
       );
 
-      // ── Foreground handler ──────────────────────────────────────────────
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('[FCM] Foreground message: ${message.messageId}');
+      // Ensure FCM delivers messages even when app is in foreground
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      // ── FOREGROUND handler ───────────────────────────────────────────────
+      // When app is OPEN and a push arrives, show local notification manually
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+        debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
+        debugPrint('[FCM] Data: ${message.data}');
         _foregroundMessageController.add(message);
 
-        final String title = message.notification?.title ??
-            message.data['title'] ??
-            'Shresht Library';
+        final String title =
+            message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
         final String body =
             message.notification?.body ?? message.data['body'] ?? '';
         final String subtitle = message.data['subtitle'] ?? '';
@@ -269,7 +277,7 @@ class NotificationService {
         if (title.isNotEmpty || displayBody.isNotEmpty) {
           final int id =
               DateTime.now().millisecondsSinceEpoch.remainder(100000);
-          _showRichNotification(
+          await _showRichNotification(
             plugin: flutterLocalNotificationsPlugin,
             id: id,
             title: title,
@@ -278,15 +286,19 @@ class NotificationService {
             linkUrl: linkUrl,
             linkButtonText: linkButtonText,
           );
+          debugPrint('[FCM] ✅ Foreground local notification shown (id=$id)');
         }
       });
 
-      // ── Tap handlers ────────────────────────────────────────────────────
+      // ── BACKGROUND tap handler ───────────────────────────────────────────
+      // When user taps a notification while app is in BACKGROUND
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint('[FCM] onMessageOpenedApp: ${message.data}');
         _handleMessageTap(message);
       });
 
+      // ── TERMINATED tap handler ───────────────────────────────────────────
+      // When user taps a notification that opened the app from TERMINATED state
       final RemoteMessage? initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
@@ -296,6 +308,11 @@ class NotificationService {
 
       final token = await FirebaseMessaging.instance.getToken();
       debugPrint('[FCM] Token: $token');
+
+      // ── Token refresh listener ───────────────────────────────────────────
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        debugPrint('[FCM] Token refreshed: $newToken');
+      });
     } catch (e, st) {
       debugPrint('[FCM] init error: $e\n$st');
     }
@@ -339,7 +356,7 @@ class NotificationService {
     );
   }
 
-  // ── Study Session notification ────────────────────────────────────────────
+  // ── Study Session notification ─────────────────────────────────────────────
   Future<void> startStudySessionNotification() async {
     _sessionSeconds = 0;
     _updateSessionNotification();
