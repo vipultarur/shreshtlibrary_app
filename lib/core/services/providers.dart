@@ -23,7 +23,7 @@ final studentApiProvider = Provider<StudentApi>((ref) {
   return StudentApi(ref.watch(apiClientProvider));
 });
 
-class DashboardNotifier extends AutoDisposeNotifier<AsyncValue<StudentDashboard>> {
+class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   @override
   AsyncValue<StudentDashboard> build() {
     _fetch();
@@ -44,4 +44,4 @@ class DashboardNotifier extends AutoDisposeNotifier<AsyncValue<StudentDashboard>
   }
 }
 
-final dashboardProvider = NotifierProvider.autoDispose<DashboardNotifier, AsyncValue<StudentDashboard>>(DashboardNotifier.new);
+final dashboardProvider = NotifierProvider<DashboardNotifier, AsyncValue<StudentDashboard>>(DashboardNotifier.new);

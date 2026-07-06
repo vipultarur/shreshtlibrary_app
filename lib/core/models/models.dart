@@ -636,6 +636,7 @@ class LibraryInfo {
     this.website,
     this.statisticsDescription,
     this.enableWhatsappService = false,
+    this.maintenanceMode = false,
   });
 
   final String name;
@@ -680,6 +681,7 @@ class LibraryInfo {
   final String? website;
   final String? statisticsDescription;
   final bool enableWhatsappService;
+  final bool maintenanceMode;
 
   factory LibraryInfo.fromJson(JsonMap json) => LibraryInfo(
     name: text(json['name'], 'Shresht Library'),
@@ -724,6 +726,7 @@ class LibraryInfo {
     website: optionalText(json['website']),
     statisticsDescription: optionalText(json['statistics_description']),
     enableWhatsappService: boolean(json['enable_whatsapp_service']),
+    maintenanceMode: boolean(json['maintenance_mode']),
   );
 }
 
