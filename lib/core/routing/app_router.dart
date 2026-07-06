@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shreshtlibrary/features/attendance/attendance_screen.dart';
 import 'package:shreshtlibrary/features/attendance/qr_scanner_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/maintenance_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/login_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/register_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/forgot_password_screen.dart';
@@ -67,6 +68,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.isLoading) {
         return path == '/loading' ? null : '/loading';
       }
+      if (auth.isMaintenance) {
+        return path == '/maintenance' ? null : '/maintenance';
+      }
       if (!auth.isAuthenticated && !publicPath) {
         return '/login';
       }
@@ -79,6 +83,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/loading',
         builder: (context, state) => const LoadingScreen(),
+      ),
+      GoRoute(
+        path: '/maintenance',
+        builder: (context, state) => const MaintenanceScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(

@@ -12,12 +12,15 @@ class AuthState {
   const AuthState({
     required this.isLoading,
     required this.isAuthenticated,
+    this.isMaintenance = false,
     this.user,
     this.error,
     this.fieldErrors,
   });
 
   const AuthState.loading() : this(isLoading: true, isAuthenticated: false);
+  
+  const AuthState.maintenance() : this(isLoading: false, isAuthenticated: false, isMaintenance: true);
 
   const AuthState.signedOut([String? error, Map<String, dynamic>? fieldErrors])
     : this(isLoading: false, isAuthenticated: false, error: error, fieldErrors: fieldErrors);
@@ -27,6 +30,7 @@ class AuthState {
 
   final bool isLoading;
   final bool isAuthenticated;
+  final bool isMaintenance;
   final AuthUser? user;
   final String? error;
   final Map<String, dynamic>? fieldErrors;
@@ -46,6 +50,16 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> _bootstrap() async {
+    try {
+      final info = await _api.libraryInfo();
+      if (info.maintenanceMode) {
+        state = const AuthState.maintenance();
+        return;
+      }
+    } catch (_) {
+      // Ignore network errors and continue to cache-based auth
+    }
+
     final tokens = await ref.read(tokenStoreProvider).read();
     state = tokens?.isComplete ?? false
         ? const AuthState.signedIn()
