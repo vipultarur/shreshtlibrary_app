@@ -31,7 +31,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
 
   StudySession? _session;
   bool _busy = false;
-  String _status = 'loading'; // loading, none, starting, active, paused
+  String _status = 'none'; // loading, none, starting, active, paused
   
   StreamSubscription? _accelSub;
   Timer? _ticker;
@@ -54,8 +54,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _notificationService = ref.read(notificationServiceProvider);
-    
-    _loadSession();
 
     _actionSub = _notificationService.actionStream.listen((action) {
       if (action == 'stop_session') {
@@ -77,27 +75,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       ref.read(studentApiProvider).endStudySession(durMin, pauMin).catchError((_) => _session!);
     }
     super.dispose();
-  }
-
-  Future<void> _loadSession() async {
-    try {
-      final session = await ref.read(studentApiProvider).currentStudySession();
-      if (!mounted) return;
-      if (session != null) {
-        setState(() {
-          _session = session;
-          _status = session.status;
-          _effectiveSeconds = session.durationMinutes * 60;
-          _pausedSeconds = session.pausedMinutes * 60;
-        });
-        _startTracking();
-      } else {
-        setState(() => _status = 'none');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _status = 'none');
-    }
   }
 
   void _startTracking() {
@@ -240,10 +217,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   }
 
   Future<void> _onRefresh() async {
-
     ref.invalidate(studyHistoryProvider);
-
-    await _loadSession();
   }
 
   @override
