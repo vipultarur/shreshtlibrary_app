@@ -115,10 +115,19 @@ class NotificationService {
       // Handle FCM foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('Got a message whilst in the foreground!');
-        debugPrint('Message data: ${message.data}');
         
-        // Instead of showing system notification, broadcast it for in-app banner
+        // Broadcast it for in-app real-time updates
         _foregroundMessageController.add(message);
+        
+        // Show the system notification in the notification tray
+        if (message.notification != null) {
+          showNotification(
+            title: message.notification!.title ?? 'Notification',
+            body: message.notification!.body ?? '',
+            channelId: 'admin_notifications',
+            channelName: 'Admin Notifications',
+          );
+        }
       });
       
       // Request permission for FCM
@@ -155,8 +164,10 @@ class NotificationService {
     final NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
+    final int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    
     await flutterLocalNotificationsPlugin.show(
-      id: 0,
+      id: notificationId,
       title: title,
       body: body,
       notificationDetails: platformChannelSpecifics,
