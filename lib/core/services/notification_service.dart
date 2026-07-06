@@ -98,6 +98,7 @@ Future<void> _showRichNotification({
         largeIconBitmap = FilePathAndroidBitmap(file.path);
         styleInformation = BigPictureStyleInformation(
           FilePathAndroidBitmap(file.path),
+          largeIcon: FilePathAndroidBitmap(file.path),
           hideExpandedLargeIcon: true,
           contentTitle: title,
           summaryText: body,
