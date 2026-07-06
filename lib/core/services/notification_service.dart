@@ -28,6 +28,8 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
       ' payload: ${notificationResponse.payload}');
   if (notificationResponse.actionId != null) {
     _actionStreamController.add(notificationResponse.actionId!);
+  } else if (notificationResponse.payload != null) {
+    _actionStreamController.add('payload:${notificationResponse.payload}');
   }
 }
 
@@ -68,6 +70,8 @@ class NotificationService {
           debugPrint('Notification tapped: ${notificationResponse.payload}');
           if (notificationResponse.actionId != null) {
             _actionStreamController.add(notificationResponse.actionId!);
+          } else if (notificationResponse.payload != null) {
+            _actionStreamController.add('payload:${notificationResponse.payload}');
           }
         },
         onDidReceiveBackgroundNotificationResponse: notificationTapBackground,

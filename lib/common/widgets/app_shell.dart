@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
-
+import 'package:shreshtlibrary/core/services/notification_service.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -15,14 +16,27 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver {
+  StreamSubscription? _notificationSub;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // Listen to notification actions/taps
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notificationSub = ref.read(notificationServiceProvider).actionStream.listen((action) {
+        if (action == 'payload:study_session') {
+          // Switch to Study branch (index 2)
+          _onTap(2);
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
+    _notificationSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
