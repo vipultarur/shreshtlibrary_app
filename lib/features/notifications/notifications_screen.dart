@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/notifications/widgets/notification_card.dart';
 
@@ -36,6 +37,16 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Listen for incoming foreground messages and refresh the list
+    ref.listen(
+      foregroundMessageStreamProvider,
+      (previous, next) {
+        if (next.hasValue) {
+          ref.invalidate(notificationsProvider);
+        }
+      },
+    );
+
     return PageScaffold(
       title: 'Notifications',
       onRefresh: () async => ref.invalidate(notificationsProvider),
