@@ -21,8 +21,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final plugin = FlutterLocalNotificationsPlugin();
   const androidSettings =
       AndroidInitializationSettings('@drawable/ic_notification');
-  await plugin
-      .initialize(const InitializationSettings(android: androidSettings));
+  await plugin.initialize(
+      settings: const InitializationSettings(android: androidSettings));
 
   final androidPlugin = plugin
       .resolvePlatformSpecificImplementation<
@@ -129,10 +129,10 @@ Future<void> _showRichNotification({
   }
 
   await plugin.show(
-    id,
-    title,
-    body,
-    NotificationDetails(
+    id: id,
+    title: title,
+    body: body,
+    notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         'admin_notifications',
         'Admin Notifications',
@@ -217,7 +217,7 @@ class NotificationService {
           AndroidInitializationSettings('@drawable/ic_notification');
 
       await flutterLocalNotificationsPlugin.initialize(
-        const InitializationSettings(android: androidSettings),
+        settings: const InitializationSettings(android: androidSettings),
         onDidReceiveNotificationResponse: (NotificationResponse r) {
           final id = r.actionId ?? (r.payload != null ? 'payload:${r.payload}' : null);
           if (id != null) _actionStreamController.add(id);
@@ -319,10 +319,10 @@ class NotificationService {
   }) async {
     final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
     await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      NotificationDetails(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           channelId,
           channelName,
@@ -362,10 +362,10 @@ class NotificationService {
         '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
 
     await flutterLocalNotificationsPlugin.show(
-      100,
-      'Study Session Active',
-      'Time elapsed: $timeString',
-      const NotificationDetails(
+      id: 100,
+      title: 'Study Session Active',
+      body: 'Time elapsed: $timeString',
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'session_notifications',
           'Study Session',
