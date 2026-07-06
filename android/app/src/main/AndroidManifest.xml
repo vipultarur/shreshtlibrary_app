@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="Shresht Library"
@@ -32,8 +33,16 @@
             </intent-filter>
 
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+        
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="admin_notifications" />
             
-            <intent-filter android:autoVerify="true">
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+            
+        <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
