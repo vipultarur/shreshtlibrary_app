@@ -104,12 +104,40 @@ class AuthController extends Notifier<AuthState> {
     }
 
     final tokens = await ref.read(tokenStoreProvider).read();
-    state = tokens?.isComplete ?? false
+    final isSignedIn = tokens?.isComplete ?? false;
+    state = isSignedIn
         ? const AuthState.signedIn()
         : const AuthState.signedOut();
-        
+
+    if (isSignedIn) {
+      // Always refresh the FCM token with the backend on startup,
+      // because the OS may have issued a new token since last login.
+      _registerFcmToken();
+      
+      // Listen for future token rotations (OS can refresh the token any time)
+      FirebaseMessaging.instance.onTokenRefresh.listen(_registerFcmTokenValue);
+    }
+
     _startPolling();
   }
+
+  void _registerFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _api.registerDeviceToken(token);
+      }
+    } catch (_) {
+      // Silently ignore — will retry on next launch
+    }
+  }
+
+  void _registerFcmTokenValue(String token) async {
+    try {
+      await _api.registerDeviceToken(token);
+    } catch (_) {}
+  }
+
 
   Future<bool> loginEmail(String email, String password) {
     return _completeLogin(() => _api.loginEmail(email, password));
