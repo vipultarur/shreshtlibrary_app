@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../firebase_options.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
@@ -11,62 +14,143 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 // ─── Background handler (top-level, @pragma required) ────────────────────────
-// This runs in an ISOLATE when the app is terminated or in the background.
-// FCM automatically shows the notification tray for messages that contain a
-// `notification` payload.  For data-only messages we show one ourselves.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // If the message has NO notification payload (data-only), show one manually.
-  if (message.notification == null && message.data.isNotEmpty) {
-    final plugin = FlutterLocalNotificationsPlugin();
+  final plugin = FlutterLocalNotificationsPlugin();
+  const androidSettings =
+      AndroidInitializationSettings('@drawable/ic_notification');
+  await plugin
+      .initialize(const InitializationSettings(android: androidSettings));
 
-    const androidSettings =
-        AndroidInitializationSettings('@drawable/ic_notification');
-    await plugin.initialize(
-        const InitializationSettings(android: androidSettings));
+  final androidPlugin = plugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+  await androidPlugin?.createNotificationChannel(
+    const AndroidNotificationChannel(
+      'admin_notifications',
+      'Admin Notifications',
+      description: 'Notifications from the admin',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      showBadge: true,
+    ),
+  );
 
-    final androidPlugin =
-        plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(
-      const AndroidNotificationChannel(
-        'admin_notifications',
-        'Admin Notifications',
-        description: 'Notifications from the admin',
-        importance: Importance.max,
-        playSound: true,
-        enableVibration: true,
-        showBadge: true,
-      ),
-    );
+  // Use notification payload first, fallback to data map
+  final String title = message.notification?.title ??
+      message.data['title'] ??
+      'Shresht Library';
+  final String body =
+      message.notification?.body ?? message.data['body'] ?? '';
+  final String subtitle = message.data['subtitle'] ?? '';
+  final String imageUrl = message.notification?.android?.imageUrl ??
+      message.data['image_url'] ?? '';
+  final String linkUrl = message.data['link_url'] ?? '';
+  final String linkButtonText =
+      message.data['link_button_text']?.isNotEmpty == true
+          ? message.data['link_button_text']!
+          : 'View Details';
 
-    final title = message.data['title'] ?? 'Shresht Library';
-    final body = message.data['body'] ?? '';
-    final int id =
-        DateTime.now().millisecondsSinceEpoch.remainder(100000);
+  // Build the display body: subtitle on first line, message body after
+  final String displayBody =
+      subtitle.isNotEmpty ? '$subtitle\n$body' : body;
 
-    await plugin.show(
-      id,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'admin_notifications',
-          'Admin Notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          visibility: NotificationVisibility.public,
-          playSound: true,
-          enableVibration: true,
-        ),
-      ),
-    );
-  }
+  final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+  await _showRichNotification(
+    plugin: plugin,
+    id: id,
+    title: title,
+    body: displayBody,
+    imageUrl: imageUrl,
+    linkUrl: linkUrl,
+    linkButtonText: linkButtonText,
+  );
 }
 
-// ─── Global stream controllers ───────────────────────────────────────────────
+/// Downloads an image and shows a BigPicture or plain notification.
+Future<void> _showRichNotification({
+  required FlutterLocalNotificationsPlugin plugin,
+  required int id,
+  required String title,
+  required String body,
+  String imageUrl = '',
+  String linkUrl = '',
+  String linkButtonText = 'View Details',
+}) async {
+  StyleInformation? styleInformation;
+
+  // Try to download and attach the image
+  if (imageUrl.isNotEmpty) {
+    try {
+      final dio = Dio();
+      final tempDir = await getTemporaryDirectory();
+      final ext = imageUrl.split('.').last.split('?').first;
+      final filePath =
+          '${tempDir.path}/notif_img_$id.${ext.isEmpty ? 'jpg' : ext}';
+      await dio.download(
+        imageUrl,
+        filePath,
+        options: Options(receiveTimeout: const Duration(seconds: 10)),
+      );
+      final file = File(filePath);
+      if (await file.exists()) {
+        styleInformation = BigPictureStyleInformation(
+          FilePathAndroidBitmap(file.path),
+          largeIcon: FilePathAndroidBitmap(file.path),
+          contentTitle: title,
+          summaryText: body,
+          htmlFormatContentTitle: false,
+          htmlFormatSummaryText: false,
+        );
+      }
+    } catch (_) {
+      // Image download failed → fall back to BigText
+    }
+  }
+
+  // Fall back to BigText so long subtitles + body are fully visible
+  styleInformation ??= BigTextStyleInformation(
+    body,
+    contentTitle: title,
+    htmlFormatBigText: false,
+    htmlFormatContentTitle: false,
+  );
+
+  final List<AndroidNotificationAction> actions = [];
+  if (linkUrl.isNotEmpty) {
+    actions.add(AndroidNotificationAction(
+      'open_link:$linkUrl',
+      linkButtonText,
+      showsUserInterface: true,
+    ));
+  }
+
+  await plugin.show(
+    id,
+    title,
+    body,
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'admin_notifications',
+        'Admin Notifications',
+        channelDescription: 'Notifications from the admin',
+        importance: Importance.max,
+        priority: Priority.high,
+        visibility: NotificationVisibility.public,
+        playSound: true,
+        enableVibration: true,
+        icon: '@drawable/ic_notification',
+        styleInformation: styleInformation,
+        actions: actions,
+      ),
+    ),
+  );
+}
+
+// ─── Global stream controllers ────────────────────────────────────────────────
 final StreamController<String> _actionStreamController =
     StreamController<String>.broadcast();
 final StreamController<RemoteMessage> _foregroundMessageController =
@@ -74,14 +158,11 @@ final StreamController<RemoteMessage> _foregroundMessageController =
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
-  if (notificationResponse.actionId != null) {
-    _actionStreamController.add(notificationResponse.actionId!);
-  } else if (notificationResponse.payload != null) {
-    _actionStreamController.add('payload:${notificationResponse.payload}');
-  }
+  final id = notificationResponse.actionId ?? notificationResponse.payload;
+  if (id != null) _actionStreamController.add(id);
 }
 
-// ─── NotificationService ─────────────────────────────────────────────────────
+// ─── NotificationService ──────────────────────────────────────────────────────
 class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -93,7 +174,6 @@ class NotificationService {
   Stream<RemoteMessage> get foregroundMessageStream =>
       _foregroundMessageController.stream;
 
-  // ── Notification channels ──────────────────────────────────────────────────
   static const AndroidNotificationChannel _adminChannel =
       AndroidNotificationChannel(
     'admin_notifications',
@@ -123,37 +203,28 @@ class NotificationService {
     enableVibration: true,
   );
 
-  // ── init ───────────────────────────────────────────────────────────────────
   Future<void> init() async {
     try {
-      // Firebase is already initialised in main.dart; catch duplicate-init
       try {
         await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform);
       } catch (_) {}
 
-      // Register background handler FIRST
       FirebaseMessaging.onBackgroundMessage(
           _firebaseMessagingBackgroundHandler);
 
-      // flutter_local_notifications initialisation
       const AndroidInitializationSettings androidSettings =
           AndroidInitializationSettings('@drawable/ic_notification');
 
       await flutterLocalNotificationsPlugin.initialize(
         const InitializationSettings(android: androidSettings),
         onDidReceiveNotificationResponse: (NotificationResponse r) {
-          debugPrint('Notification tapped: ${r.payload}');
-          if (r.actionId != null) {
-            _actionStreamController.add(r.actionId!);
-          } else if (r.payload != null) {
-            _actionStreamController.add('payload:${r.payload}');
-          }
+          final id = r.actionId ?? (r.payload != null ? 'payload:${r.payload}' : null);
+          if (id != null) _actionStreamController.add(id);
         },
         onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
       );
 
-      // Create channels
       final androidPlugin = flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
@@ -165,7 +236,6 @@ class NotificationService {
         await androidPlugin.requestNotificationsPermission();
       }
 
-      // ── FCM permission ────────────────────────────────────────────────────
       await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
@@ -173,35 +243,50 @@ class NotificationService {
         provisional: false,
       );
 
-      // ── Foreground handler ────────────────────────────────────────────────
-      // When app is open, FCM suppresses the system notification by default.
-      // We re-show it ourselves using flutter_local_notifications.
+      // ── Foreground handler ──────────────────────────────────────────────
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('[FCM] Foreground message: ${message.messageId}');
-
-        // 1. Broadcast for in-app real-time update
         _foregroundMessageController.add(message);
 
-        // 2. Build title/body from notification payload OR data payload
         final String title = message.notification?.title ??
             message.data['title'] ??
             'Shresht Library';
         final String body =
             message.notification?.body ?? message.data['body'] ?? '';
+        final String subtitle = message.data['subtitle'] ?? '';
+        final String imageUrl =
+            message.notification?.android?.imageUrl ??
+                message.data['image_url'] ?? '';
+        final String linkUrl = message.data['link_url'] ?? '';
+        final String linkButtonText =
+            (message.data['link_button_text'] ?? '').isNotEmpty
+                ? message.data['link_button_text']!
+                : 'View Details';
 
-        if (title.isNotEmpty || body.isNotEmpty) {
-          _showAdminNotification(title: title, body: body);
+        final String displayBody =
+            subtitle.isNotEmpty ? '$subtitle\n$body' : body;
+
+        if (title.isNotEmpty || displayBody.isNotEmpty) {
+          final int id =
+              DateTime.now().millisecondsSinceEpoch.remainder(100000);
+          _showRichNotification(
+            plugin: flutterLocalNotificationsPlugin,
+            id: id,
+            title: title,
+            body: displayBody,
+            imageUrl: imageUrl,
+            linkUrl: linkUrl,
+            linkButtonText: linkButtonText,
+          );
         }
       });
 
-      // ── Tap handlers ──────────────────────────────────────────────────────
-      // App opened by tapping a notification while it was in the background
+      // ── Tap handlers ────────────────────────────────────────────────────
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint('[FCM] onMessageOpenedApp: ${message.data}');
         _handleMessageTap(message);
       });
 
-      // App launched from a terminated state by tapping a notification
       final RemoteMessage? initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
@@ -209,7 +294,6 @@ class NotificationService {
         _handleMessageTap(initialMessage);
       }
 
-      // ── FCM token ─────────────────────────────────────────────────────────
       final token = await FirebaseMessaging.instance.getToken();
       debugPrint('[FCM] Token: $token');
     } catch (e, st) {
@@ -217,35 +301,15 @@ class NotificationService {
     }
   }
 
-  // ── Helper: show an admin-channel notification ────────────────────────────
-  Future<void> _showAdminNotification({
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'admin_notifications',
-          'Admin Notifications',
-          channelDescription: 'Notifications from the admin',
-          importance: Importance.max,
-          priority: Priority.high,
-          visibility: NotificationVisibility.public,
-          playSound: true,
-          enableVibration: true,
-          icon: '@drawable/ic_notification',
-        ),
-      ),
-      payload: payload,
-    );
+  void _handleMessageTap(RemoteMessage message) {
+    final String linkUrl = message.data['link_url'] ?? '';
+    if (linkUrl.isNotEmpty) {
+      _actionStreamController.add('open_link:$linkUrl');
+    } else {
+      _actionStreamController.add('payload:notifications');
+    }
   }
 
-  // ── Public showNotification (used from other places) ──────────────────────
   Future<void> showNotification({
     required String title,
     required String body,
@@ -268,20 +332,11 @@ class NotificationService {
           playSound: true,
           enableVibration: true,
           icon: '@drawable/ic_notification',
+          styleInformation: BigTextStyleInformation(body),
         ),
       ),
       payload: payload,
     );
-  }
-
-  // ── Handle message tap (navigate to correct screen) ───────────────────────
-  void _handleMessageTap(RemoteMessage message) {
-    final String? type = message.data['type'];
-    if (type != null) {
-      _actionStreamController.add('deeplink:$type');
-    } else {
-      _actionStreamController.add('payload:notifications');
-    }
   }
 
   // ── Study Session notification ────────────────────────────────────────────
@@ -291,9 +346,7 @@ class NotificationService {
     _sessionTimer?.cancel();
     _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _sessionSeconds++;
-      if (_sessionSeconds % 60 == 0) {
-        _updateSessionNotification();
-      }
+      if (_sessionSeconds % 60 == 0) _updateSessionNotification();
     });
   }
 
