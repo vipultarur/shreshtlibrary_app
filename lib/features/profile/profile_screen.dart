@@ -100,23 +100,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SettingsTile(
                     icon: Icons.person_outline,
                     title: 'Account Information',
-                    onTap: () => Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(builder: (_) => const AccountInfoScreen()),
-                    ),
+                    onTap: () => context.push('/profile/account'),
                   ),
                   SettingsTile(
                     icon: Icons.badge_outlined,
                     title: 'Digital ID Card',
-                    onTap: () => Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(builder: (_) => const IdCardScreen()),
-                    ),
+                    onTap: () => context.push('/profile/id-card'),
                   ),
                   SettingsTile(
                     icon: Icons.card_giftcard,
                     title: 'Referrals',
-                    onTap: () => Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(builder: (_) => const ReferralsScreen()),
-                    ),
+                    onTap: () => context.push('/profile/referrals'),
                     showDivider: false,
                   ),
                 ],
@@ -254,9 +248,7 @@ class ProfileSummaryCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               InkWell(
-                onTap: () => Navigator.of(context, rootNavigator: true).push(
-                  MaterialPageRoute(builder: (_) => const AccountInfoScreen()),
-                ),
+                onTap: () => context.push('/profile/account'),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

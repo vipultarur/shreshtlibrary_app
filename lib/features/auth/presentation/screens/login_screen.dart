@@ -89,7 +89,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _busy = false);
     if (ok) {
       showSnack(context, 'Login successful!');
-      context.go('/home');
+      final state = GoRouterState.of(context);
+      final redirectTo = state.uri.queryParameters['redirect_to'];
+      if (redirectTo != null && redirectTo.isNotEmpty) {
+        context.go(Uri.decodeComponent(redirectTo));
+      } else {
+        context.go('/home');
+      }
     } else {
       _handleError(ref.read(authControllerProvider), 'Login failed.');
     }
@@ -176,7 +182,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () => context.go('/forgot-password'),
+                onPressed: () {
+                  final state = GoRouterState.of(context);
+                  final redirectTo = state.uri.queryParameters['redirect_to'];
+                  if (redirectTo != null) {
+                    context.go('/forgot-password?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                  } else {
+                    context.go('/forgot-password');
+                  }
+                },
                 child: const Text('Forgot Password?', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
               ),
             ],
@@ -207,7 +221,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Text("Don't have an account?", style: TextStyle(color: Colors.black54)),
               TextButton(
-                onPressed: () => context.go('/register'),
+                onPressed: () {
+                  final state = GoRouterState.of(context);
+                  final redirectTo = state.uri.queryParameters['redirect_to'];
+                  if (redirectTo != null) {
+                    context.go('/register?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                  } else {
+                    context.go('/register');
+                  }
+                },
                 child: const Text('Sign Up', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
               ),
             ],

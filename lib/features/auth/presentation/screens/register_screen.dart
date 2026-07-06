@@ -326,7 +326,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _busy = false);
     if (ok) {
       showSnack(context, 'Registration successful!');
-      context.go('/home');
+      final state = GoRouterState.of(context);
+      final redirectTo = state.uri.queryParameters['redirect_to'];
+      if (redirectTo != null && redirectTo.isNotEmpty) {
+        context.go(Uri.decodeComponent(redirectTo));
+      } else {
+        context.go('/home');
+      }
     } else {
       final auth = ref.read(authControllerProvider);
       final fieldErrors = auth.fieldErrors ?? {};
@@ -545,7 +551,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 const Text('Already have an account?', style: TextStyle(color: Colors.black54)),
                 TextButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: () {
+                    final state = GoRouterState.of(context);
+                    final redirectTo = state.uri.queryParameters['redirect_to'];
+                    if (redirectTo != null) {
+                      context.go('/login?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                    } else {
+                      context.go('/login');
+                    }
+                  },
                   child: const Text('Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
                 ),
               ],

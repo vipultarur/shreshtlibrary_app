@@ -84,7 +84,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await ref.read(authControllerProvider.notifier).resetPassword(_identifier.text.trim(), _token.text.trim(), _password.text);
       if (mounted) {
         showSnack(context, 'Password reset successfully. You can now login.');
-        context.go('/login');
+        final state = GoRouterState.of(context);
+        final redirectTo = state.uri.queryParameters['redirect_to'];
+        if (redirectTo != null) {
+          context.go('/login?redirect_to=${Uri.encodeComponent(redirectTo)}');
+        } else {
+          context.go('/login');
+        }
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -200,7 +206,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
           TextButton(
-            onPressed: () => context.go('/login'),
+            onPressed: () {
+              final state = GoRouterState.of(context);
+              final redirectTo = state.uri.queryParameters['redirect_to'];
+              if (redirectTo != null) {
+                context.go('/login?redirect_to=${Uri.encodeComponent(redirectTo)}');
+              } else {
+                context.go('/login');
+              }
+            },
             child: const Text('Back to Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
           ),
         ],

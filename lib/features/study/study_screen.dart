@@ -11,6 +11,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
+import 'package:shreshtlibrary/core/services/student_api.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 
 
@@ -48,12 +49,14 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
   DateTime _selectedHistoryDate = DateTime.now();
 
   late final NotificationService _notificationService;
+  late final StudentApi _studentApi;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _notificationService = ref.read(notificationServiceProvider);
+    _studentApi = ref.read(studentApiProvider);
 
     _actionSub = _notificationService.actionStream.listen((action) {
       if (action == 'stop_session') {
@@ -72,7 +75,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     if (_session != null && (_status == 'active' || _status == 'paused')) {
       final durMin = _effectiveSeconds ~/ 60;
       final pauMin = _pausedSeconds ~/ 60;
-      ref.read(studentApiProvider).endStudySession(durMin, pauMin).catchError((_) => _session!);
+      _studentApi.endStudySession(durMin, pauMin).catchError((_) => _session!);
     }
     super.dispose();
   }

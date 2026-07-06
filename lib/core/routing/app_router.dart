@@ -21,6 +21,7 @@ import 'package:shreshtlibrary/features/study/study_screen.dart';
 import 'package:shreshtlibrary/common/widgets/app_shell.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
+import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
 
 class ProtectedRoute extends ConsumerWidget {
   const ProtectedRoute({
@@ -64,21 +65,36 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/login' ||
           path == '/register' ||
           path == '/forgot-password' ||
-          path == '/loading';
+          path == '/loading' ||
+          path == '/maintenance';
+      
       if (auth.isLoading) {
         return path == '/loading' ? null : '/loading';
       }
       if (auth.isMaintenance) {
         return path == '/maintenance' ? null : '/maintenance';
       }
+      
       if (!auth.isAuthenticated && !publicPath) {
-        return '/login';
+        final currentUrl = Uri.encodeComponent(state.uri.toString());
+        return '/login?redirect_to=$currentUrl';
       }
+      
       if (auth.isAuthenticated && publicPath) {
+        final redirectTo = state.uri.queryParameters['redirect_to'];
+        if (redirectTo != null && redirectTo.isNotEmpty) {
+          return Uri.decodeComponent(redirectTo);
+        }
         return '/home';
       }
       return null;
     },
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(title: const Text('Page Not Found')),
+      body: Center(
+        child: Text('The requested page "${state.uri.path}" does not exist.'),
+      ),
+    ),
     routes: [
       GoRoute(
         path: '/loading',
@@ -186,6 +202,111 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/facilities',
         builder: (context, state) => const FacilitiesScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        builder: (context, state) => const PlaceholderScreen(title: 'Dashboard'),
+      ),
+      GoRoute(
+        path: '/attendance/history',
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'attendance',
+          child: PlaceholderScreen(title: 'Attendance History'),
+        ),
+      ),
+      GoRoute(
+        path: '/study/history',
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'study',
+          child: PlaceholderScreen(title: 'Study History'),
+        ),
+      ),
+      GoRoute(
+        path: '/study/seat-booking',
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'study',
+          child: PlaceholderScreen(title: 'Seat Booking'),
+        ),
+      ),
+      GoRoute(
+        path: '/study/seat-booking/:seatId',
+        builder: (context, state) => ProtectedRoute(
+          feature: 'study',
+          child: PlaceholderScreen(title: 'Seat Booking', id: state.pathParameters['seatId']),
+        ),
+      ),
+      GoRoute(
+        path: '/study/my-seat',
+        builder: (context, state) => const ProtectedRoute(
+          feature: 'study',
+          child: PlaceholderScreen(title: 'My Seat'),
+        ),
+      ),
+      GoRoute(
+        path: '/notifications/:id',
+        builder: (context, state) => ProtectedRoute(
+          feature: 'notifications',
+          child: PlaceholderScreen(title: 'Notification Details', id: state.pathParameters['id']),
+        ),
+      ),
+      GoRoute(
+        path: '/payments/:id',
+        builder: (context, state) => ProtectedRoute(
+          feature: 'payments',
+          child: PlaceholderScreen(title: 'Payment Details', id: state.pathParameters['id']),
+        ),
+      ),
+      GoRoute(
+        path: '/membership',
+        builder: (context, state) => const PlaceholderScreen(title: 'Membership'),
+      ),
+      GoRoute(
+        path: '/plans',
+        builder: (context, state) => const PlaceholderScreen(title: 'Plans'),
+      ),
+      GoRoute(
+        path: '/library/about',
+        builder: (context, state) => const PlaceholderScreen(title: 'About'),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const PlaceholderScreen(title: 'Settings'),
+      ),
+      GoRoute(
+        path: '/contact',
+        builder: (context, state) => const PlaceholderScreen(title: 'Contact'),
+      ),
+      GoRoute(
+        path: '/help',
+        builder: (context, state) => const PlaceholderScreen(title: 'Help'),
+      ),
+      GoRoute(
+        path: '/faq',
+        builder: (context, state) => const PlaceholderScreen(title: 'FAQ'),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        builder: (context, state) => const PlaceholderScreen(title: 'Privacy Policy'),
+      ),
+      GoRoute(
+        path: '/terms-conditions',
+        builder: (context, state) => const PlaceholderScreen(title: 'Terms & Conditions'),
+      ),
+      GoRoute(
+        path: '/events/:id',
+        builder: (context, state) => PlaceholderScreen(title: 'Event Details', id: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/profile/account',
+        builder: (context, state) => const AccountInfoScreen(),
+      ),
+      GoRoute(
+        path: '/profile/id-card',
+        builder: (context, state) => const IdCardScreen(),
+      ),
+      GoRoute(
+        path: '/profile/referrals',
+        builder: (context, state) => const ReferralsScreen(),
       ),
     ],
   );
