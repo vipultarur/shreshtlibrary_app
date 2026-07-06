@@ -146,9 +146,15 @@ class ApiClient {
         )
         .then((response) async {
           final payload = response.data;
-          final access = payload is JsonMap
-              ? payload['access']?.toString()
-              : null;
+          String? access;
+          if (payload is JsonMap) {
+            final dataObj = payload['data'];
+            if (dataObj is JsonMap) {
+              access = dataObj['access']?.toString();
+            } else {
+              access = payload['access']?.toString();
+            }
+          }
           if (access == null || access.isEmpty) {
             return null;
           }

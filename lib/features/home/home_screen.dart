@@ -218,7 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(width: 12),
                   StatusBadge(
                     status: status,
-                    time: dashboard.attendanceTime,
+                    time: status.toLowerCase() == 'absent' ? null : dashboard.attendanceTime,
                   ),
                 ],
               ),
