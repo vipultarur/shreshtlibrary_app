@@ -105,7 +105,8 @@ Future<void> _showRichNotification({
           htmlFormatSummaryText: false,
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[FCM] Image download failed: $e');
       // Image download failed → fall back to BigText
     }
   }
