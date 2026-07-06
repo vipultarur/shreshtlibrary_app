@@ -13,6 +13,7 @@ class LocalCacheService {
   final SharedPreferences _prefs;
 
   static const _idCardKey = 'cached_id_card';
+  static const _notificationsKey = 'cached_notifications';
 
   static Future<LocalCacheService> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -42,6 +43,20 @@ class LocalCacheService {
       return StudentIdCard.fromJson(map);
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> saveNotifications(List<dynamic> data) async {
+    await _prefs.setString(_notificationsKey, jsonEncode(data));
+  }
+
+  List<dynamic> getNotifications() {
+    final jsonStr = _prefs.getString(_notificationsKey);
+    if (jsonStr == null) return [];
+    try {
+      return jsonDecode(jsonStr) as List<dynamic>;
+    } catch (_) {
+      return [];
     }
   }
 

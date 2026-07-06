@@ -14,11 +14,49 @@ final notificationsProvider =
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
+  Future<void> _markAllRead(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(studentApiProvider).markAllNotificationsRead();
+      ref.invalidate(notificationsProvider);
+      if (context.mounted) showSnack(context, 'All notifications marked as read.');
+    } catch (e) {
+      if (context.mounted) showSnack(context, 'Failed to mark as read.');
+    }
+  }
+
+  Future<void> _clearAll(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(studentApiProvider).deleteAllNotifications();
+      ref.invalidate(notificationsProvider);
+      if (context.mounted) showSnack(context, 'All notifications cleared.');
+    } catch (e) {
+      if (context.mounted) showSnack(context, 'Failed to clear notifications.');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PageScaffold(
       title: 'Notifications',
       onRefresh: () async => ref.invalidate(notificationsProvider),
+      actions: [
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'read_all') _markAllRead(context, ref);
+            if (value == 'clear_all') _clearAll(context, ref);
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'read_all',
+              child: Text('Mark All Read'),
+            ),
+            const PopupMenuItem(
+              value: 'clear_all',
+              child: Text('Clear All'),
+            ),
+          ],
+        ),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -27,7 +65,27 @@ class NotificationsScreen extends ConsumerWidget {
             builder: (rows) => rows.isEmpty
                 ? const SectionCard(child: Text('No notifications yet.'))
                 : Column(
-                    children: rows.map((item) => NotificationCard(item)).toList(),
+                    children: rows.map((item) {
+                      return Dismissible(
+                        key: ValueKey(item.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          color: Colors.red,
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (_) async {
+                          try {
+                            await ref.read(studentApiProvider).deleteNotification(item.id);
+                            ref.invalidate(notificationsProvider);
+                          } catch (_) {
+                            if (context.mounted) showSnack(context, 'Failed to delete notification.');
+                          }
+                        },
+                        child: NotificationCard(item),
+                      );
+                    }).toList(),
                   ),
           ),
         ],

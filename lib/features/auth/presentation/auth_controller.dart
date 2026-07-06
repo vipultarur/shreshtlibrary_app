@@ -147,6 +147,13 @@ class AuthController extends Notifier<AuthState> {
     } catch (_) {
       // Local logout must still complete if the server is unavailable.
     }
+    
+    try {
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (_) {
+      // Ignore FCM errors during logout
+    }
+    
     await ref.read(tokenStoreProvider).clear();
     state = const AuthState.signedOut();
   }

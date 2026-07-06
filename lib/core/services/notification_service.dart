@@ -20,6 +20,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 // Ensure global stream controller for background taps, but local is easier for foreground
 final StreamController<String> _actionStreamController = StreamController<String>.broadcast();
+final StreamController<RemoteMessage> _foregroundMessageController = StreamController<RemoteMessage>.broadcast();
 
 @pragma('vm:entry-point')
 void notificationTapBackground(NotificationResponse notificationResponse) {
@@ -41,6 +42,7 @@ class NotificationService {
   int _sessionSeconds = 0;
   
   Stream<String> get actionStream => _actionStreamController.stream;
+  Stream<RemoteMessage> get foregroundMessageStream => _foregroundMessageController.stream;
 
   Future<void> init() async {
     try {
@@ -114,16 +116,9 @@ class NotificationService {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('Got a message whilst in the foreground!');
         debugPrint('Message data: ${message.data}');
-
-        if (message.notification != null) {
-          debugPrint('Message also contained a notification: ${message.notification}');
-          showNotification(
-            title: message.notification?.title ?? 'Notification',
-            body: message.notification?.body ?? '',
-            channelId: 'admin_notifications',
-            channelName: 'Admin Notifications',
-          );
-        }
+        
+        // Instead of showing system notification, broadcast it for in-app banner
+        _foregroundMessageController.add(message);
       });
       
       // Request permission for FCM

@@ -2,11 +2,13 @@ import 'package:dio/dio.dart';
 
 import 'package:shreshtlibrary/core/network/api_client.dart' hide JsonMap;
 import 'package:shreshtlibrary/core/models/models.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 
 class StudentApi {
-  StudentApi(this._client);
+  StudentApi(this._client, this._cache);
 
   final ApiClient _client;
+  final LocalCacheService _cache;
 
   Future<LoginResult> register(Map<String, dynamic> payload) async {
     final response = await _client.post<dynamic>(
@@ -315,29 +317,52 @@ class StudentApi {
   }
 
   Future<List<StudentNotification>> notifications() async {
-    final response = await _client.get<dynamic>('/notifications/list');
-    return _client.unwrap(response, (data) {
-      // The API returns paginated data: { data: [...], count, total_pages }
-      if (data is Map<String, dynamic> && data.containsKey('data')) {
-        final rows = data['data'] as List<dynamic>? ?? const <Object?>[];
+    try {
+      final response = await _client.get<dynamic>('/notifications/list');
+      return _client.unwrap(response, (data) {
+        // The API returns paginated data: { data: [...], count, total_pages }
+        List<dynamic> rows = [];
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          rows = data['data'] as List<dynamic>? ?? <dynamic>[];
+        } else if (data is List) {
+          rows = data;
+        }
+
+        // Cache raw JSON
+        _cache.saveNotifications(rows);
+
         return rows
             .whereType<Map<String, dynamic>>()
             .map(StudentNotification.fromJson)
             .toList();
-      }
-      // Fallback: if it's already a plain list
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map(StudentNotification.fromJson)
-            .toList();
-      }
-      return <StudentNotification>[];
-    });
+      });
+    } catch (_) {
+      // Fallback to local cache
+      final cached = _cache.getNotifications();
+      return cached
+          .whereType<Map<String, dynamic>>()
+          .map(StudentNotification.fromJson)
+          .toList();
+    }
   }
 
   Future<void> markNotificationRead(int id) async {
     final response = await _client.post<dynamic>('/notifications/read/$id');
+    _client.unwrap(response, (_) => null);
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    final response = await _client.post<dynamic>('/notifications/read-all');
+    _client.unwrap(response, (_) => null);
+  }
+
+  Future<void> deleteNotification(int id) async {
+    final response = await _client.delete<dynamic>('/notifications/$id');
+    _client.unwrap(response, (_) => null);
+  }
+
+  Future<void> deleteAllNotifications() async {
+    final response = await _client.delete<dynamic>('/notifications/all');
     _client.unwrap(response, (_) => null);
   }
 

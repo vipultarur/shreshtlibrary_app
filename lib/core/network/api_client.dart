@@ -57,6 +57,10 @@ class ApiClient {
     return _guard(() => dio.put<T>(path, data: data ?? <String, dynamic>{}));
   }
 
+  Future<Response<T>> delete<T>(String path, {Object? data}) {
+    return _guard(() => dio.delete<T>(path, data: data));
+  }
+
   Future<void> close() async {
     dio.close();
     _refreshDio.close();
