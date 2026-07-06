@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:intl/intl.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
@@ -26,6 +27,18 @@ class NotificationCard extends ConsumerWidget {
   void _launchUrl(String url) async {
     if (url.isNotEmpty && await canLaunchUrlString(url)) {
       await launchUrlString(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '';
+    try {
+      // Parse the ISO 8601 string (which will be in UTC if 'Z' is present)
+      // If the backend is still returning the old format, it will throw FormatException and fall back to returning the string directly.
+      final dateTime = DateTime.parse(dateString).toLocal();
+      return DateFormat('MMM dd, yyyy h:mm a').format(dateTime);
+    } catch (_) {
+      return dateString;
     }
   }
 
@@ -74,7 +87,7 @@ class NotificationCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    item.sentAt ?? '',
+                    _formatDate(item.sentAt),
                     style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                   if (item.displayMode != 'one_time')
