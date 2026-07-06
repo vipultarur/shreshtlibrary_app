@@ -16,12 +16,15 @@ class StudentApi {
     return _client.unwrap(response, LoginResult.fromJson);
   }
 
-  Future<void> checkAvailability({String? email, String? mobile}) async {
+  Future<bool> checkAvailability({String? email, String? mobile}) async {
     final response = await _client.post<dynamic>(
       '/auth/check-availability',
       data: {'email': email ?? '', 'mobile': mobile ?? ''},
     );
-    _client.unwrap(response, (_) => null);
+    return _client.unwrap(response, (data) {
+      final json = data as JsonMap? ?? const {};
+      return json['require_otp'] == true;
+    });
   }
 
   Future<LoginResult> loginEmail(String email, String password) async {

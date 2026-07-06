@@ -39,6 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _otpVerified = false;
   Timer? _resendTimer;
   int _resendSeconds = 0;
+  bool _requireOtp = true;
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
@@ -81,7 +82,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (email == null && mobile == null) return;
 
     try {
-      await ref.read(authControllerProvider.notifier).checkAvailability(email: email, mobile: mobile);
+      final reqOtp = await ref.read(authControllerProvider.notifier).checkAvailability(email: email, mobile: mobile);
+      if (mounted && mobile != null) {
+        setState(() => _requireOtp = reqOtp);
+      }
     } catch (e) {
       if (e is ApiFailure && e.errors != null && e.errors is Map<String, dynamic>) {
         final errorsMap = e.errors as Map<String, dynamic>;
@@ -275,7 +279,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       firstErrorFocus ??= _mobileFocus;
     }
     
-    if (otp.isEmpty) {
+    if (_requireOtp && otp.isEmpty) {
       addError('otp', 'OTP is required.', _otpFocus);
     }
 
@@ -423,9 +427,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _mobile,
               focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
-              suffixIcon: _otpVerified ? Icons.check_circle : Icons.phone_android,
-              iconColor: _otpVerified ? Colors.green : null,
-              borderColor: _otpVerified ? Colors.green : null,
+              suffixIcon: (!_requireOtp || _otpVerified) ? Icons.check_circle : Icons.phone_android,
+              iconColor: (!_requireOtp || _otpVerified) ? Colors.green : null,
+              borderColor: (!_requireOtp || _otpVerified) ? Colors.green : null,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(10),
@@ -447,12 +451,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            if (_otpVerified)
+            if (!_requireOtp || _otpVerified)
               const Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text('Verified', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
               ),
-            if (_otpSent && !_otpVerified) ...[
+            if (_requireOtp && _otpSent && !_otpVerified) ...[
               const SizedBox(height: 12),
               AuthTextField(
                 label: 'OTP (Sent to WhatsApp)',
@@ -503,7 +507,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ],
               ),
-            ] else if (!_otpVerified) ...[
+            ] else if (_requireOtp && !_otpVerified) ...[
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
@@ -518,7 +522,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
-                if (!_otpVerified) {
+                if (_requireOtp && !_otpVerified) {
                   showSnack(context, 'Please verify your mobile number first.');
                   return;
                 }
