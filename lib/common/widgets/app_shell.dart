@@ -6,9 +6,9 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 
 
 class AppShell extends ConsumerStatefulWidget {
-  const AppShell({super.key, required this.child});
+  const AppShell({super.key, required this.navigationShell});
 
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
@@ -34,24 +34,20 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
     }
   }
 
-  int _indexForPath(String path) {
-    if (path.startsWith('/attendance')) return 1;
-    if (path.startsWith('/study')) return 2;
-    if (path.startsWith('/leaderboard')) return 3;
-    if (path.startsWith('/profile')) return 4;
-    return 0;
+  void _onTap(int index) {
+    widget.navigationShell.goBranch(
+      index,
+      initialLocation: index == widget.navigationShell.currentIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final path = GoRouterState.of(context).uri.path;
-    final currentIndex = _indexForPath(path);
-
-
+    final currentIndex = widget.navigationShell.currentIndex;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1EFFC),
-      body: widget.child, // SafeArea handled by individual screens to allow full bleed if needed
+      body: widget.navigationShell, // SafeArea handled by individual screens to allow full bleed if needed
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -75,31 +71,31 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                 iconPath: 'assets/icons/shared/home.svg',
                 label: 'Home',
                 isSelected: currentIndex == 0,
-                onTap: () => context.go('/home'),
+                onTap: () => _onTap(0),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/calender.svg',
                 label: 'Attendance',
                 isSelected: currentIndex == 1,
-                onTap: () => context.go('/attendance'),
+                onTap: () => _onTap(1),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/target.svg',
                 label: 'Study',
                 isSelected: currentIndex == 2,
-                onTap: () => context.go('/study'),
+                onTap: () => _onTap(2),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/bage.svg',
                 label: 'Leaderboard',
                 isSelected: currentIndex == 3,
-                onTap: () => context.go('/leaderboard'),
+                onTap: () => _onTap(3),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/profile.svg',
                 label: 'Profile',
                 isSelected: currentIndex == 4,
-                onTap: () => context.go('/profile'),
+                onTap: () => _onTap(4),
               ),
             ],
           ),

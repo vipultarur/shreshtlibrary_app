@@ -97,37 +97,57 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/home',
-            builder: (context, state) => const HomeScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/attendance',
-            builder: (context, state) => const ProtectedRoute(
-              feature: 'attendance',
-              child: AttendanceScreen(),
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/attendance',
+                builder: (context, state) => const ProtectedRoute(
+                  feature: 'attendance',
+                  child: AttendanceScreen(),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/study',
-            builder: (context, state) => const ProtectedRoute(
-              feature: 'study',
-              child: StudyScreen(),
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/study',
+                builder: (context, state) => const ProtectedRoute(
+                  feature: 'study',
+                  child: StudyScreen(),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/leaderboard',
-            builder: (context, state) => const ProtectedRoute(
-              feature: 'study',
-              child: LeaderboardScreen(),
-            ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/leaderboard',
+                builder: (context, state) => const ProtectedRoute(
+                  feature: 'study',
+                  child: LeaderboardScreen(),
+                ),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/profile',
-            builder: (context, state) => const ProfileScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
