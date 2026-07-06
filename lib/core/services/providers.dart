@@ -23,6 +23,15 @@ final studentApiProvider = Provider<StudentApi>((ref) {
   return StudentApi(ref.watch(apiClientProvider));
 });
 
-final dashboardProvider = FutureProvider.autoDispose<StudentDashboard>((ref) {
-  return ref.watch(studentApiProvider).dashboard();
-});
+class DashboardNotifier extends AutoDisposeAsyncNotifier<StudentDashboard> {
+  @override
+  Future<StudentDashboard> build() {
+    return ref.watch(studentApiProvider).dashboard();
+  }
+
+  void updateData(StudentDashboard dashboard) {
+    state = AsyncData(dashboard);
+  }
+}
+
+final dashboardProvider = AsyncNotifierProvider.autoDispose<DashboardNotifier, StudentDashboard>(DashboardNotifier.new);

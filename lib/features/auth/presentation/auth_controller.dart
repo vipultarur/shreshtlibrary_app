@@ -43,10 +43,52 @@ final authControllerProvider = NotifierProvider<AuthController, AuthState>(
 class AuthController extends Notifier<AuthState> {
   StudentApi get _api => ref.read(studentApiProvider);
 
+  Timer? _pollingTimer;
+
   @override
   AuthState build() {
+    ref.onDispose(() {
+      _pollingTimer?.cancel();
+    });
     Future.microtask(_bootstrap);
     return const AuthState.loading();
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) => _pollStatus());
+  }
+
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  Future<void> _pollStatus() async {
+    try {
+      final info = await _api.libraryInfo();
+      if (info.maintenanceMode) {
+        if (!state.isMaintenance) {
+          state = const AuthState.maintenance();
+          _stopPolling();
+        }
+        return;
+      } else if (state.isMaintenance) {
+        // Recover from maintenance
+        _bootstrap();
+        return;
+      }
+
+      if (state.isAuthenticated) {
+        final dashboard = await _api.dashboard();
+        ref.read(dashboardProvider.notifier).updateData(dashboard);
+        
+        // If suspended, we might want to sign out or just let restricted features screen handle it.
+        // Actually, RestrictedFeatureScreen handles SUSPENDED.
+      }
+    } catch (_) {
+      // Ignore network errors during polling
+    }
   }
 
   Future<void> _bootstrap() async {
@@ -54,6 +96,7 @@ class AuthController extends Notifier<AuthState> {
       final info = await _api.libraryInfo();
       if (info.maintenanceMode) {
         state = const AuthState.maintenance();
+        _startPolling(); // Keep polling to recover from maintenance
         return;
       }
     } catch (_) {
@@ -64,6 +107,8 @@ class AuthController extends Notifier<AuthState> {
     state = tokens?.isComplete ?? false
         ? const AuthState.signedIn()
         : const AuthState.signedOut();
+        
+    _startPolling();
   }
 
   Future<bool> loginEmail(String email, String password) {

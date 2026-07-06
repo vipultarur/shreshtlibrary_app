@@ -71,6 +71,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     _ticker?.cancel();
     _actionSub?.cancel();
     _notificationService.stopStudySessionNotification();
+    if (_session != null && (_status == 'active' || _status == 'paused')) {
+      final durMin = _effectiveSeconds ~/ 60;
+      final pauMin = _pausedSeconds ~/ 60;
+      ref.read(studentApiProvider).endStudySession(durMin, pauMin).catchError((_) => _session!);
+    }
     super.dispose();
   }
 
