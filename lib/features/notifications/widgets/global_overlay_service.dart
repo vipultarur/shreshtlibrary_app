@@ -373,100 +373,34 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
             child: Container(color: Colors.black.withValues(alpha: 0.6)),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.data.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  if (widget.data.subtitle != null && widget.data.subtitle!.isNotEmpty)
-                    Text(
-                      widget.data.subtitle!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
-                    ),
-                  const SizedBox(height: 12),
-                  Text(widget.data.body, style: const TextStyle(color: Colors.white)),
-                  if (widget.data.description != null && widget.data.description!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(widget.data.description!, style: const TextStyle(color: Colors.white70)),
-                  ],
-                  _buildLinkButton(context, true),
-                ],
-              ),
-            ),
+            padding: const EdgeInsets.all(20.0),
+            child: _buildTextContent(context, true),
           ),
         ],
       );
     }
 
-    if (widget.data.layout == 'full_image') {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildTextContent(context, false),
-          ),
-          if (widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: widget.data.imageUrl!,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorWidget: (context, url, error) => const SizedBox.shrink(),
-            ),
-          if (widget.data.linkUrl != null && widget.data.linkUrl!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildLinkButton(context, false),
-            ),
-        ],
-      );
-    }
-
-    if (widget.data.layout == 'half_image') {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: widget.data.imageUrl!,
-              height: 140,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorWidget: (context, url, error) => const SizedBox.shrink(),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTextContent(context, false),
-                _buildLinkButton(context, false),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-
-    // text_only
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.data.layout == 'full_image' || widget.data.layout == 'half_image') ...[
+            if (widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: CachedNetworkImage(
+                  imageUrl: widget.data.imageUrl!,
+                  height: widget.data.layout == 'full_image' ? 140 : 100,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) => const SizedBox.shrink(),
+                ),
+              ),
+            const SizedBox(height: 16),
+          ],
           _buildTextContent(context, false),
-          _buildLinkButton(context, false),
         ],
       ),
     );
@@ -474,38 +408,48 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
 
   Widget _buildTextContent(BuildContext context, bool isBackground) {
     final theme = Theme.of(context);
-    final titleColor = isBackground ? Colors.white : null;
-    final subtitleColor = isBackground ? Colors.white70 : theme.colorScheme.primary;
-    final bodyColor = isBackground ? Colors.white : null;
-    final descColor = isBackground ? Colors.white70 : null;
+    final titleColor = isBackground ? Colors.white : theme.colorScheme.onSurface;
+    final subtitleColor = isBackground ? const Color(0xFFFFD54F) : theme.colorScheme.primary;
+    final bodyColor = isBackground ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.onSurfaceVariant;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           widget.data.title,
+          textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium?.copyWith(
             color: titleColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (widget.data.subtitle != null && widget.data.subtitle!.isNotEmpty)
+        if (widget.data.subtitle != null && widget.data.subtitle!.isNotEmpty) ...[
+          const SizedBox(height: 4),
           Text(
             widget.data.subtitle!,
-            style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: subtitleColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 12),
         Text(
           widget.data.body,
-          style: TextStyle(color: bodyColor),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium?.copyWith(color: bodyColor),
         ),
         if (widget.data.description != null && widget.data.description!.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             widget.data.description!,
-            style: TextStyle(color: descColor),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(color: bodyColor.withValues(alpha: 0.8)),
           ),
         ],
+        _buildLinkButton(context, isBackground),
       ],
     );
   }
@@ -515,7 +459,7 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
     
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 16.0),
+      padding: const EdgeInsets.only(top: 20.0),
       child: SizedBox(
         width: double.infinity,
         child: FilledButton(
@@ -523,10 +467,13 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
           style: FilledButton.styleFrom(
             backgroundColor: isBackground ? theme.colorScheme.surface : theme.colorScheme.primary,
             foregroundColor: isBackground ? theme.colorScheme.onSurface : theme.colorScheme.onPrimary,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            elevation: 0,
           ),
           child: Text(
             (widget.data.linkButtonText?.isNotEmpty == true) ? widget.data.linkButtonText! : 'View Details',
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
       ),
