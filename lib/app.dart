@@ -5,7 +5,7 @@ import 'package:shreshtlibrary/core/services/notification_service.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/notifications/widgets/in_app_notification_dialog.dart';
+import 'features/notifications/widgets/global_overlay_service.dart';
 
 class ShreshtStudentApp extends ConsumerStatefulWidget {
   const ShreshtStudentApp({super.key});
@@ -69,12 +69,24 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         final imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'];
         final backgroundImage = message.data['background_image'];
 
-        // Only show dialog if it's an alert or persistent, or just show for all for now to match UI requirement
         final displayMode = message.data['display_mode'];
+        final type = message.data['type']?.toString().toUpperCase() ?? 'GENERAL';
+        
         if (displayMode != 'silent') {
-          showDialog(
-            context: rootNavigatorKey.currentContext!,
-            builder: (context) => InAppNotificationDialog(
+          Duration? autoDismiss;
+          if (displayMode == 'one_time') {
+            autoDismiss = const Duration(seconds: 8);
+          }
+          
+          String priority = 'medium';
+          if (type == 'EMERGENCY' || type == 'MAINTENANCE') {
+            priority = 'critical';
+          } else if (layout == 'text_only' && title.length < 20 && body.length < 50) {
+            priority = 'low';
+          }
+
+          GlobalOverlayService.instance.show(
+            OverlayNotificationData(
               title: title,
               body: body,
               subtitle: subtitle,
@@ -84,6 +96,9 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
               backgroundImage: backgroundImage,
               linkUrl: linkUrl,
               linkButtonText: linkButtonText,
+              priority: priority,
+              autoDismissDuration: autoDismiss,
+              rawPayload: message.data,
             ),
           );
         }
