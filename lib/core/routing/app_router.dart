@@ -55,9 +55,12 @@ class ProtectedRoute extends ConsumerWidget {
   }
 }
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authControllerProvider);
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/home',
     redirect: (context, state) {
       final path = state.uri.path;

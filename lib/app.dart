@@ -5,6 +5,7 @@ import 'package:shreshtlibrary/core/services/notification_service.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/notifications/widgets/in_app_notification_dialog.dart';
 
 class ShreshtStudentApp extends ConsumerStatefulWidget {
   const ShreshtStudentApp({super.key});
@@ -57,37 +58,35 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
     });
 
     ref.read(notificationServiceProvider).foregroundMessageStream.listen((message) {
-      if (message.notification != null) {
-        final title = message.notification?.title ?? 'New Notification';
-        final body = message.notification?.body ?? '';
-        
-        rootScaffoldMessengerKey.currentState?.showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-                if (body.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(body, style: const TextStyle(color: Colors.white70)),
-                ],
-              ],
+      if (rootNavigatorKey.currentContext != null) {
+        final title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
+        final body = message.notification?.body ?? message.data['body'] ?? '';
+        final subtitle = message.data['subtitle'];
+        final description = message.data['description'];
+        final layout = message.data['layout'] ?? 'text_only';
+        final linkUrl = message.data['link_url'];
+        final linkButtonText = message.data['link_button_text'];
+        final imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'];
+        final backgroundImage = message.data['background_image'];
+
+        // Only show dialog if it's an alert or persistent, or just show for all for now to match UI requirement
+        final displayMode = message.data['display_mode'];
+        if (displayMode != 'silent') {
+          showDialog(
+            context: rootNavigatorKey.currentContext!,
+            builder: (context) => InAppNotificationDialog(
+              title: title,
+              body: body,
+              subtitle: subtitle,
+              description: description,
+              layout: layout,
+              imageUrl: imageUrl,
+              backgroundImage: backgroundImage,
+              linkUrl: linkUrl,
+              linkButtonText: linkButtonText,
             ),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            backgroundColor: const Color(0xFF140C2C),
-            elevation: 8,
-            action: SnackBarAction(
-              label: 'VIEW',
-              textColor: const Color(0xFF917CFF),
-              onPressed: () {
-                _handleMessage(message);
-              },
-            ),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+          );
+        }
       }
     });
   }
