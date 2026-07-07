@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
   return ref.watch(studentApiProvider).leaderboard();
@@ -17,29 +18,9 @@ class LeaderboardScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1EFFC),
+      appBar: const CommonAppBar(title: 'Leaderboard'),
       body: Column(
         children: [
-          Container(
-            color: const Color(0xFFCBB9FF),
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16,
-              bottom: 16,
-              left: 20,
-              right: 20,
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Leaderboard',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF140C2C),
-                  ),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: Container(
               width: double.infinity,

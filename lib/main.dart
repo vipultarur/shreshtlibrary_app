@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'app.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/local_cache_service.dart';
+import 'core/services/study_session_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,8 @@ void main() async {
   await notificationService.init();
 
   final localCacheService = await LocalCacheService.init();
+  
+  await StudySessionService().init();
   
   runApp(
     ProviderScope(

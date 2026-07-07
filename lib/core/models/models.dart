@@ -513,32 +513,7 @@ class SeatAssignment {
 }
 
 
-class StudySession {
-  const StudySession({
-    required this.id,
-    required this.startTime,
-    this.endTime,
-    required this.status,
-    required this.durationMinutes,
-    required this.pausedMinutes,
-  });
 
-  final int id;
-  final String startTime;
-  final String? endTime;
-  final String status;
-  final int durationMinutes;
-  final int pausedMinutes;
-
-  factory StudySession.fromJson(JsonMap json) => StudySession(
-    id: integer(json['id']),
-    startTime: text(json['start_time']),
-    endTime: optionalText(json['end_time']),
-    status: text(json['status'], 'starting'),
-    durationMinutes: integer(json['duration_minutes']),
-    pausedMinutes: integer(json['paused_minutes']),
-  );
-}
 
 class StudentNotification {
   const StudentNotification({
@@ -910,4 +885,29 @@ class GalleryImage {
   }
 }
 
+class StudySession {
+  const StudySession({
+    required this.id,
+    required this.studentId,
+    required this.startTime,
+    this.endTime,
+    required this.isActive,
+    required this.durationMinutes,
+  });
 
+  final int id;
+  final int studentId;
+  final String startTime;
+  final String? endTime;
+  final bool isActive;
+  final int durationMinutes;
+
+  factory StudySession.fromJson(JsonMap json) => StudySession(
+    id: integer(json['id']),
+    studentId: integer(json['student']),
+    startTime: text(json['start_time']),
+    endTime: optionalText(json['end_time']),
+    isActive: text(json['status']) == 'active',
+    durationMinutes: integer(json['duration_minutes']),
+  );
+}

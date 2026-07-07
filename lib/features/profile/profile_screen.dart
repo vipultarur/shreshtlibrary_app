@@ -37,47 +37,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: Navigator.canPop(context)
-            ? Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: InkWell(
-                  onTap: () => context.pop(),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF6F6F6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.black87, size: 20),
-                  ),
-                ),
-              )
-            : null,
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0, top: 8, bottom: 8),
-            child: InkWell(
-              onTap: () {}, // Action for more
-              child: Container(
-                width: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF6F6F6),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.more_horiz, color: Colors.black87, size: 20),
+      backgroundColor: scaffoldBg,
+      appBar: CommonAppBar(
+        title: 'Profile',
+        rightIcon: Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: InkWell(
+            onTap: () {}, // Action for more
+            child: Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
+              child: Icon(Icons.more_horiz, color: textColor, size: 20),
             ),
           ),
-        ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -106,11 +88,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     icon: Icons.badge_outlined,
                     title: 'Digital ID Card',
                     onTap: () => context.push('/profile/id-card'),
-                  ),
-                  SettingsTile(
-                    icon: Icons.card_giftcard,
-                    title: 'Referrals',
-                    onTap: () => context.push('/profile/referrals'),
                     showDivider: false,
                   ),
                 ],
@@ -125,17 +102,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     onTap: () => context.push('/payments'),
                   ),
                   SettingsTile(
-                    icon: Icons.timer_outlined,
-                    title: 'Study Tracker',
-                    onTap: () => context.push('/study'),
-                  ),
-                  SettingsTile(
                     icon: Icons.notifications_none,
                     title: 'Notifications',
                     trailing: Switch(
                       value: _notificationsEnabled,
                       onChanged: (val) => setState(() => _notificationsEnabled = val),
-                      activeColor: Colors.green,
+                      activeThumbColor: const Color(0xFF917CFF),
                     ),
                     onTap: () => setState(() => _notificationsEnabled = !_notificationsEnabled),
                     showDivider: false,
@@ -143,30 +115,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
 
-              const SectionTitle('More Info'),
-              SectionCard(
-                children: [
-                  SettingsTile(
-                    icon: Icons.local_library_outlined,
-                    title: 'Library Facilities',
-                    onTap: () => context.push('/facilities'),
-                  ),
-                  SettingsTile(
-                    icon: Icons.emoji_events_outlined,
-                    title: 'Achievers',
-                    onTap: () => context.push('/achievers'),
-                    showDivider: false,
-                  ),
-                ],
-              ),
-
-              const SectionTitle('Terms & Condition'),
+              const SectionTitle('Settings'),
               SectionCard(
                 children: [
                   SettingsTile(
                     icon: Icons.logout,
                     title: 'Logout',
                     onTap: () => ref.read(authControllerProvider.notifier).logout(),
+                    iconColor: Colors.redAccent,
+                    textColor: Colors.redAccent,
                     showDivider: false,
                   ),
                 ],
@@ -186,6 +143,13 @@ class ProfileSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dashAsync = ref.watch(dashboardProvider);
     final status = dashAsync.value?.membershipStatus ?? 'Loading...';
+    
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = theme.colorScheme.surface;
+    final textColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
+    final secondaryTextColor = theme.textTheme.bodyMedium?.color ?? (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+    final editBgColor = theme.scaffoldBackgroundColor;
 
     return AsyncPane(
       value: ref.watch(profileProvider),
@@ -194,8 +158,15 @@ class ProfileSummaryCard extends ConsumerWidget {
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF6F6F6),
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -203,7 +174,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                   shape: BoxShape.circle,
                   image: profile.profilePhoto != null && profile.profilePhoto!.isNotEmpty
                       ? DecorationImage(
@@ -223,10 +194,10 @@ class ProfileSummaryCard extends ConsumerWidget {
                   children: [
                     Text(
                       '${profile.firstName} ${profile.lastName}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: textColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -236,7 +207,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                       profile.email.isNotEmpty ? profile.email : 'No email provided',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: secondaryTextColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -253,17 +224,17 @@ class ProfileSummaryCard extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: editBgColor,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.edit_outlined, size: 16, color: Colors.black87),
+                      Icon(Icons.edit_outlined, size: 16, color: textColor),
                       const SizedBox(width: 6),
-                      const Text(
+                      Text(
                         'Edit',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
                       ),
                     ],
                   ),
@@ -282,11 +253,14 @@ class SectionTitle extends StatelessWidget {
   const SectionTitle(this.title, {super.key});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 12, top: 24),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
       ),
     );
   }
@@ -297,10 +271,19 @@ class SectionCard extends StatelessWidget {
   const SectionCard({super.key, required this.children});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F6F6),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: children,
@@ -315,6 +298,8 @@ class SettingsTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool showDivider;
+  final Color? iconColor;
+  final Color? textColor;
 
   const SettingsTile({
     super.key,
@@ -323,10 +308,18 @@ class SettingsTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showDivider = true,
+    this.iconColor,
+    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final defaultTextColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
+    final iconBgColor = theme.scaffoldBackgroundColor;
+    final dividerColor = theme.dividerColor;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -338,34 +331,36 @@ class SettingsTile extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: iconBgColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 20, color: Colors.black87),
+                  child: Icon(icon, size: 20, color: iconColor ?? defaultTextColor),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: textColor ?? defaultTextColor),
                   ),
                 ),
                 if (trailing != null) trailing!
-                else const Icon(Icons.chevron_right, color: Colors.black54),
+                else Icon(Icons.chevron_right, color: isDark ? Colors.white54 : Colors.black54),
               ],
             ),
           ),
           if (showDivider)
             Padding(
               padding: const EdgeInsets.only(left: 60, right: 16),
-              child: Divider(height: 1, color: Colors.grey.shade300),
+              child: Divider(height: 1, color: dividerColor),
             ),
         ],
       ),
     );
   }
 }
+
+
 
 // Sub-screens for Account Navigation
 
@@ -375,12 +370,7 @@ class AccountInfoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Account Information', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      appBar: const CommonAppBar(title: 'Account Information'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: AsyncPane(
@@ -398,12 +388,7 @@ class IdCardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Digital ID Card', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      appBar: const CommonAppBar(title: 'Digital ID Card'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: AsyncPane(

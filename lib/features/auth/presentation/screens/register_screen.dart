@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart'; // keep old showSnack import
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:shreshtlibrary/core/services/providers.dart';
 import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
@@ -38,8 +39,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _verifyingOtp = false;
   bool _otpVerified = false;
   Timer? _resendTimer;
+  Timer? _configPollingTimer;
   int _resendSeconds = 0;
-  bool _requireOtp = true;
+  bool _requireOtp = false;
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
@@ -61,6 +63,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.initState();
     _emailFocus.addListener(_onEmailFocusChange);
     _mobileFocus.addListener(_onMobileFocusChange);
+    _fetchConfig();
+    _configPollingTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchConfig());
+  }
+
+  Future<void> _fetchConfig() async {
+    try {
+      final info = await ref.read(studentApiProvider).libraryInfo();
+      if (mounted && _requireOtp != info.enableWhatsappService) {
+        setState(() {
+          _requireOtp = info.enableWhatsappService;
+          if (!_requireOtp) {
+            _otpSent = false;
+            _verifyingOtp = false;
+            _sendingOtp = false;
+            _otp.clear();
+            _resendTimer?.cancel();
+            _resendSeconds = 0;
+            _clientErrors.remove('otp');
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   void _onEmailFocusChange() {
@@ -106,6 +130,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void dispose() {
     _resendTimer?.cancel();
+    _configPollingTimer?.cancel();
     for (final controller in [
       _firstName, _lastName, _email, _mobile, _otp, _dob, _address, _parentMobile, _password, _confirmPassword,
     ]) {
@@ -352,11 +377,50 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _pickDob() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime(2000),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme: isDark 
+                ? const ColorScheme.dark(
+                    primary: Color(0xFF917CFF),
+                    onPrimary: Colors.white,
+                    surface: Color(0xFF1E1E2C),
+                    onSurface: Colors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: Color(0xFF917CFF),
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: Color(0xFF140C2C),
+                  ),
+            dialogBackgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+            datePickerTheme: DatePickerThemeData(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              headerBackgroundColor: const Color(0xFF917CFF),
+              headerForegroundColor: Colors.white,
+              backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+              dayStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
+              yearStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+              weekdayStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF917CFF),
+                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Outfit'),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (date != null) {
       _dob.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
@@ -397,6 +461,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: _firstName,
                     focusNode: _firstNameFocus,
                     errorText: errorFor('first_name'),
+                    onChanged: (val) {
+                      if (_clientErrors.containsKey('first_name')) {
+                        setState(() => _clientErrors.remove('first_name'));
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -407,6 +476,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: _lastName,
                     focusNode: _lastNameFocus,
                     errorText: errorFor('last_name'),
+                    onChanged: (val) {
+                      if (_clientErrors.containsKey('last_name')) {
+                        setState(() => _clientErrors.remove('last_name'));
+                      }
+                    },
                   ),
                 ),
               ],
@@ -433,16 +507,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _mobile,
               focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
-              suffixIcon: (!_requireOtp || _otpVerified) ? Icons.check_circle : Icons.phone_android,
-              iconColor: (!_requireOtp || _otpVerified) ? Colors.green : null,
-              borderColor: (!_requireOtp || _otpVerified) ? Colors.green : null,
+              suffixIcon: (_requireOtp && _otpVerified) ? Icons.check_circle : Icons.phone_android,
+              iconColor: (_requireOtp && _otpVerified) ? Colors.green : null,
+              borderColor: (_requireOtp && _otpVerified) ? Colors.green : null,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(10),
               ],
               errorText: errorFor('mobile'),
               onChanged: (val) {
-                if (_otpVerified || _otpSent) {
+                if (_requireOtp && (_otpVerified || _otpSent)) {
                   setState(() {
                     _otpVerified = false;
                     _otpSent = false;
@@ -457,7 +531,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 }
               },
             ),
-            if (!_requireOtp || _otpVerified)
+            if (_requireOtp && _otpVerified)
               const Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text('Verified', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
@@ -528,6 +602,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
+                bool hasError = false;
+                FocusNode? firstErrorFocus;
+
+                void addError(String key, String msg, FocusNode fn) {
+                  _clientErrors[key] = msg;
+                  hasError = true;
+                  firstErrorFocus ??= fn;
+                }
+
+                if (_firstName.text.trim().isEmpty) addError('first_name', 'First name is required', _firstNameFocus);
+                if (_lastName.text.trim().isEmpty) addError('last_name', 'Last name is required', _lastNameFocus);
+                if (_email.text.trim().isEmpty) addError('email', 'Email is required', _emailFocus);
+                if (_mobile.text.trim().isEmpty) addError('mobile', 'Mobile number is required', _mobileFocus);
+
+                if (hasError) {
+                  setState(() {});
+                  showSnack(context, 'Please fill all required fields in Step 1');
+                  firstErrorFocus?.requestFocus();
+                  return;
+                }
+
                 if (_requireOtp && !_otpVerified) {
                   showSnack(context, 'Please verify your mobile number first.');
                   return;

@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 
+
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/notifications/widgets/global_overlay_service.dart';
@@ -48,13 +49,24 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
   
   void _listenToNotificationActions() {
     ref.read(notificationServiceProvider).actionStream.listen((action) {
+
+      const shellRoutes = ['/home', '/attendance', '/study', '/leaderboard', '/profile'];
+      
       if (action.startsWith('payload:')) {
         final payload = action.replaceFirst('payload:', '');
         if (payload.startsWith('/')) {
-          ref.read(routerProvider).push(payload);
+          if (shellRoutes.contains(payload)) {
+            ref.read(routerProvider).go(payload);
+          } else {
+            ref.read(routerProvider).push(payload);
+          }
         }
       } else if (action.startsWith('/')) {
-        ref.read(routerProvider).push(action);
+        if (shellRoutes.contains(action)) {
+          ref.read(routerProvider).go(action);
+        } else {
+          ref.read(routerProvider).push(action);
+        }
       }
     });
 

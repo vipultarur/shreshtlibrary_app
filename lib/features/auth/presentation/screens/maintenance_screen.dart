@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:shreshtlibrary/core/theme/app_theme.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 
 class MaintenanceScreen extends ConsumerWidget {
@@ -25,8 +23,8 @@ class MaintenanceScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: isDark 
-                    ? theme.colorScheme.primary.withOpacity(0.1) 
-                    : theme.colorScheme.primary.withOpacity(0.05),
+                    ? theme.colorScheme.primary.withValues(alpha: 0.1) 
+                    : theme.colorScheme.primary.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

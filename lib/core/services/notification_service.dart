@@ -170,8 +170,6 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Timer? _sessionTimer;
-  int _sessionSeconds = 0;
 
   Stream<String> get actionStream => _actionStreamController.stream;
   Stream<RemoteMessage> get foregroundMessageStream =>
@@ -188,13 +186,6 @@ class NotificationService {
     showBadge: true,
   );
 
-  static const AndroidNotificationChannel _sessionChannel =
-      AndroidNotificationChannel(
-    'session_notifications',
-    'Study Session',
-    description: 'Active study session notifications',
-    importance: Importance.low,
-  );
 
   static const AndroidNotificationChannel _defaultChannel =
       AndroidNotificationChannel(
@@ -235,7 +226,7 @@ class NotificationService {
 
       if (androidPlugin != null) {
         await androidPlugin.createNotificationChannel(_adminChannel);
-        await androidPlugin.createNotificationChannel(_sessionChannel);
+
         await androidPlugin.createNotificationChannel(_defaultChannel);
         // Request notification permission (Android 13+)
         final granted = await androidPlugin.requestNotificationsPermission();
@@ -335,51 +326,5 @@ class NotificationService {
     );
   }
 
-  // ── Study Session notification ─────────────────────────────────────────────
-  Future<void> startStudySessionNotification() async {
-    _sessionSeconds = 0;
-    _updateSessionNotification();
-    _sessionTimer?.cancel();
-    _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _sessionSeconds++;
-      if (_sessionSeconds % 60 == 0) _updateSessionNotification();
-    });
-  }
 
-  void stopStudySessionNotification() {
-    _sessionTimer?.cancel();
-    flutterLocalNotificationsPlugin.cancel(id: 100);
-  }
-
-  Future<void> _updateSessionNotification() async {
-    final int hours = _sessionSeconds ~/ 3600;
-    final int minutes = (_sessionSeconds % 3600) ~/ 60;
-    final String timeString =
-        '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-
-    await flutterLocalNotificationsPlugin.show(
-      id: 100,
-      title: 'Study Session Active',
-      body: 'Time elapsed: $timeString',
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'session_notifications',
-          'Study Session',
-          channelDescription: 'Active study session notifications',
-          importance: Importance.low,
-          priority: Priority.low,
-          ongoing: true,
-          autoCancel: false,
-          actions: <AndroidNotificationAction>[
-            AndroidNotificationAction(
-              'stop_session',
-              'Stop Session',
-              cancelNotification: false,
-            ),
-          ],
-        ),
-      ),
-      payload: 'study_session',
-    );
-  }
 }

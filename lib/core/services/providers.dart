@@ -6,6 +6,7 @@ import 'package:shreshtlibrary/core/network/token_store.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
+import 'package:shreshtlibrary/core/services/study_session_service.dart';
 import 'student_api.dart';
 
 final tokenStoreProvider = Provider<TokenStore>(
@@ -26,6 +27,10 @@ final studentApiProvider = Provider<StudentApi>((ref) {
     ref.watch(apiClientProvider),
     ref.watch(localCacheServiceProvider),
   );
+});
+
+final studySessionServiceProvider = Provider<StudySessionService>((ref) {
+  return StudySessionService();
 });
 
 final foregroundMessageStreamProvider = StreamProvider((ref) {

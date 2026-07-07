@@ -140,11 +140,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
                 clipBehavior: Clip.hardEdge,
                 child: logoUrl != null 
                     ? Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (c, e, s) => Image.asset('assets/images/logo.png', fit: BoxFit.cover))
@@ -162,9 +163,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           Container(
-            decoration: const BoxDecoration(
+            width: 45,
+            height: 45,
+            decoration: BoxDecoration(
               color: Colors.white,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(20),
             ),
             child: IconButton(
               icon: const Icon(Icons.notifications_none, color: Color(0xFF140C2C)),

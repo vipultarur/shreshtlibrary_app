@@ -255,16 +255,7 @@ class StudentApi {
     return _client.unwrapList(response, SeatAssignment.fromJson);
   }
 
-  Future<StudySession?> currentStudySession() async {
-    final response = await _client.get<dynamic>('/study/session/current');
-    return _client.unwrap(
-      response,
-      (data) {
-        if (data == null || (data is Map && data.isEmpty)) return null;
-        return StudySession.fromJson(data as JsonMap);
-      },
-    );
-  }
+
 
   Future<StudySession> startStudySession() async {
     final response = await _client.post<dynamic>('/study/session/start');
@@ -274,22 +265,7 @@ class StudentApi {
     );
   }
 
-  Future<StudySession> updateStudySessionStatus(String status, {int? durationMinutes, int? pausedMinutes}) async {
-    final data = <String, dynamic>{'status': status};
-    if (durationMinutes != null) data['duration_minutes'] = durationMinutes;
-    if (pausedMinutes != null) data['paused_minutes'] = pausedMinutes;
-
-    final response = await _client.post<dynamic>(
-      '/study/session/update',
-      data: data,
-    );
-    return _client.unwrap(
-      response,
-      (data) => StudySession.fromJson(data as JsonMap? ?? const {}),
-    );
-  }
-
-  Future<StudySession> endStudySession(int durationMinutes, int pausedMinutes) async {
+  Future<void> stopStudySession(int durationMinutes, {int pausedMinutes = 0}) async {
     final response = await _client.post<dynamic>(
       '/study/session/end',
       data: {
@@ -297,14 +273,22 @@ class StudentApi {
         'paused_minutes': pausedMinutes,
       },
     );
-    return _client.unwrap(
-      response,
-      (data) => StudySession.fromJson(data as JsonMap? ?? const {}),
-    );
+    _client.unwrap(response, (_) => null);
+  }
+
+  Future<StudySession?> getCurrentSession() async {
+    final response = await _client.get<dynamic>('/study/session/current');
+    return _client.unwrap(response, (data) {
+      if (data == null || (data is Map && data.isEmpty)) return null;
+      return StudySession.fromJson(data as JsonMap);
+    });
   }
 
   Future<List<StudySession>> studySessionHistory() async {
-    final response = await _client.get<dynamic>('/study/session/history');
+    final response = await _client.get<dynamic>(
+      '/study/session/history',
+      query: {'page_size': 1000},
+    );
     return _client.unwrapList(response, StudySession.fromJson);
   }
 

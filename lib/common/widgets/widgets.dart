@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // for libraryInfoProvider
+
+import 'common_app_bar.dart';
+export 'common_app_bar.dart';
 
 class PageScaffold extends ConsumerWidget {
   const PageScaffold({
@@ -24,47 +26,14 @@ class PageScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final logoUrl = ref.watch(libraryInfoProvider).value?.logoSquare;
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              clipBehavior: Clip.hardEdge,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-              ),
-              child: logoUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: logoUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: theme.textTheme.displayMedium?.copyWith(
-                fontSize: 20,
-                color: theme.appBarTheme.foregroundColor,
-              ),
-            ),
-          ],
-        ),
-        actions: actions,
-        elevation: 0,
-        backgroundColor: theme.appBarTheme.backgroundColor,
+      appBar: CommonAppBar(
+        title: title,
+        rightIcon: actions != null && actions!.isNotEmpty
+            ? Row(mainAxisSize: MainAxisSize.min, children: actions!)
+            : null,
       ),
       body: scrollable
           ? RefreshIndicator(

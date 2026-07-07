@@ -1,24 +1,13 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
-import 'package:sensors_plus/sensors_plus.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import 'package:shreshtlibrary/core/models/models.dart';
-import 'package:shreshtlibrary/core/services/providers.dart';
-import 'package:shreshtlibrary/core/services/notification_service.dart';
-import 'package:shreshtlibrary/core/services/student_api.dart';
+import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
+import 'package:shreshtlibrary/features/attendance/attendance_screen.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
-
-
-final studyHistoryProvider = FutureProvider.autoDispose<List<StudySession>>((ref) {
-  return ref.watch(studentApiProvider).studySessionHistory();
-});
-
 
 class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});
@@ -29,189 +18,25 @@ class StudyScreen extends ConsumerStatefulWidget {
 
 class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  StudySession? _session;
-  bool _busy = false;
-  String _status = 'none'; // loading, none, starting, active, paused
-  
-  StreamSubscription? _accelSub;
-  Timer? _ticker;
-  StreamSubscription? _actionSub;
-  
-  DateTime? _lastMotionTime;
-  DateTime? _lastTickTime;
-  
-  int _effectiveSeconds = 0;
-  int _pausedSeconds = 0;
-  int _accumulatedMilliseconds = 0;
-  bool _isUpdatingBackend = false;
-
   DateTime _selectedHistoryDate = DateTime.now();
-
-  late final NotificationService _notificationService;
-  late final StudentApi _studentApi;
+  String _chartViewMode = 'Week'; // 'Week' or 'Month'
+  final PageController _pageController = PageController(initialPage: 10000);
+  int _currentPageOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _notificationService = ref.read(notificationServiceProvider);
-    _studentApi = ref.read(studentApiProvider);
-
-    _actionSub = _notificationService.actionStream.listen((action) {
-      if (action == 'stop_session') {
-        _endSession();
-      }
-    });
   }
+
+
 
   @override
   void dispose() {
+    _pageController.dispose();
     _tabController.dispose();
-    _accelSub?.cancel();
-    _ticker?.cancel();
-    _actionSub?.cancel();
-    _notificationService.stopStudySessionNotification();
-    if (_session != null && (_status == 'active' || _status == 'paused')) {
-      final durMin = _effectiveSeconds ~/ 60;
-      final pauMin = _pausedSeconds ~/ 60;
-      _studentApi.endStudySession(durMin, pauMin).catchError((_) => _session!);
-    }
     super.dispose();
   }
-
-  void _startTracking() {
-    _accelSub?.cancel();
-    _ticker?.cancel();
-
-    _lastMotionTime = DateTime.now();
-    _lastTickTime = DateTime.now();
-    _accumulatedMilliseconds = 0;
-
-    _accelSub = userAccelerometerEventStream().listen((event) {
-      final magnitude = sqrt(pow(event.x, 2) + pow(event.y, 2) + pow(event.z, 2));
-      if (magnitude > 1.5) {
-        _lastMotionTime = DateTime.now();
-      }
-    });
-
-    _ticker = Timer.periodic(const Duration(seconds: 1), _onTick);
-  }
-
-  void _onTick(Timer timer) {
-    if (_session == null || _status == 'none' || _busy) return;
-
-    final now = DateTime.now();
-    final deltaMs = _lastTickTime != null ? now.difference(_lastTickTime!).inMilliseconds : 1000;
-    _lastTickTime = now;
-    
-    _accumulatedMilliseconds += deltaMs;
-    int deltaSeconds = _accumulatedMilliseconds ~/ 1000;
-    _accumulatedMilliseconds %= 1000;
-    
-    final secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
-
-    setState(() {
-      if (_status == 'active') {
-        _effectiveSeconds += deltaSeconds;
-        if (secondsSinceMotion < 2 && !_isUpdatingBackend) {
-          _updateBackendStatus('paused');
-          _status = 'paused';
-        }
-      } else if (_status == 'paused') {
-        _pausedSeconds += deltaSeconds;
-        if (secondsSinceMotion >= 60 && !_isUpdatingBackend) {
-          _updateBackendStatus('active');
-          _status = 'active';
-          _notificationService.startStudySessionNotification();
-        }
-      }
-    });
-  }
-
-  Future<void> _updateBackendStatus(String newStatus) async {
-    if (_busy || _isUpdatingBackend) return;
-    _isUpdatingBackend = true;
-    try {
-      await ref.read(studentApiProvider).updateStudySessionStatus(
-        newStatus,
-        durationMinutes: _effectiveSeconds ~/ 60,
-        pausedMinutes: _pausedSeconds ~/ 60,
-      );
-    } catch (_) {
-    } finally {
-      if (mounted) {
-        _isUpdatingBackend = false;
-      }
-    }
-  }
-
-  Future<void> _startNewSession() async {
-    setState(() => _busy = true);
-    try {
-      final logs = await ref.read(studentApiProvider).attendanceLogs();
-      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final todayLog = logs.firstWhere(
-        (l) => l.date == todayStr, 
-        orElse: () => const AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false)
-      );
-      
-      if (todayLog.timeOut != null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot start a new session after checking out.')));
-        return;
-      }
-
-      final session = await ref.read(studentApiProvider).startStudySession();
-      if (!mounted) return;
-      setState(() {
-        _session = session;
-        _status = 'active';
-        _effectiveSeconds = session.durationMinutes * 60;
-        _pausedSeconds = session.pausedMinutes * 60;
-      });
-      _notificationService.startStudySessionNotification();
-      _startTracking();
-      ref.invalidate(studyHistoryProvider);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start session: $e')));
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _endSession() async {
-    setState(() => _busy = true);
-    try {
-      _accelSub?.cancel();
-      _ticker?.cancel();
-      _notificationService.stopStudySessionNotification();
-      
-      final durMin = _effectiveSeconds ~/ 60;
-      final pauMin = _pausedSeconds ~/ 60;
-      
-      await ref.read(studentApiProvider).endStudySession(durMin, pauMin);
-      
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Study session completed!')));
-      setState(() {
-        _session = null;
-        _status = 'none';
-        _effectiveSeconds = 0;
-        _pausedSeconds = 0;
-      });
-      ref.invalidate(studyHistoryProvider);
-
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to end session.')));
-      _startTracking();
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
 
   String _formatTime(int seconds) {
     final m = seconds ~/ 60;
@@ -247,7 +72,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: TabBar(
@@ -257,6 +82,8 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                     borderRadius: BorderRadius.circular(30),
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
+                  splashFactory: NoSplash.splashFactory,
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey.shade600,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold),
@@ -286,7 +113,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                   onRefresh: _onRefresh,
                   child: _buildHistoryTab(),
                 ),
-
               ],
             ),
           ),
@@ -320,23 +146,449 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       children: [
         const SizedBox(height: 16),
         _buildActiveSessionView(),
+        const SizedBox(height: 16),
+        _buildStudyChart(),
       ],
+    );
+  }
+
+  String _getDateRangeLabel() {
+    final now = DateTime.now();
+    if (_chartViewMode == 'Week') {
+      final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+      final startOfWeek = monday.add(Duration(days: _currentPageOffset * 7));
+      final endOfWeek = startOfWeek.add(const Duration(days: 6));
+      return '${DateFormat('d MMM').format(startOfWeek)} – ${DateFormat('d MMM yyyy').format(endOfWeek)}';
+    } else {
+      final targetMonth = DateTime(now.year, now.month + _currentPageOffset, 1);
+      return DateFormat('MMMM yyyy').format(targetMonth);
+    }
+  }
+
+  Widget _buildStudyChart() {
+    final historyAsync = ref.watch(studyHistoryProvider);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Analytics',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF140C2C),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _chartViewMode,
+                    icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF140C2C), size: 20),
+                    isDense: true,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF140C2C),
+                    ),
+                    items: ['Week', 'Month'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _chartViewMode = newValue;
+                          _currentPageOffset = 0;
+                        });
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (_pageController.hasClients) {
+                            _pageController.jumpToPage(10000);
+                          }
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          historyAsync.when(
+            data: (history) {
+              return SizedBox(
+                height: 400, // Adjusted height to fit chart + summary cards
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPageOffset = index - 10000;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return _buildAnalyticsPage(history, index - 10000, _chartViewMode);
+                  },
+                ),
+              );
+            },
+            loading: () => const SizedBox(height: 400, child: Center(child: CircularProgressIndicator(color: Color(0xFF8B7DF1)))),
+            error: (_, __) => const SizedBox(height: 400, child: Center(child: Text('Failed to load chart'))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsPage(List<StudySession> history, int offset, String mode) {
+    final now = DateTime.now();
+    
+    List<double> totals;
+    DateTime startOfRange;
+    int numBars;
+    String dateRangeLabel;
+    
+    if (mode == 'Week') {
+      final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+      startOfRange = monday.add(Duration(days: offset * 7));
+      final endOfWeek = startOfRange.add(const Duration(days: 6));
+      dateRangeLabel = '${DateFormat('d MMM').format(startOfRange)} – ${DateFormat('d MMM yyyy').format(endOfWeek)}';
+      
+      numBars = 7;
+      totals = List.filled(numBars, 0.0);
+      
+      for (final session in history) {
+        try {
+          final start = DateTime.parse(session.startTime).toLocal();
+          final sessionDate = DateTime(start.year, start.month, start.day);
+          final diff = sessionDate.difference(startOfRange).inDays;
+          
+          if (diff >= 0 && diff < numBars) {
+            totals[diff] += session.durationMinutes.toDouble();
+          }
+        } catch (_) {}
+      }
+    } else {
+      final targetMonth = DateTime(now.year, now.month + offset, 1);
+      final nextMonth = DateTime(now.year, now.month + offset + 1, 1);
+      dateRangeLabel = DateFormat('MMMM yyyy').format(targetMonth);
+      
+      final daysInMonth = nextMonth.difference(targetMonth).inDays;
+      numBars = (daysInMonth / 7.0).ceil();
+      startOfRange = targetMonth;
+      totals = List.filled(numBars, 0.0);
+      
+      for (final session in history) {
+        try {
+          final start = DateTime.parse(session.startTime).toLocal();
+          if (start.year == targetMonth.year && start.month == targetMonth.month) {
+            int weekIndex = (start.day - 1) ~/ 7;
+            if (weekIndex >= 0 && weekIndex < numBars) {
+              totals[weekIndex] += session.durationMinutes.toDouble();
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    double totalMinutes = totals.fold(0.0, (sum, val) => sum + val);
+    double avgMinutes = numBars > 0 ? totalMinutes / numBars : 0.0;
+    
+    double maxDuration = totals.isEmpty ? 0 : totals.reduce((a, b) => a > b ? a : b);
+    int mostProductiveIndex = totals.indexOf(maxDuration);
+    String mostProductiveLabel = '--';
+    
+    if (maxDuration > 0) {
+      if (mode == 'Week') {
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        if (mostProductiveIndex >= 0 && mostProductiveIndex < days.length) {
+          mostProductiveLabel = days[mostProductiveIndex];
+        }
+      } else {
+        mostProductiveLabel = 'Week ${mostProductiveIndex + 1}';
+      }
+    }
+    
+    if (maxDuration < 60) maxDuration = 60; // minimum 1 hr scale
+
+    final totalH = totalMinutes ~/ 60;
+    final totalM = (totalMinutes % 60).toInt();
+    
+    final avgH = avgMinutes ~/ 60;
+    final avgM = (avgMinutes % 60).toInt();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Text(
+                  dateRangeLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (totalMinutes == 0)
+                const SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Text(
+                      'No data available',
+                      style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 160,
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: maxDuration * 1.2,
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipColor: (_) => const Color(0xFF140C2C),
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            String label;
+                            if (mode == 'Week') {
+                              final date = startOfRange.add(Duration(days: group.x));
+                              label = DateFormat('MMM dd').format(date);
+                            } else {
+                              label = 'Week ${group.x + 1}';
+                            }
+                            return BarTooltipItem(
+                              '$label\n${rod.toY.toInt()} min',
+                              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            );
+                          },
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        show: true,
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final idx = value.toInt();
+                              if (idx < 0 || idx >= numBars) return const SizedBox.shrink();
+                              
+                              String label = '';
+                              bool isCurrent = false;
+                              
+                              if (mode == 'Week') {
+                                const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                                label = days[idx];
+                                final date = startOfRange.add(Duration(days: idx));
+                                isCurrent = date.year == now.year && date.month == now.month && date.day == now.day;
+                              } else {
+                                label = 'W${idx + 1}';
+                                final targetMonth = DateTime(now.year, now.month + offset, 1);
+                                if (targetMonth.year == now.year && targetMonth.month == now.month) {
+                                   int currentWeekIndex = (now.day - 1) ~/ 7;
+                                   isCurrent = idx == currentWeekIndex;
+                                }
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isCurrent ? const Color(0xFF8B7DF1) : Colors.grey,
+                                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: maxDuration / 4,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: Colors.grey.withValues(alpha: 0.2), 
+                          strokeWidth: 1, 
+                          dashArray: [5, 5],
+                        ),
+                      ),
+                      barGroups: List.generate(numBars, (index) {
+                         bool isCurrent = false;
+                         if (mode == 'Week') {
+                             final date = startOfRange.add(Duration(days: index));
+                             isCurrent = date.year == now.year && date.month == now.month && date.day == now.day;
+                         } else {
+                             final targetMonth = DateTime(now.year, now.month + offset, 1);
+                             if (targetMonth.year == now.year && targetMonth.month == now.month) {
+                                 int currentWeekIndex = (now.day - 1) ~/ 7;
+                                 isCurrent = index == currentWeekIndex;
+                             }
+                         }
+                        
+                        return BarChartGroupData(
+                          x: index,
+                          barRods: [
+                            BarChartRodData(
+                              toY: totals[index],
+                              color: isCurrent ? const Color(0xFF8B7DF1) : const Color(0xFFCBB9FF),
+                              width: mode == 'Month' ? 24 : 16,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSummaryCard(
+                title: 'Total Time',
+                value: '${totalH}h ${totalM}m',
+                icon: Icons.timer,
+                color: const Color(0xFF8B7DF1),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSummaryCard(
+                title: mode == 'Week' ? 'Avg Daily' : 'Avg Weekly',
+                value: '${avgH}h ${avgM}m',
+                icon: Icons.show_chart,
+                color: Colors.orange,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildSummaryCard(
+          title: 'Most Productive',
+          value: mostProductiveLabel,
+          icon: Icons.star,
+          color: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard({required String title, required String value, required IconData icon, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF140C2C),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
 
   Widget _buildActiveSessionView() {
-    if (_status == 'loading') {
+    final state = ref.watch(studySessionProvider);
+    final notifier = ref.read(studySessionProvider.notifier);
+    
+    final logsAsync = ref.watch(attendanceLogsProvider);
+    if (logsAsync.isLoading) {
       return const SizedBox(
         height: 300,
         child: Center(child: CircularProgressIndicator(color: Color(0xFF8B7DF1))),
       );
     }
+    
+    final logsOpt = logsAsync.value;
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayLog = logsOpt?.firstWhere(
+        (l) => l.date == todayStr,
+        orElse: () => AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false));
+        
+    final isCheckedIn = todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
+    final isCheckedOut = todayLog != null && todayLog.timeOut != null;
+    final canStartSession = isCheckedIn && !isCheckedOut;
 
-    if (_status == 'none') {
+    if (!canStartSession && state.status != StudySessionStatus.active && state.status != StudySessionStatus.starting) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
@@ -351,18 +603,70 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1EFFC),
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1EFFC),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.timer, size: 64, color: Color(0xFF8B7DF1)),
+              child: const Icon(Icons.location_off, size: 48, color: Colors.grey),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            const Text(
+              'Not Checked In',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF140C2C),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Please check in at the library to start an anti-distraction study session.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, height: 1.5),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state.status == StudySessionStatus.starting) {
+      return const SizedBox(
+        height: 300,
+        child: Center(child: CircularProgressIndicator(color: Color(0xFF8B7DF1))),
+      );
+    }
+
+    if (state.status == StudySessionStatus.idle || state.status == StudySessionStatus.error) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1EFFC),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.timer, size: 48, color: Color(0xFF8B7DF1)),
+            ),
+            const SizedBox(height: 12),
             const Text(
               'Ready to Focus?',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFF140C2C),
               ),
@@ -373,11 +677,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey, height: 1.5),
             ),
-            const SizedBox(height: 32),
+            if (state.errorMessage != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                state.errorMessage!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _busy ? null : _startNewSession,
+                onPressed: () async {
+                  await notifier.startSession();
+                  if (context.mounted) {
+                    ref.invalidate(studyHistoryProvider);
+                  }
+                },
                 icon: const Icon(Icons.play_arrow, color: Colors.white),
                 label: const Text('Start New Session', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
@@ -393,29 +710,25 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     }
 
     Color primaryColor = const Color(0xFF8B7DF1);
-    bool isPaused = _status == 'paused' || _status == 'starting';
-
-    final now = DateTime.now();
-    final int secondsSinceMotion = _lastMotionTime != null ? now.difference(_lastMotionTime!).inSeconds : 60;
-    final int reverseCountdown = max(0, 60 - secondsSinceMotion);
+    bool isPaused = state.isPaused;
 
     double progressValue;
     Color progressColor;
     String centerText;
 
     if (!isPaused) {
-      progressValue = (_effectiveSeconds % 3600) / 3600.0;
+      progressValue = (state.elapsed.inSeconds % 3600) / 3600.0;
       progressColor = primaryColor;
-      centerText = _formatTime(_effectiveSeconds);
+      centerText = _formatTime(state.elapsed.inSeconds);
     } else {
-      progressValue = reverseCountdown / 60.0;
-      progressColor = Colors.orange; // Amber/Yellow equivalent
-      centerText = _formatTime(reverseCountdown);
+      progressValue = state.verificationRemaining / 60.0;
+      progressColor = Colors.orange; 
+      centerText = _formatTime(state.verificationRemaining);
     }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -429,10 +742,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       ),
       child: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           SizedBox(
-            width: 240,
-            height: 240,
+            width: 180,
+            height: 180,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -451,7 +764,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                         centerText,
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
-                          fontSize: 56,
+                          fontSize: 44,
                           letterSpacing: -1,
                           color: Color(0xFF140C2C),
                         ),
@@ -465,7 +778,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            _status == 'starting' ? 'STARTING' : 'PAUSED',
+                            'PAUSED',
                             style: TextStyle(
                               color: progressColor,
                               fontWeight: FontWeight.bold,
@@ -488,21 +801,29 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
               const Icon(Icons.pause_circle_outline, color: Colors.grey, size: 16),
               const SizedBox(width: 8),
               Text(
-                'Total Paused: ${_formatTime(_pausedSeconds)}',
+                'Total Paused: ${_formatTime(state.pausedSeconds)}',
                 style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildControlButton(
-                icon: Icons.stop,
-                label: 'Quit',
-                color: Colors.redAccent,
-                onTap: _busy ? null : _endSession,
-              ),
+              if (state.status == StudySessionStatus.stopping)
+                const CircularProgressIndicator()
+              else
+                _buildControlButton(
+                  icon: Icons.stop,
+                  label: 'Quit',
+                  color: Colors.redAccent,
+                  onTap: () async {
+                    await notifier.stopSession();
+                    if (context.mounted) {
+                      ref.invalidate(studyHistoryProvider);
+                    }
+                  },
+                ),
             ],
           ),
         ],
@@ -545,49 +866,49 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
             child: EasyDateTimeLine(
               initialDate: _selectedHistoryDate,
               onDateChange: (selectedDate) {
-              setState(() {
-                _selectedHistoryDate = selectedDate;
-              });
-            },
-            headerProps: const EasyHeaderProps(
-              monthPickerType: MonthPickerType.switcher,
-              dateFormatter: DateFormatter.fullDateDayAsStrMY(),
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              monthStyle: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            dayProps: EasyDayProps(
-              height: 70,
-              width: 60,
-              dayStructure: DayStructure.dayNumDayStr,
-              activeDayStyle: const DayStyle(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  color: Color(0xFF140C2C),
-                ),
-                dayNumStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                dayStrStyle: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                setState(() {
+                  _selectedHistoryDate = selectedDate;
+                });
+              },
+              headerProps: const EasyHeaderProps(
+                monthPickerType: MonthPickerType.switcher,
+                dateFormatter: DateFormatter.fullDateDayAsStrMY(),
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                monthStyle: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              inactiveDayStyle: DayStyle(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(30)),
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
+              dayProps: EasyDayProps(
+                height: 70,
+                width: 60,
+                dayStructure: DayStructure.dayNumDayStr,
+                activeDayStyle: const DayStyle(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                    color: Color(0xFF140C2C),
+                  ),
+                  dayNumStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  dayStrStyle: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                dayNumStyle: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
-                dayStrStyle: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-              todayStyle: DayStyle(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  color: Colors.white,
-                  border: Border.all(color: Color(0xFF140C2C), width: 1.5),
+                inactiveDayStyle: DayStyle(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  dayNumStyle: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
+                  dayStrStyle: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
-                dayNumStyle: TextStyle(color: Color(0xFF140C2C), fontSize: 18, fontWeight: FontWeight.bold),
-                dayStrStyle: TextStyle(color: Color(0xFF140C2C), fontSize: 11, fontWeight: FontWeight.bold),
+                todayStyle: DayStyle(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(30)),
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFF140C2C), width: 1.5),
+                  ),
+                  dayNumStyle: const TextStyle(color: Color(0xFF140C2C), fontSize: 18, fontWeight: FontWeight.bold),
+                  dayStrStyle: const TextStyle(color: Color(0xFF140C2C), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
-        ),
         ),
         Expanded(
           child: historyAsync.when(
@@ -607,17 +928,31 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 return ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Center(child: Text('Total sessions in memory: ${history.length}', style: const TextStyle(color: Colors.grey, fontSize: 12))),
+                    ),
                     const SizedBox(height: 50),
                     _buildEmptyState('No Study Sessions on this date', Icons.history_toggle_off),
                   ],
                 );
               }
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: filteredHistory.length,
-                separatorBuilder: (c, i) => const SizedBox(height: 12),
-                itemBuilder: (c, i) => _buildHistoryCard(filteredHistory[i]),
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                    child: Center(child: Text('Total sessions in memory: ${history.length}', style: const TextStyle(color: Colors.grey, fontSize: 12))),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: filteredHistory.length,
+                      separatorBuilder: (c, i) => const SizedBox(height: 12),
+                      itemBuilder: (c, i) => _buildHistoryCard(filteredHistory[i]),
+                    ),
+                  ),
+                ],
               );
             },
             loading: () => ListView(children: const [_SkeletonBox(height: 100)]),
@@ -630,7 +965,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
 
   Widget _buildHistoryCard(StudySession session) {
     DateTime? startTime;
-    try { startTime = DateTime.parse(session.startTime); } catch (_) {}
+    try { startTime = DateTime.parse(session.startTime).toLocal(); } catch (_) {}
     
     final dateStr = startTime != null ? DateFormat('MMM dd, yyyy').format(startTime) : 'Unknown Date';
     final timeStr = startTime != null ? DateFormat('hh:mm a').format(startTime) : '--:--';
@@ -674,7 +1009,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       ),
     );
   }
-
 
   Widget _buildEmptyState(String title, IconData icon) {
     return Padding(

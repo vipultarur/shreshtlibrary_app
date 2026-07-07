@@ -8,16 +8,13 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
+import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
 
 final attendanceLogsProvider =
     FutureProvider.autoDispose<List<AttendanceRecord>>((ref) {
   return ref.watch(studentApiProvider).attendanceLogs();
 });
 
-final attendanceStudyHistoryProvider =
-    FutureProvider.autoDispose<List<StudySession>>((ref) {
-  return ref.watch(studentApiProvider).studySessionHistory();
-});
 
 class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({super.key});
@@ -29,116 +26,100 @@ class AttendanceScreen extends ConsumerStatefulWidget {
 class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
+  bool _isCheckingOut = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1EFFC),
+      appBar: CommonAppBar(
+        title: 'Attendance',
+        rightIcon: Consumer(
+          builder: (context, ref, _) {
+            final dash = ref.watch(dashboardProvider).value;
+            final isRestricted = dash?.restrictedFeatures.contains('attendance') ?? false;
+            final showScan = !isRestricted && (dash?.allowQrScan ?? false);
+            
+            final logsOpt = ref.watch(attendanceLogsProvider).value;
+            final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+            final todayLog = logsOpt?.firstWhere(
+                (l) => l.date == todayStr,
+                orElse: () => AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false));
+                
+            final isCheckedIn = todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
+            final isCheckedOut = todayLog != null && todayLog.timeOut != null;
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isCheckedIn && !isCheckedOut)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF140C2C),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                      onPressed: _isCheckingOut ? null : () async {
+                        setState(() { _isCheckingOut = true; });
+                        try {
+                          await ref.read(studentApiProvider).checkoutAttendance();
+                          ref.invalidate(attendanceLogsProvider);
+                          
+                          // Stop active study session if running
+                          final studyNotifier = ref.read(studySessionProvider.notifier);
+                          final studyState = ref.read(studySessionProvider);
+                          if (studyState.status == StudySessionStatus.active || studyState.status == StudySessionStatus.starting) {
+                            await studyNotifier.stopSession();
+                          }
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Checked out successfully')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() { _isCheckingOut = false; });
+                          }
+                        }
+                      },
+                      icon: _isCheckingOut 
+                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Icon(Icons.logout, size: 18),
+                      label: Text(_isCheckingOut ? 'Wait...' : 'Check Out', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                if (showScan)
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF140C2C)),
+                      onPressed: () => context.push('/attendance/scan'),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
       body: Column(
         children: [
-          Container(
-            color: const Color(0xFFCBB9FF),
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Color(0xFF140C2C)),
-                          onPressed: () => context.pop(),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Attendance',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF140C2C),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final dash = ref.watch(dashboardProvider).value;
-                      final isRestricted = dash?.restrictedFeatures.contains('attendance') ?? false;
-                      final showScan = !isRestricted && (dash?.allowQrScan ?? false);
-                      
-                      final logsOpt = ref.watch(attendanceLogsProvider).value;
-                      final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                      final todayLog = logsOpt?.firstWhere(
-                          (l) => l.date == todayStr,
-                          orElse: () => AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false));
-                          
-                      final isCheckedIn = todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
-                      final isCheckedOut = todayLog != null && todayLog.timeOut != null;
-
-                      return Row(
-                        children: [
-                          if (isCheckedIn && !isCheckedOut)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF140C2C),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                ),
-                                onPressed: () async {
-                                  try {
-                                    await ref.read(studentApiProvider).checkoutAttendance();
-                                    ref.invalidate(attendanceLogsProvider);
-                                    ref.invalidate(attendanceStudyHistoryProvider);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Checked out successfully')),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(e.toString())),
-                                      );
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.logout, size: 18),
-                                label: const Text('Check Out', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                            ),
-                          if (showScan)
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF140C2C)),
-                                onPressed: () => context.push('/attendance/scan'),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(attendanceLogsProvider);
-                ref.invalidate(attendanceStudyHistoryProvider);
+
               },
               child: AsyncPane(
                 value: ref.watch(attendanceLogsProvider),
@@ -156,32 +137,29 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   final daysAbsent = currentMonthLogs.where((r) => !r.isPresent && r.method != 'PENDING').length;
                   final totalLateMarks = currentMonthLogs.where((r) => r.lateMark).length;
 
+                  final studySessions = ref.watch(studyHistoryProvider).value ?? [];
+                  int monthlyStudyMinutes = 0;
+                  int dailyStudyMinutes = 0;
 
-
-
-                  final studyHistory = ref.watch(attendanceStudyHistoryProvider).value ?? [];
-                  
-                  int dailyStudyMins = 0;
-                  int monthlyStudyMins = 0;
-                  final selectedDateStr = DateFormat('yyyy-MM-dd').format(_selectedDay ?? DateTime.now());
-                  
-                  for (final session in studyHistory) {
+                  for (final session in studySessions) {
                     try {
-                      final sessionDate = DateTime.parse(session.startTime);
-                      final sessionDateStr = DateFormat('yyyy-MM-dd').format(sessionDate);
-                      
-                      if (sessionDateStr == selectedDateStr) {
-                        dailyStudyMins += session.durationMinutes;
+                      final start = DateTime.parse(session.startTime).toLocal();
+                      if (start.month == _focusedDay.month && start.year == _focusedDay.year) {
+                        monthlyStudyMinutes += session.durationMinutes;
                       }
-                      
-                      if (sessionDate.month == _focusedDay.month && sessionDate.year == _focusedDay.year) {
-                        monthlyStudyMins += session.durationMinutes;
+                      if (_selectedDay != null &&
+                          start.year == _selectedDay!.year &&
+                          start.month == _selectedDay!.month &&
+                          start.day == _selectedDay!.day) {
+                        dailyStudyMinutes += session.durationMinutes;
                       }
                     } catch (_) {}
                   }
                   
-                  final dailyStudyHours = '${dailyStudyMins ~/ 60}h ${dailyStudyMins % 60}m';
-                  final monthlyStudyHours = '${monthlyStudyMins ~/ 60}h ${monthlyStudyMins % 60}m';
+                  final monthlyStudyH = monthlyStudyMinutes ~/ 60;
+                  final monthlyStudyM = monthlyStudyMinutes % 60;
+                  final dailyStudyH = dailyStudyMinutes ~/ 60;
+                  final dailyStudyM = dailyStudyMinutes % 60;
 
                   // Build a map for quick lookup
                   final logMap = <String, AttendanceRecord>{};
@@ -220,11 +198,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildSelectedDayInfo(selectedLog, dailyStudyHours),
+                          child: _buildSelectedDayInfo(selectedLog, dailyStudyH, dailyStudyM),
                         ),
-                        const SizedBox(height: 8),
-                        _buildMonthlyHoursCard(monthlyStudyHours),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildMonthlyStudyCard(monthlyStudyH, monthlyStudyM),
+                        ),
+                        const SizedBox(height: 12),
                         _buildStatsGrid(daysPresent, daysAbsent, totalLateMarks),
                       ],
                     ),
@@ -336,52 +317,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     );
   }
 
-  Widget _buildMonthlyHoursCard(String monthlyHours) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFCBB9FF).withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.timer, color: Color(0xFF140C2C), size: 24),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  monthlyHours,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF140C2C),
-                  ),
-                ),
-                const Text(
-                  'Monthly Study Hours',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF140C2C),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildStatsGrid(int daysPresent, int daysAbsent, int lateMarks) {
     return Padding(
@@ -430,7 +366,55 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     );
   }
 
-  Widget _buildSelectedDayInfo(AttendanceRecord? log, String dailyStudyHours) {
+  Widget _buildMonthlyStudyCard(int hours, int minutes) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1EFFC),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.timer,
+              color: Color(0xFF140C2C),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${hours}h ${minutes}m',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF140C2C),
+                ),
+              ),
+              const Text(
+                'Monthly Study Hours',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF140C2C),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectedDayInfo(AttendanceRecord? log, int studyH, int studyM) {
     String checkIn = '--:--';
     String checkOut = '--:--';
 
@@ -478,41 +462,41 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFCBB9FF).withValues(alpha: 0.3),
+                color: const Color(0xFFF1EFFC),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        dailyStudyHours,
-                        style: const TextStyle(
-                          fontSize: 16, 
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF140C2C),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    '${studyH}h ${studyM}m',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF140C2C),
+                    ),
                   ),
-                  const Text('TodayStudy', style: TextStyle(color: Color(0xFF140C2C), fontSize: 10, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Today Study',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF140C2C),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             flex: 3,
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       border: Border.all(color: const Color(0xFFF1EFFC), width: 1.5),
                       borderRadius: BorderRadius.circular(16),
@@ -527,14 +511,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                               style: TextStyle(
                                 fontSize: 10, 
                                 color: Color(0xFF140C2C),
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(width: 2),
                             Icon(Icons.call_received, size: 12, color: Colors.green.shade600),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           checkIn, 
                           style: const TextStyle(
@@ -547,10 +531,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       border: Border.all(color: const Color(0xFFF1EFFC), width: 1.5),
                       borderRadius: BorderRadius.circular(16),
@@ -565,14 +549,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                               style: TextStyle(
                                 fontSize: 10, 
                                 color: Color(0xFF140C2C),
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(width: 2),
                             Icon(Icons.call_made, size: 12, color: Colors.red.shade600),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           checkOut, 
                           style: const TextStyle(
