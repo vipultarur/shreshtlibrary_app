@@ -72,7 +72,14 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         final displayMode = message.data['display_mode'];
         final type = message.data['type']?.toString().toUpperCase() ?? 'GENERAL';
         
-        if (displayMode != 'silent') {
+        final router = ref.read(routerProvider);
+        final currentPath = router.routerDelegate.currentConfiguration.uri.path;
+        
+        final isExcludedScreen = currentPath == '/notifications' || 
+                                 currentPath == '/profile' || 
+                                 currentPath == '/settings';
+        
+        if (displayMode != 'silent' && !isExcludedScreen) {
           Duration? autoDismiss;
           if (displayMode == 'one_time') {
             autoDismiss = const Duration(seconds: 8);
