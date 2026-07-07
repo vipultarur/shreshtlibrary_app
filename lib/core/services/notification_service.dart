@@ -258,43 +258,15 @@ class NotificationService {
       );
 
       // ── FOREGROUND handler ───────────────────────────────────────────────
-      // When app is OPEN and a push arrives, show local notification manually
+      // When app is OPEN and a push arrives, handle it strictly via the GlobalOverlayService
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
         debugPrint('[FCM] Data: ${message.data}');
+        
+        // This stream triggers `app.dart` to show the GlobalOverlayService dialog box.
+        // We DO NOT call _showRichNotification here to prevent the device tray from
+        // showing a duplicate system notification while the user is inside the app.
         _foregroundMessageController.add(message);
-
-        final String title =
-            message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
-        final String body =
-            message.notification?.body ?? message.data['body'] ?? '';
-        final String subtitle = message.data['subtitle'] ?? '';
-        final String imageUrl =
-            message.notification?.android?.imageUrl ??
-                message.data['image_url'] ?? '';
-        final String linkUrl = message.data['link_url'] ?? '';
-        final String linkButtonText =
-            (message.data['link_button_text'] ?? '').isNotEmpty
-                ? message.data['link_button_text']!
-                : 'View Details';
-
-        final String displayBody =
-            subtitle.isNotEmpty ? '$subtitle\n$body' : body;
-
-        if (title.isNotEmpty || displayBody.isNotEmpty) {
-          final int id =
-              DateTime.now().millisecondsSinceEpoch.remainder(100000);
-          await _showRichNotification(
-            plugin: flutterLocalNotificationsPlugin,
-            id: id,
-            title: title,
-            body: displayBody,
-            imageUrl: imageUrl,
-            linkUrl: linkUrl,
-            linkButtonText: linkButtonText,
-          );
-          debugPrint('[FCM] ✅ Foreground local notification shown (id=$id)');
-        }
       });
 
       // ── BACKGROUND tap handler ───────────────────────────────────────────
