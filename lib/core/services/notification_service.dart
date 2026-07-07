@@ -95,19 +95,21 @@ Future<void> _showRichNotification({
       );
       final file = File(filePath);
       if (await file.exists()) {
+        debugPrint('[FCM] Image downloaded successfully: ${file.path}');
         largeIconBitmap = FilePathAndroidBitmap(file.path);
         styleInformation = BigPictureStyleInformation(
           FilePathAndroidBitmap(file.path),
-          largeIcon: FilePathAndroidBitmap(file.path),
           hideExpandedLargeIcon: true,
           contentTitle: title,
           summaryText: body,
           htmlFormatContentTitle: false,
           htmlFormatSummaryText: false,
         );
+      } else {
+        debugPrint('[FCM] File does not exist after download');
       }
-    } catch (e) {
-      debugPrint('[FCM] Image download failed: $e');
+    } catch (e, st) {
+      debugPrint('[FCM] Image download failed for URL $imageUrl: $e\n$st');
       // Image download failed → fall back to BigText
     }
   }
