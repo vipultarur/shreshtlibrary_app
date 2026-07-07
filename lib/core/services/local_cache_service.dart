@@ -14,6 +14,7 @@ class LocalCacheService {
 
   static const _idCardKey = 'cached_id_card';
   static const _notificationsKey = 'cached_notifications';
+  static const _processedNotifsKey = 'processed_notifs_ids';
 
   static Future<LocalCacheService> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -58,6 +59,18 @@ class LocalCacheService {
     } catch (_) {
       return [];
     }
+  }
+
+  Future<void> markNotificationProcessed(String id) async {
+    final ids = getProcessedNotifications();
+    if (!ids.contains(id)) {
+      ids.add(id);
+      await _prefs.setStringList(_processedNotifsKey, ids.toList());
+    }
+  }
+
+  Set<String> getProcessedNotifications() {
+    return (_prefs.getStringList(_processedNotifsKey) ?? []).toSet();
   }
 
   Future<void> clearAll() async {

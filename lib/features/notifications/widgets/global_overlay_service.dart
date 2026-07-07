@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:go_router/go_router.dart';
 
 class OverlayNotificationData {
+  final String id;
   final String title;
   final String body;
   final String? subtitle;
@@ -19,8 +20,10 @@ class OverlayNotificationData {
   final String? priority; // low, medium, high, critical
   final Duration? autoDismissDuration;
   final Map<String, dynamic> rawPayload;
+  final VoidCallback? onDismissed;
 
   OverlayNotificationData({
+    required this.id,
     required this.title,
     required this.body,
     this.subtitle,
@@ -33,6 +36,7 @@ class OverlayNotificationData {
     this.priority = 'medium',
     this.autoDismissDuration,
     required this.rawPayload,
+    this.onDismissed,
   });
 }
 
@@ -41,11 +45,17 @@ class GlobalOverlayService {
   GlobalOverlayService._();
 
   final Queue<OverlayNotificationData> _queue = Queue();
+  final Set<String> _activeIds = {};
+  OverlayNotificationData? _currentData;
   OverlayEntry? _currentEntry;
   Timer? _dismissTimer;
 
   void show(OverlayNotificationData data) {
+    if (_activeIds.contains(data.id)) return; // Prevent duplicates
+
+    _activeIds.add(data.id);
     _queue.add(data);
+    
     if (_currentEntry == null) {
       _showNext();
     }
@@ -54,10 +64,12 @@ class GlobalOverlayService {
   void _showNext() {
     if (_queue.isEmpty) {
       _currentEntry = null;
+      _currentData = null;
       return;
     }
 
     final data = _queue.removeFirst();
+    _currentData = data;
     final overlayState = rootNavigatorKey.currentState?.overlay;
     if (overlayState == null) {
       // Overlay not ready, try again later or discard
@@ -84,6 +96,11 @@ class GlobalOverlayService {
   void _dismissCurrent() {
     _dismissTimer?.cancel();
     _dismissTimer = null;
+    
+    if (_currentData != null) {
+      _activeIds.remove(_currentData!.id);
+      _currentData?.onDismissed?.call();
+    }
     
     if (_currentEntry != null) {
       _currentEntry?.remove();

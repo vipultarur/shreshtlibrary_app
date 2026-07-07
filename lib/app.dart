@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -78,6 +79,14 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         final isExcludedScreen = currentPath == '/notifications' || 
                                  currentPath == '/profile' || 
                                  currentPath == '/settings';
+
+        final notifId = message.data['notification_id'] ?? message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString();
+        
+        final localCache = ref.read(localCacheServiceProvider);
+        if (localCache.getProcessedNotifications().contains(notifId)) {
+          debugPrint('[FCM] Notification $notifId already processed. Ignoring duplicate.');
+          return;
+        }
         
         if (displayMode != 'silent' && !isExcludedScreen) {
           Duration? autoDismiss;
@@ -94,6 +103,7 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
 
           GlobalOverlayService.instance.show(
             OverlayNotificationData(
+              id: notifId,
               title: title,
               body: body,
               subtitle: subtitle,
@@ -106,6 +116,10 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
               priority: priority,
               autoDismissDuration: autoDismiss,
               rawPayload: message.data,
+              onDismissed: () {
+                localCache.markNotificationProcessed(notifId);
+                debugPrint('[FCM] Notification $notifId dismissed and marked as processed.');
+              },
             ),
           );
         }
