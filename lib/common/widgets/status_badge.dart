@@ -31,47 +31,50 @@ class StatusBadge extends StatelessWidget {
       );
     }
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     Widget? statusIcon;
     if (upperStatus == 'PRESENT') {
-      innerBgColor = const Color(0xFF7CE495); // Light green pill
-      innerTextColor = const Color(0xFF140C2C); // Dark text
-      statusIcon = buildIcon(const Color(0xFF07A833), Icons.check);
+      innerBgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.greenAccent.shade400; // Light green pill
+      innerTextColor = isDark ? Colors.green.shade200 : Colors.black87; // Dark text
+      statusIcon = buildIcon(isDark ? Colors.green.shade600 : Colors.green.shade700, Icons.check);
     } else if (upperStatus.contains('LATE')) {
-      innerBgColor = const Color(0xFFFDEBCC); // Light orange pill
-      innerTextColor = const Color(0xFF914B00); // Dark brown text
-      displayStatus = 'Present (Arrived Late)';
-      statusIcon = buildIcon(const Color(0xFFD39000), Icons.access_time_filled);
+      innerBgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade100;
+      innerTextColor = isDark ? Colors.orange.shade200 : Colors.orange.shade900;
+      displayStatus = 'Arrived Late';
+      statusIcon = buildIcon(isDark ? Colors.orange.shade700 : Colors.orange.shade600, Icons.access_time_filled);
     } else if (upperStatus == 'ABSENT') {
-      innerBgColor = const Color(0xFFFDE2E2); // Light pink pill
-      innerTextColor = const Color(0xFF991515); // Dark red text
-      statusIcon = buildIcon(const Color(0xFFD32F2F), Icons.close);
+      innerBgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade100;
+      innerTextColor = isDark ? Colors.red.shade200 : Colors.red.shade900;
+      statusIcon = buildIcon(isDark ? Colors.red.shade700 : Colors.red.shade600, Icons.close);
     } else if (upperStatus == 'HOLIDAY') {
-      innerBgColor = const Color(0xFFE2ECFA); // Light blue pill
-      innerTextColor = const Color(0xFF113876); // Dark blue text
-      statusIcon = buildIcon(const Color(0xFF2864C6), Icons.beach_access);
+      innerBgColor = isDark ? Colors.blue.shade900.withValues(alpha: 0.3) : Colors.blue.shade50;
+      innerTextColor = isDark ? Colors.blue.shade200 : Colors.blue.shade900;
+      statusIcon = buildIcon(isDark ? Colors.blue.shade700 : Colors.blue.shade600, Icons.beach_access);
     } else if (upperStatus == 'PENDING') {
-      innerBgColor = const Color(0xFFFDEBCC); // Light orange pill
-      innerTextColor = const Color(0xFFD66900); // Dark orange text
-      statusIcon = buildIcon(const Color(0xFFE65100), Icons.hourglass_bottom);
+      innerBgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
+      innerTextColor = isDark ? Colors.orange.shade200 : Colors.orange.shade900;
+      statusIcon = buildIcon(isDark ? Colors.orange.shade700 : Colors.orange.shade600, Icons.hourglass_bottom);
     } else if (upperStatus == 'LIVE' || upperStatus == 'ACTIVE') {
-      innerBgColor = const Color(0xFFE2FBE8); // Light green
-      innerTextColor = const Color(0xFF0C8A2C); // Dark green
-      statusIcon = buildIcon(const Color(0xFF18A03A), Icons.verified);
+      innerBgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.green.shade50;
+      innerTextColor = isDark ? Colors.green.shade200 : Colors.green.shade800;
+      statusIcon = buildIcon(isDark ? Colors.green.shade700 : Colors.green.shade600, Icons.verified);
     } else if (upperStatus == 'EXPIRED') {
-      innerBgColor = const Color(0xFFFEE2E2); // Light red
-      innerTextColor = const Color(0xFFB91C1C); // Dark red
-      statusIcon = buildIcon(const Color(0xFFDC2626), Icons.warning_amber_rounded);
+      innerBgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50;
+      innerTextColor = isDark ? Colors.red.shade200 : Colors.red.shade900;
+      statusIcon = buildIcon(isDark ? Colors.red.shade700 : Colors.red.shade600, Icons.warning_amber_rounded);
     } else if (upperStatus == 'SUSPENDED') {
-      innerBgColor = const Color(0xFFFCE7F3); // Light pink
-      innerTextColor = const Color(0xFFBE185D); // Dark pink
-      statusIcon = buildIcon(const Color(0xFFE11D48), Icons.block);
+      innerBgColor = isDark ? Colors.pink.shade900.withValues(alpha: 0.3) : Colors.pink.shade50;
+      innerTextColor = isDark ? Colors.pink.shade200 : Colors.pink.shade900;
+      statusIcon = buildIcon(isDark ? Colors.pink.shade700 : Colors.pink.shade600, Icons.block);
     } else {
-      innerBgColor = Colors.grey.shade200;
-      innerTextColor = Colors.grey.shade800;
+      innerBgColor = isDark ? Colors.grey.shade900.withValues(alpha: 0.5) : Colors.grey.shade200;
+      innerTextColor = isDark ? Colors.grey.shade300 : Colors.grey.shade800;
     }
 
     final bool hasTime = time != null && time!.isNotEmpty;
-    final purpleColor = const Color(0xFF8B7DF1); // Standard purple border
+    final purpleColor = theme.colorScheme.primary; // Standard primary border
 
     Widget buildInnerPill() {
       return Container(

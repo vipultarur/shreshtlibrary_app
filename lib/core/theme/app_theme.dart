@@ -71,6 +71,8 @@ class AppTheme {
         secondary: AppColors.darkSecondary,
         surface: AppColors.darkSurface,
         error: AppColors.darkError,
+        onSurface: AppColors.darkTextPrimary,
+        onPrimary: AppColors.darkBackground,
       ),
       textTheme: const TextTheme(
         displayLarge: AppTextStyles.darkHeadline1,
@@ -78,11 +80,12 @@ class AppTheme {
         bodyLarge: AppTextStyles.darkBody,
         bodyMedium: AppTextStyles.darkBodySecondary,
         labelLarge: AppTextStyles.darkButton,
+        labelSmall: AppTextStyles.darkLabelSmall,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.darkPrimary,
-          foregroundColor: AppColors.darkTextPrimary,
+          foregroundColor: AppColors.darkBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -110,10 +113,26 @@ class AppTheme {
         hintStyle: AppTextStyles.darkBodySecondary,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: AppColors.darkTextPrimary,
+        backgroundColor: AppColors.darkAppBarBg,
+        foregroundColor: AppColors.darkPrimaryText,
         elevation: 0,
         centerTitle: true,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.darkSurface,
+        selectedItemColor: AppColors.darkPrimary,
+        unselectedItemColor: AppColors.darkNavUnselected,
+      ),
+      cardTheme: CardTheme(
+        color: AppColors.darkSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.darkBorder,
+        thickness: 1,
       ),
       dividerColor: AppColors.darkBorder,
     );

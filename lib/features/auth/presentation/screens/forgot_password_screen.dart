@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart'; // keep old showSnack import
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
@@ -63,7 +64,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           });
         });
         final isEmail = identifier.contains('@');
-        showSnack(context, isEmail ? 'Password reset link sent to your email.' : 'Password reset OTP sent to your WhatsApp.');
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, isEmail ? l10n.forgot_pwd_snack_email : l10n.forgot_pwd_snack_whatsapp);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -83,7 +85,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     try {
       await ref.read(authControllerProvider.notifier).resetPassword(_identifier.text.trim(), _token.text.trim(), _password.text);
       if (mounted) {
-        showSnack(context, 'Password reset successfully. You can now login.');
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.forgot_pwd_snack_success);
         final state = GoRouterState.of(context);
         final redirectTo = state.uri.queryParameters['redirect_to'];
         if (redirectTo != null) {
@@ -106,31 +109,34 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return AuthLayout(
-      title: 'Recovery',
-      subtitle: 'Reset your password securely',
+      title: l10n.forgot_pwd_title,
+      subtitle: l10n.forgot_pwd_subtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Forgot Password?',
+          Text(
+            l10n.forgot_pwd_header,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF140C2C),
+              color: theme.textTheme.bodyLarge?.color,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Enter your registered email address or mobile number. We will send you a reset link or OTP to reset your password.',
+          Text(
+            l10n.forgot_pwd_desc,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
           ),
           const SizedBox(height: 32),
           AuthTextField(
-            label: 'Email Address or Mobile Number',
-            hint: 'john.doe@example.com or 9999999999',
+            label: l10n.forgot_pwd_label_input,
+            hint: l10n.forgot_pwd_hint_input,
             controller: _identifier,
             keyboardType: TextInputType.emailAddress,
             suffixIcon: Icons.account_circle_outlined,
@@ -140,8 +146,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ElevatedButton(
             onPressed: _requesting || _resendSeconds > 0 ? null : _request,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF917CFF),
-              foregroundColor: const Color(0xFF140C2C),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -149,9 +155,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               elevation: 0,
             ),
             child: _requesting
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2))
+                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                 : Text(
-                    _resendSeconds > 0 ? 'Resend in ${_resendSeconds}s' : 'Send Reset Link or OTP',
+                    _resendSeconds > 0 ? l10n.forgot_pwd_btn_resend(_resendSeconds.toString()) : l10n.forgot_pwd_btn_send,
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   ),
           ),
@@ -159,30 +165,30 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           Row(
             children: [
               Expanded(child: Divider(color: Colors.grey.shade300)),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('OR', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(l10n.forgot_pwd_or, style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6))),
               ),
               Expanded(child: Divider(color: Colors.grey.shade300)),
             ],
           ),
           const SizedBox(height: 32),
-          const Text(
-            'Already have a token or OTP? Enter it below with your new password.',
+          Text(
+            l10n.forgot_pwd_token_desc,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
           ),
           const SizedBox(height: 24),
           AuthTextField(
-            label: 'Reset Token or OTP',
-            hint: 'Enter the token or OTP',
+            label: l10n.forgot_pwd_label_token,
+            hint: l10n.forgot_pwd_hint_token,
             controller: _token,
             suffixIcon: Icons.vpn_key_outlined,
             errorText: _fieldErrors['token'] is List ? _fieldErrors['token'][0] : _fieldErrors['token']?.toString(),
           ),
           const SizedBox(height: 16),
           AuthTextField(
-            label: 'New Password',
+            label: l10n.forgot_pwd_label_new_pwd,
             hint: '********',
             controller: _password,
             obscureText: _obscurePassword,
@@ -194,15 +200,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ElevatedButton(
             onPressed: _reset,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF917CFF),
-              foregroundColor: const Color(0xFF140C2C),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               elevation: 0,
             ),
-            child: const Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+            child: Text(l10n.forgot_pwd_btn_reset, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 24),
           TextButton(
@@ -215,7 +221,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 context.go('/login');
               }
             },
-            child: const Text('Back to Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
+            child: Text(l10n.forgot_pwd_back_to_signin, style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

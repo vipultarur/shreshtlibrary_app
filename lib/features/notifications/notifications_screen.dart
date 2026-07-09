@@ -5,6 +5,7 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/notifications/widgets/notification_card.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 final notificationsProvider =
     FutureProvider.autoDispose<List<StudentNotification>>((ref) {
@@ -18,9 +19,15 @@ class NotificationsScreen extends ConsumerWidget {
     try {
       await ref.read(studentApiProvider).markAllNotificationsRead();
       ref.invalidate(notificationsProvider);
-      if (context.mounted) showSnack(context, 'All notifications marked as read.');
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.noti_all_marked_read);
+      }
     } catch (e) {
-      if (context.mounted) showSnack(context, 'Failed to mark as read.');
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.noti_failed_mark);
+      }
     }
   }
 
@@ -28,9 +35,15 @@ class NotificationsScreen extends ConsumerWidget {
     try {
       await ref.read(studentApiProvider).deleteAllNotifications();
       ref.invalidate(notificationsProvider);
-      if (context.mounted) showSnack(context, 'All notifications cleared.');
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.noti_all_cleared);
+      }
     } catch (e) {
-      if (context.mounted) showSnack(context, 'Failed to clear notifications.');
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.noti_failed_clear);
+      }
     }
   }
 
@@ -46,8 +59,10 @@ class NotificationsScreen extends ConsumerWidget {
       },
     );
 
+    final l10n = AppLocalizations.of(context)!;
+
     return PageScaffold(
-      title: 'Notifications',
+      title: l10n.noti_title,
       onRefresh: () async => ref.invalidate(notificationsProvider),
       actions: [
         PopupMenuButton<String>(
@@ -56,13 +71,13 @@ class NotificationsScreen extends ConsumerWidget {
             if (value == 'clear_all') _clearAll(context, ref);
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'read_all',
-              child: Text('Mark All Read'),
+              child: Text(l10n.noti_btn_mark_all_read),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'clear_all',
-              child: Text('Clear All'),
+              child: Text(l10n.noti_btn_clear_all),
             ),
           ],
         ),
@@ -73,7 +88,7 @@ class NotificationsScreen extends ConsumerWidget {
           AsyncPane(
             value: ref.watch(notificationsProvider),
             builder: (rows) => rows.isEmpty
-                ? const SectionCard(child: Text('No notifications yet.'))
+                ? SectionCard(child: Text(l10n.noti_empty))
                 : Column(
                     children: rows.map((item) {
                       return Dismissible(
@@ -90,7 +105,7 @@ class NotificationsScreen extends ConsumerWidget {
                             await ref.read(studentApiProvider).deleteNotification(item.id);
                             ref.invalidate(notificationsProvider);
                           } catch (_) {
-                            if (context.mounted) showSnack(context, 'Failed to delete notification.');
+                            if (context.mounted) showSnack(context, l10n.noti_failed_delete);
                           }
                         },
                         child: NotificationCard(item),

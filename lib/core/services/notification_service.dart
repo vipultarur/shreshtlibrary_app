@@ -40,6 +40,27 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       showBadge: true,
     ),
   );
+  await androidPlugin?.createNotificationChannel(
+    const AndroidNotificationChannel(
+      'attendance_notifications', 'Attendance Notifications',
+      description: 'Notifications related to attendance',
+      importance: Importance.max, playSound: true, enableVibration: true,
+    ),
+  );
+  await androidPlugin?.createNotificationChannel(
+    const AndroidNotificationChannel(
+      'billing_notifications', 'Billing Notifications',
+      description: 'Notifications related to billing and payments',
+      importance: Importance.max, playSound: true, enableVibration: true,
+    ),
+  );
+  await androidPlugin?.createNotificationChannel(
+    const AndroidNotificationChannel(
+      'account_notifications', 'Account Notifications',
+      description: 'Notifications related to account status',
+      importance: Importance.max, playSound: true, enableVibration: true,
+    ),
+  );
 
   final String title =
       message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
@@ -54,8 +75,38 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           ? message.data['link_button_text']!
           : 'View Details';
 
-  final String displayBody = subtitle.isNotEmpty ? '$subtitle\n$body' : body;
+  final String type = message.data['type'] ?? 'GENERAL';
+
+  final displayBody = subtitle.isNotEmpty ? '$subtitle\n$body' : body;
   final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+  String channelId = 'default_notifications';
+  String channelName = 'General Notifications';
+  String channelDesc = 'General notifications like payments';
+
+  switch (type.toUpperCase()) {
+    case 'ATTENDANCE':
+      channelId = 'attendance_notifications';
+      channelName = 'Attendance Notifications';
+      channelDesc = 'Notifications related to attendance';
+      break;
+    case 'BILLING':
+    case 'EXPIRY':
+      channelId = 'billing_notifications';
+      channelName = 'Billing Notifications';
+      channelDesc = 'Notifications related to billing and payments';
+      break;
+    case 'ACCOUNT':
+      channelId = 'account_notifications';
+      channelName = 'Account Notifications';
+      channelDesc = 'Notifications related to account status';
+      break;
+    default:
+      channelId = 'admin_notifications';
+      channelName = 'Admin Notifications';
+      channelDesc = 'Notifications from the admin';
+      break;
+  }
 
   await _showRichNotification(
     plugin: plugin,
@@ -65,6 +116,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     imageUrl: imageUrl,
     linkUrl: linkUrl,
     linkButtonText: linkButtonText,
+    channelId: channelId,
+    channelName: channelName,
+    channelDesc: channelDesc,
   );
 }
 
@@ -77,6 +131,9 @@ Future<void> _showRichNotification({
   String imageUrl = '',
   String linkUrl = '',
   String linkButtonText = 'View Details',
+  String channelId = 'admin_notifications',
+  String channelName = 'Admin Notifications',
+  String channelDesc = 'Notifications from the admin',
 }) async {
   StyleInformation? styleInformation;
   AndroidBitmap<Object>? largeIconBitmap;
@@ -136,9 +193,9 @@ Future<void> _showRichNotification({
     body: body,
     notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
-        'admin_notifications',
-        'Admin Notifications',
-        channelDescription: 'Notifications from the admin',
+        channelId,
+        channelName,
+        channelDescription: channelDesc,
         importance: Importance.max,
         priority: Priority.high,
         visibility: NotificationVisibility.public,
@@ -197,6 +254,36 @@ class NotificationService {
     enableVibration: true,
   );
 
+  static const AndroidNotificationChannel _attendanceChannel =
+      AndroidNotificationChannel(
+    'attendance_notifications',
+    'Attendance Notifications',
+    description: 'Notifications related to attendance',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
+  static const AndroidNotificationChannel _billingChannel =
+      AndroidNotificationChannel(
+    'billing_notifications',
+    'Billing Notifications',
+    description: 'Notifications related to billing and payments',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
+  static const AndroidNotificationChannel _accountChannel =
+      AndroidNotificationChannel(
+    'account_notifications',
+    'Account Notifications',
+    description: 'Notifications related to account status',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
   Future<void> init() async {
     try {
       try {
@@ -226,8 +313,10 @@ class NotificationService {
 
       if (androidPlugin != null) {
         await androidPlugin.createNotificationChannel(_adminChannel);
-
         await androidPlugin.createNotificationChannel(_defaultChannel);
+        await androidPlugin.createNotificationChannel(_attendanceChannel);
+        await androidPlugin.createNotificationChannel(_billingChannel);
+        await androidPlugin.createNotificationChannel(_accountChannel);
         // Request notification permission (Android 13+)
         final granted = await androidPlugin.requestNotificationsPermission();
         debugPrint('[FCM] Notification permission granted: $granted');
@@ -253,22 +342,15 @@ class NotificationService {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
         debugPrint('[FCM] Data: ${message.data}');
-        
-        // This stream triggers `app.dart` to show the GlobalOverlayService dialog box.
-        // We DO NOT call _showRichNotification here to prevent the device tray from
-        // showing a duplicate system notification while the user is inside the app.
+       
         _foregroundMessageController.add(message);
       });
 
-      // ── BACKGROUND tap handler ───────────────────────────────────────────
-      // When user taps a notification while app is in BACKGROUND
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint('[FCM] onMessageOpenedApp: ${message.data}');
         _handleMessageTap(message);
       });
 
-      // ── TERMINATED tap handler ───────────────────────────────────────────
-      // When user taps a notification that opened the app from TERMINATED state
       final RemoteMessage? initialMessage =
           await FirebaseMessaging.instance.getInitialMessage();
       if (initialMessage != null) {
@@ -326,5 +408,42 @@ class NotificationService {
     );
   }
 
+  Future<void> showSystemNotification(RemoteMessage message) async {
+    final title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
+    final body = message.notification?.body ?? message.data['body'] ?? '';
+    final type = message.data['type'] ?? 'GENERAL';
+    final payload = message.data['link_url'] ?? '';
 
+    String channelId = 'default_notifications';
+    String channelName = 'General Notifications';
+
+    switch (type.toUpperCase()) {
+      case 'ATTENDANCE':
+        channelId = 'attendance_notifications';
+        channelName = 'Attendance Notifications';
+        break;
+      case 'BILLING':
+      case 'EXPIRY':
+        channelId = 'billing_notifications';
+        channelName = 'Billing Notifications';
+        break;
+      case 'ACCOUNT':
+        channelId = 'account_notifications';
+        channelName = 'Account Notifications';
+        break;
+      case 'GENERAL':
+      default:
+        channelId = 'default_notifications';
+        channelName = 'General Notifications';
+        break;
+    }
+
+    await showNotification(
+      title: title,
+      body: body,
+      payload: payload,
+      channelId: channelId,
+      channelName: channelName,
+    );
+  }
 }

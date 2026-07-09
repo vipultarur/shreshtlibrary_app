@@ -9,6 +9,9 @@ import 'package:shreshtlibrary/features/auth/presentation/screens/maintenance_sc
 import 'package:shreshtlibrary/features/auth/presentation/screens/login_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/register_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/splash_screen.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/language_selection_screen.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/features/home/home_screen.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart';
 import 'package:shreshtlibrary/features/library/achievers_screen.dart';
@@ -61,17 +64,35 @@ final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authControllerProvider);
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final path = state.uri.path;
+      final cacheService = ref.read(localCacheServiceProvider);
+      final hasSelectedLang = cacheService.hasSelectedLanguage();
+
+      // Language Select Guard
+      if (!hasSelectedLang && path != '/splash' && path != '/language-selection') {
+        return '/language-selection';
+      }
+
+      // Prevent going back to language selection if already selected
+      if (hasSelectedLang && path == '/language-selection') {
+        return '/home';
+      }
+
       final publicPath =
           path == '/login' ||
           path == '/register' ||
           path == '/forgot-password' ||
           path == '/loading' ||
-          path == '/maintenance';
+          path == '/maintenance' ||
+          path == '/splash' ||
+          path == '/language-selection';
       
       if (auth.isLoading) {
+        if (path == '/splash' || path == '/language-selection') {
+          return null;
+        }
         return path == '/loading' ? null : '/loading';
       }
       if (auth.isMaintenance) {
@@ -83,7 +104,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login?redirect_to=$currentUrl';
       }
       
-      if (auth.isAuthenticated && publicPath) {
+      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password')) {
         final redirectTo = state.uri.queryParameters['redirect_to'];
         if (redirectTo != null && redirectTo.isNotEmpty) {
           return Uri.decodeComponent(redirectTo);
@@ -99,6 +120,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ),
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/language-selection',
+        builder: (context, state) => const LanguageSelectionScreen(),
+      ),
       GoRoute(
         path: '/loading',
         builder: (context, state) => const LoadingScreen(),

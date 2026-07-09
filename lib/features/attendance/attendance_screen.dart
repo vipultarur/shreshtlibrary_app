@@ -9,6 +9,7 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 final attendanceLogsProvider =
     FutureProvider.autoDispose<List<AttendanceRecord>>((ref) {
@@ -30,10 +31,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CommonAppBar(
-        title: 'Attendance',
+        title: l10n.attendance_title,
         rightIcon: Consumer(
           builder: (context, ref, _) {
             final dash = ref.watch(dashboardProvider).value;
@@ -57,8 +62,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF140C2C),
-                        foregroundColor: Colors.white,
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        minimumSize: const Size(0, 36),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: _isCheckingOut ? null : () async {
@@ -76,7 +83,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Checked out successfully')),
+                              SnackBar(content: Text(l10n.attendance_checkout_success)),
                             );
                           }
                         } catch (e) {
@@ -94,17 +101,17 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                       icon: _isCheckingOut 
                           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : const Icon(Icons.logout, size: 18),
-                      label: Text(_isCheckingOut ? 'Wait...' : 'Check Out', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      label: Text(_isCheckingOut ? l10n.attendance_wait : l10n.attendance_check_out, style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 if (showScan)
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF140C2C)),
+                      icon: Icon(Icons.qr_code_scanner, color: theme.textTheme.bodyLarge?.color),
                       onPressed: () => context.push('/attendance/scan'),
                     ),
                   ),
@@ -177,9 +184,9 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Container(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFCBB9FF),
-                            borderRadius: BorderRadius.only(
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(40),
                               bottomRight: Radius.circular(40),
                             ),
@@ -220,9 +227,13 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   }
 
   Widget _buildCalendar(Map<String, AttendanceRecord> logMap) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor = theme.textTheme.bodyLarge?.color;
+    
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
       ),
       padding: const EdgeInsets.all(8),
@@ -241,16 +252,16 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
         onPageChanged: (focusedDay) {
           _focusedDay = focusedDay;
         },
-        headerStyle: const HeaderStyle(
+        headerStyle: HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          leftChevronIcon: Icon(Icons.chevron_left, color: Color(0xFF140C2C), size: 20),
-          rightChevronIcon: Icon(Icons.chevron_right, color: Color(0xFF140C2C), size: 20),
-          headerPadding: EdgeInsets.symmetric(vertical: 4),
+          leftChevronIcon: Icon(Icons.chevron_left, color: textColor, size: 20),
+          rightChevronIcon: Icon(Icons.chevron_right, color: textColor, size: 20),
+          headerPadding: const EdgeInsets.symmetric(vertical: 4),
           titleTextStyle: TextStyle(
             fontSize: 16, 
             fontWeight: FontWeight.w900,
-            color: Color(0xFF140C2C),
+            color: textColor,
           ),
         ),
         calendarBuilders: CalendarBuilders(
@@ -259,9 +270,9 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           todayBuilder: (context, day, focusedDay) => _buildCell(day, logMap, isSelected: isSameDay(day, _selectedDay), isToday: true),
           outsideBuilder: (context, day, focusedDay) => const SizedBox(),
         ),
-        daysOfWeekStyle: const DaysOfWeekStyle(
-          weekdayStyle: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.w600, fontSize: 12),
-          weekendStyle: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.w600, fontSize: 12),
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 12),
+          weekendStyle: TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 12),
         ),
       ),
     );
@@ -270,32 +281,34 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   Widget _buildCell(DateTime day, Map<String, AttendanceRecord> logMap, {bool isSelected = false, bool isToday = false}) {
     final dateString = DateFormat('yyyy-MM-dd').format(day);
     final log = logMap[dateString];
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     Color? bgColor;
-    Color textColor = const Color(0xFF140C2C);
+    Color? textColor = theme.textTheme.bodyLarge?.color;
     Border? border;
 
     if (log != null) {
       if (log.isPresent) {
         if (log.lateMark) {
-          bgColor = const Color(0xFFFFF3E0); // Light orange for late
-          textColor = const Color(0xFFE65100);
+          bgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
+          textColor = isDark ? Colors.orange.shade200 : Colors.orange.shade800;
         } else {
-          bgColor = const Color(0xFFE8F5E9); // Light Green
-          textColor = const Color(0xFF2E7D32);
+          bgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.green.shade50;
+          textColor = isDark ? Colors.green.shade200 : Colors.green.shade800;
         }
       } else if (log.method == 'PENDING') {
-        bgColor = const Color(0xFFFFF8E1); // Light yellow for pending
-        textColor = const Color(0xFFF57F17);
+        bgColor = isDark ? Colors.yellow.shade900.withValues(alpha: 0.3) : Colors.yellow.shade50;
+        textColor = isDark ? Colors.yellow.shade200 : Colors.yellow.shade800;
       } else {
-        bgColor = const Color(0xFFFFEBEE); // Light Red for absent
-        textColor = const Color(0xFFC62828);
+        bgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50;
+        textColor = isDark ? Colors.red.shade200 : Colors.red.shade800;
       }
     }
 
     if (isSelected) {
-      border = Border.all(color: const Color(0xFF8B7DF1), width: 1.5);
-      bgColor ??= const Color(0xFFCBB9FF).withValues(alpha: 0.3);
+      border = Border.all(color: theme.colorScheme.primary, width: 1.5);
+      bgColor ??= isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.3);
     }
 
     return Container(
@@ -332,7 +345,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   iconColor: Colors.blue,
                   iconBgColor: Colors.blue.shade50,
                   value: daysPresent.toString(),
-                  label: 'Days Present',
+                  label: AppLocalizations.of(context)!.attendance_days_present,
                 ),
               ),
               const SizedBox(width: 8),
@@ -342,7 +355,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   iconColor: Colors.red,
                   iconBgColor: Colors.red.shade50,
                   value: daysAbsent.toString(),
-                  label: 'Days Absent',
+                  label: AppLocalizations.of(context)!.attendance_days_absent,
                 ),
               ),
             ],
@@ -356,7 +369,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   iconColor: Colors.purple,
                   iconBgColor: Colors.purple.shade50,
                   value: lateMarks.toString(),
-                  label: 'Late Marks',
+                  label: AppLocalizations.of(context)!.attendance_late_marks,
                 ),
               ),
             ],
@@ -367,9 +380,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   }
 
   Widget _buildMonthlyStudyCard(int hours, int minutes) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
       ),
       padding: const EdgeInsets.all(16),
@@ -377,13 +393,13 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1EFFC),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.timer,
-              color: Color(0xFF140C2C),
+              color: theme.textTheme.bodyLarge?.color,
               size: 24,
             ),
           ),
@@ -393,18 +409,18 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             children: [
               Text(
                 '${hours}h ${minutes}m',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF140C2C),
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
-              const Text(
-                'Monthly Study Hours',
+              Text(
+                AppLocalizations.of(context)!.attendance_monthly_study,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF140C2C),
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
             ],
@@ -449,9 +465,11 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     }
 
+    final theme = Theme.of(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
       ),
       padding: const EdgeInsets.all(12),
@@ -462,7 +480,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1EFFC),
+                color: theme.colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -470,19 +488,19 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                 children: [
                   Text(
                     '${studyH}h ${studyM}m',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF140C2C),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Today Study',
+                  Text(
+                    AppLocalizations.of(context)!.attendance_today_study,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF140C2C),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                 ],
@@ -498,7 +516,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFF1EFFC), width: 1.5),
+                      border: Border.all(color: theme.dividerColor, width: 1.5),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -506,11 +524,11 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Check-In', 
+                            Text(
+                              AppLocalizations.of(context)!.attendance_check_in, 
                               style: TextStyle(
                                 fontSize: 10, 
-                                color: Color(0xFF140C2C),
+                                color: theme.textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -521,10 +539,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         const SizedBox(height: 6),
                         Text(
                           checkIn, 
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF140C2C),
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                       ],
@@ -536,7 +554,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFF1EFFC), width: 1.5),
+                      border: Border.all(color: theme.dividerColor, width: 1.5),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -544,11 +562,11 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Check-Out', 
+                            Text(
+                              AppLocalizations.of(context)!.attendance_check_out_lbl, 
                               style: TextStyle(
                                 fontSize: 10, 
-                                color: Color(0xFF140C2C),
+                                color: theme.textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -559,10 +577,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         const SizedBox(height: 6),
                         Text(
                           checkOut, 
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF140C2C),
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                       ],

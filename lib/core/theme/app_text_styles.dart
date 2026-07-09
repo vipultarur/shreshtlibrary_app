@@ -35,6 +35,12 @@ class AppTextStyles {
     color: Colors.white,
   );
 
+  static const TextStyle lightLabelSmall = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    color: AppColors.lightTextSecondary,
+  );
+
   // Dark Theme Text Styles
   static const TextStyle darkHeadline1 = TextStyle(
     fontSize: 32,
@@ -66,5 +72,11 @@ class AppTextStyles {
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.darkTextPrimary,
+  );
+
+  static const TextStyle darkLabelSmall = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    color: AppColors.darkTextSecondary,
   );
 }

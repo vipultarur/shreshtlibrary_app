@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -16,53 +17,64 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 16);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 24);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final canPop = Navigator.canPop(context);
     final shouldShowLeft = leftIcon != null || (showBackButton && canPop);
 
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
-      color: const Color(0xFFCBB9FF),
+      color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                if (shouldShowLeft) ...[
-                  leftIcon ?? Container(
-                    width: 45,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+            Expanded(
+              child: Row(
+                children: [
+                  if (shouldShowLeft) ...[
+                    leftIcon ?? Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurface : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back, color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color),
+                        onPressed: onBackPressed ?? () {
+                          if (canPop) {
+                            context.pop();
+                          }
+                        },
+                      ),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Color(0xFF140C2C)),
-                      onPressed: () {
-                        if (canPop) {
-                          context.pop();
-                        }
-                      },
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
                 ],
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF140C2C),
-                  ),
-                ),
-              ],
+              ),
             ),
-            ?rightIcon,
+            if (rightIcon != null) ...[
+              const SizedBox(width: 12),
+              rightIcon!,
+            ],
           ],
         ),
       ),

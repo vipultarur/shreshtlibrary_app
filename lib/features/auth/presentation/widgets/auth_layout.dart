@@ -14,12 +14,15 @@ class AuthLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFCBB9FF),
+      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
       body: Column(
         children: [
           Container(
-            color: const Color(0xFFCBB9FF),
+            color: theme.colorScheme.primary.withValues(alpha: 0.2),
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 20,
               bottom: 24,
@@ -32,18 +35,18 @@ class AuthLayout extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF140C2C),
+                    color: theme.textTheme.headlineLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black54,
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -51,9 +54,9 @@ class AuthLayout extends StatelessWidget {
           ),
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1EFFC),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
                 ),

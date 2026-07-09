@@ -1,0 +1,409 @@
+{
+  "app_title": "Shresht Library",
+  "leaderboard_title": "Leaderboard",
+  "leaderboard_no_data": "No Leaderboard Data",
+  "leaderboard_top_scholars": "Top Scholars",
+  "leaderboard_failed_load": "Failed to load leaderboard",
+  "nav_home": "Home",
+  "nav_attendance": "Attendance",
+  "nav_study": "Study",
+  "nav_leaderboard": "Leaderboard",
+  "nav_profile": "Profile",
+  "splash_tagline": "Your Ultimate Study Companion",
+  "splash_loading": "Loading your experience...",
+  "lang_select_title": "Choose Language / भाषा चुनें",
+  "lang_select_subtitle": "Select your preferred language to continue / आगे बढ़ने के लिए अपनी पसंदीदा भाषा चुनें",
+  "lang_english": "English",
+  "lang_hindi": "हिन्दी",
+  "lang_gujarati": "ગુજરાતી",
+  "btn_continue": "Continue",
+  
+  "login_title": "Welcome Back",
+  "login_subtitle": "Sign in to continue your learning journey",
+  "login_email_mobile_label": "Email / Mobile",
+  "login_email_mobile_hint": "Enter email or mobile number",
+  "login_password_label": "Password",
+  "login_password_hint": "Enter your password",
+  "login_remember_me": "Remember me",
+  "login_forgot_pwd": "Forgot Password?",
+  "login_btn": "Sign In",
+  "login_no_acc": "Don't have an account? ",
+  "login_sign_up": "Sign Up",
+  "login_success": "Login successful!",
+  "login_failed": "Login failed",
+  "err_required": "This field is required",
+  "err_invalid_email": "Please enter a valid email address",
+  "err_invalid_mobile": "Mobile number must be 10 digits",
+  "err_password_len": "Password must be at least 6 characters",
+
+  "register_title": "Create Account",
+  "register_subtitle": "Join us to access exclusive library features",
+  "register_personal_info": "Step 1 of 2: Personal Info",
+  "register_first_name": "First Name",
+  "register_first_name_hint": "John",
+  "register_last_name": "Last Name",
+  "register_last_name_hint": "Doe",
+  "register_email": "Email Address",
+  "register_email_hint": "john.doe@example.com",
+  "register_mobile": "Mobile Number",
+  "register_mobile_hint": "Your mobile number",
+  "register_send_otp": "Send Verification OTP",
+  "register_verified": "Verified",
+  "register_otp_whatsapp": "OTP (Sent to WhatsApp)",
+  "register_otp_hint": "Enter 6-digit OTP",
+  "register_verify_otp": "Verify OTP",
+  "register_resend_otp_in": "Resend OTP in {seconds}s",
+  "@register_resend_otp_in": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "register_resend_otp": "Resend OTP",
+  "register_step2_header": "Almost There",
+  "register_step2_subheader": "We need a little more info to get you started",
+  "register_dob": "Birthday",
+  "register_dob_hint": "YYYY-MM-DD",
+  "register_gender": "Gender",
+  "register_gender_male": "Male",
+  "register_gender_female": "Female",
+  "register_goal": "Study Goal",
+  "register_pwd": "Password",
+  "register_confirm_pwd": "Confirm Password",
+  "register_confirm_pwd_hint": "Re-enter password",
+  "register_success": "Registration successful!",
+  "register_failed": "Registration failed",
+  "register_already_have_acc": "Already have an account? ",
+  "register_sign_in": "Sign In",
+  "register_passwords_mismatch": "Passwords do not match",
+
+  "home_good_morning": "Good Morning",
+  "home_holiday": "Holiday",
+  "home_holiday_desc": "Attendance is closed today due to a holiday.",
+  "home_ok": "OK",
+  "home_scan": "Scan",
+  "home_achievers": "Achievers",
+  "home_no_achievers": "No achievers yet.",
+  "home_facilities": "Facilities",
+  "home_no_facilities": "No facilities available.",
+  "home_pending_activation": "Pending Activation",
+  "home_pending_activation_desc": "Please purchase a plan or contact admin to activate.",
+  "home_plans": "Plans",
+  "home_account_suspended": "Account Suspended",
+  "home_account_suspended_desc": "Your account has been suspended by the administrator.",
+  "home_membership_expired": "Membership Expired",
+  "home_membership_expired_desc": "Your membership has expired. Please renew to continue accessing library features.",
+  "home_renew": "Renew",
+  "home_failed_load_user": "Failed to load user info",
+
+  "attendance_title": "Attendance",
+  "attendance_checkout_success": "Checked out successfully",
+  "attendance_check_out": "Check Out",
+  "attendance_wait": "Wait...",
+  "attendance_days_present": "Days Present",
+  "attendance_days_absent": "Days Absent",
+  "attendance_late_marks": "Late Marks",
+  "attendance_monthly_study": "Monthly Study Hours",
+  "attendance_today_study": "Today Study",
+  "attendance_check_in": "Check-In",
+  "attendance_check_out_lbl": "Check-Out",
+
+  "study_area": "Study Area",
+  "study_tracker": "Tracker",
+  "study_history": "History",
+  "study_analytics": "Analytics",
+  "study_not_checked_in": "Not Checked In",
+  "study_not_checked_in_desc": "Please check in at the library to start an anti-distraction study session.",
+  "study_ready_focus": "Ready to Focus?",
+  "study_ready_focus_desc": "Start an anti-distraction study session. If you move your phone, tracking pauses.",
+  "study_start_btn": "Start New Session",
+  "study_paused": "PAUSED",
+  "study_total_paused": "Total Paused: {time}",
+  "@study_total_paused": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "study_quit_btn": "Quit",
+  "study_history_sessions": "Total sessions in memory: {count}",
+  "@study_history_sessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "study_history_empty": "No Study Sessions on this date",
+  "study_history_empty_desc": "Take a break, or start a new session!",
+  "study_history_started_at": "Started at {time}",
+  "@study_history_started_at": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "study_history_studied": "Studied",
+  "study_failed_chart": "Failed to load chart",
+  "study_failed_history": "Failed to load history",
+  "study_no_data": "No data available",
+  "study_total_time": "Total Time",
+  "study_avg_daily": "Avg Daily",
+  "study_avg_weekly": "Avg Weekly",
+  "study_most_productive": "Most Productive",
+  "study_unknown_date": "Unknown Date",
+  "study_analytics_week": "Week",
+  "study_analytics_month": "Month",
+
+  "profile_title": "Profile",
+  "profile_settings": "Settings",
+  "profile_language": "Language",
+  "profile_select_language": "Select Language",
+
+  "forgot_pwd_title": "Recovery",
+  "forgot_pwd_subtitle": "Reset your password securely",
+  "forgot_pwd_header": "Forgot Password?",
+  "forgot_pwd_desc": "Enter your registered email address or mobile number. We will send you a reset link or OTP to reset your password.",
+  "forgot_pwd_label_input": "Email Address or Mobile Number",
+  "forgot_pwd_hint_input": "john.doe@example.com or 9999999999",
+  "forgot_pwd_btn_resend": "Resend in {seconds}s",
+  "@forgot_pwd_btn_resend": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "forgot_pwd_btn_send": "Send Reset Link or OTP",
+  "forgot_pwd_or": "OR",
+  "forgot_pwd_token_desc": "Already have a token or OTP? Enter it below with your new password.",
+  "forgot_pwd_label_token": "Reset Token or OTP",
+  "forgot_pwd_hint_token": "Enter the token or OTP",
+  "forgot_pwd_label_new_pwd": "New Password",
+  "forgot_pwd_btn_reset": "Reset Password",
+  "forgot_pwd_back_to_signin": "Back to Sign In",
+  "forgot_pwd_snack_email": "Password reset link sent to your email.",
+  "forgot_pwd_snack_whatsapp": "Password reset OTP sent to your WhatsApp.",
+  "forgot_pwd_snack_success": "Password reset successfully. You can now login.",
+
+  "referral_code_valid": "Referral code is valid.",
+  "profile_updated": "Profile updated.",
+  "profile_photo_updated": "Photo updated.",
+
+  "payment_failed": "Payment Failed: {message}",
+  "@payment_failed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "payment_external_wallet": "External Wallet Selected: {wallet}",
+  "@payment_external_wallet": {
+    "placeholders": {
+      "wallet": {
+        "type": "String"
+      }
+    }
+  },
+  "payment_unavailable": "Online payments are currently unavailable.",
+  "payment_razorpay_error": "Error launching Razorpay.",
+  "payment_select_plan": "Select a membership plan.",
+  "payment_submitted": "Payment submitted for admin verification.",
+
+  "noti_marked_read": "Marked as read.",
+  "noti_all_marked_read": "All notifications marked as read.",
+  "noti_failed_mark": "Failed to mark as read.",
+  "noti_all_cleared": "All notifications cleared.",
+  "noti_failed_clear": "Failed to clear notifications.",
+  "noti_failed_delete": "Failed to delete notification.",
+
+  "review_submitted": "Review submitted for approval.",
+
+  "register_snack_otp_success": "OTP sent to your WhatsApp successfully!",
+  "register_snack_mobile_verified": "Mobile number verified successfully!",
+  "register_snack_fix_step1": "Please fix errors in Step 1",
+  "register_snack_fill_step1": "Please fill all required fields in Step 1",
+  "register_snack_verify_mobile": "Please verify your mobile number first.",
+  "register_snack_success": "Registration successful!",
+  "register_step2_header": "Step 2 of 2: Profile Details",
+  "register_parent_mobile": "Parent Mobile",
+  "register_parent_mobile_hint": "Optional",
+  "register_full_address": "Full Address",
+  "register_full_address_hint": "Your Home Address",
+  "register_back_step1": "Back to Step 1",
+  "register_err_invalid_mobile": "Enter a valid 10-digit mobile number.",
+  "register_err_otp_required": "OTP is required.",
+  "register_err_invalid_otp": "Enter a valid 6-digit OTP.",
+  "register_err_first_name_required": "First name is required",
+  "register_err_last_name_required": "Last name is required",
+  "register_err_email_required": "Email is required",
+  "register_err_email_invalid": "Please enter a valid email address.",
+  "register_err_mobile_required": "Mobile number is required",
+  "register_err_mobile_invalid": "Mobile number must be exactly 10 digits.",
+  "register_err_dob_required": "Birthday is required",
+  "register_err_password_required": "Password is required",
+  "register_err_password_len": "Password must be at least 6 characters long",
+  "register_err_confirm_password_required": "Confirm password is required",
+  "register_err_password_mismatch": "Passwords do not match",
+  "register_err_mobile_exists": "Mobile number already exists.",
+  "register_err_email_exists": "Email already exists.",
+
+  "referral_apply_label": "Apply referral code",
+  "referral_btn_apply": "Apply",
+
+  "profile_personal_info": "Personal Information",
+  "profile_first_name": "First name",
+  "profile_last_name": "Last name",
+  "profile_email": "Email",
+  "profile_goal": "Goal (e.g. UPSC, SSC)",
+  "profile_dob": "Date of Birth (YYYY-MM-DD)",
+  "profile_parent_mobile": "Parent Mobile Number",
+  "profile_caste": "Caste",
+  "profile_address": "Address",
+  "profile_save_changes": "Save Changes",
+
+  "payment_label_plan": "Plan",
+  "payment_label_mode": "Payment mode",
+  "payment_label_transaction": "Transaction ID / UPI reference",
+  "payment_btn_manual": "Submit Manual",
+  "payment_btn_online": "Pay Online",
+  "payment_noti_title": "Payment Submitted",
+  "payment_noti_body": "Your payment has been submitted for verification.",
+
+  "noti_title": "Notifications",
+  "noti_btn_mark_read": "Mark Read",
+  "noti_btn_view_details": "View Details",
+  "noti_btn_mark_all_read": "Mark All Read",
+  "noti_btn_clear_all": "Clear All",
+  "noti_empty": "No notifications yet.",
+  "noti_marked_read": "Marked as read.",
+  "noti_all_marked_read": "All notifications marked as read.",
+  "noti_failed_mark": "Failed to mark as read.",
+  "noti_all_cleared": "All notifications cleared.",
+  "noti_failed_clear": "Failed to clear notifications.",
+  "noti_failed_delete": "Failed to delete notification.",
+
+  "review_submitted": "Review submitted for approval.",
+  "review_stars": "{rating} stars",
+  "@review_stars": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      }
+    }
+  },
+  "review_label_rating": "Rating",
+  "review_label_review": "Review",
+  "review_btn_submit": "Submit review",
+  "maintenance_title": "We're Under Maintenance",
+  "maintenance_desc": "Sorry for the inconvenience. We're performing some updates and maintenance on our servers to improve your experience. Please check back later.",
+  "btn_refresh": "Refresh",
+  "profile_section_account": "Account",
+  "profile_tile_info": "Account Information",
+  "profile_tile_id_card": "Digital ID Card",
+  "profile_section_subscription": "Accounts & Subscription",
+  "profile_tile_payments": "My Payments",
+  "profile_tile_notifications": "Notifications",
+  "profile_tile_logout": "Logout",
+  "profile_no_email": "No email provided",
+  "profile_edit_btn": "Edit",
+  "profile_label_loading": "Loading...",
+  "profile_label_name": "Name",
+  "profile_label_mobile": "Mobile",
+  "profile_label_goal": "Goal",
+  "profile_tile_referrals": "Referrals",
+  "profile_referral_program": "Referral Program",
+  "profile_your_referral_code": "Your Referral Code",
+  "profile_referral_used_by": "Used by {count} students",
+  "@profile_referral_used_by": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profile_referral_history": "Referral History",
+  "profile_no_referral_history": "No referral history yet.",
+  "library_title": "Library",
+  "library_details": "Library Details",
+  "library_label_address": "Address",
+  "library_label_phone": "Phone",
+  "library_label_email": "Email",
+  "library_label_whatsapp": "WhatsApp",
+  "library_label_emergency_contact": "Emergency Contact",
+  "library_label_working_hours": "Working Hours",
+  "library_weekly_off": "(Off: {day})",
+  "@library_weekly_off": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "library_label_website": "Website",
+  "library_capacity_stats": "Library Capacity & Stats",
+  "library_total_capacity": "Total Capacity: {count} Seats",
+  "@library_total_capacity": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "library_currently_available": "Currently Available: {count} Seats",
+  "@library_currently_available": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "library_about_us": "About Us",
+  "library_history": "History",
+  "library_mission": "Mission",
+  "library_vision": "Vision",
+  "library_services_courses": "Services & Courses",
+  "library_services_offered": "Services Offered",
+  "library_courses_supported": "Courses Supported",
+  "library_membership_info": "Membership Information",
+  "library_details_lbl": "Details",
+  "library_benefits_lbl": "Benefits",
+  "library_registration_process": "Registration Process",
+  "library_required_documents": "Required Documents",
+  "library_rules_guidelines": "Rules & Guidelines",
+  "library_rules": "Library Rules",
+  "library_faq": "Frequently Asked Questions",
+  "library_location": "Location",
+  "library_get_directions": "Get Directions",
+  "library_facilities": "Facilities",
+  "library_no_facilities": "No facilities listed.",
+  "library_facility_fallback": "Facility",
+  "library_featured_achievers": "Featured Achievers",
+  "library_no_featured_achievers": "No featured achievers yet.",
+  "library_all_achievers_title": "All Achievers",
+  "library_no_achievers": "No achievers yet.",
+  "library_gallery": "Gallery",
+  "library_no_gallery_images": "No images yet.",
+  "library_reviews": "Reviews",
+  "library_reviews_summary": "{avg} average from {count} reviews",
+  "@library_reviews_summary": {
+    "placeholders": {
+      "avg": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "library_no_reviews": "No reviews yet.",
+  "library_social_media": "Social Media",
+  "lib_title_achievers": "All Achievers",
+  "lib_no_achievers": "No achievers listed.",
+  "lib_title_facilities": "All Facilities",
+  "lib_no_facilities": "No facilities listed."
+}

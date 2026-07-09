@@ -5,6 +5,7 @@ import 'package:shreshtlibrary/core/routing/app_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shreshtlibrary/core/config/app_config.dart';
 
 class OverlayNotificationData {
   final String id;
@@ -160,14 +161,23 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   void _handleTap() async {
     final link = widget.data.linkUrl;
     if (link != null && link.isNotEmpty) {
-      if (link.startsWith('/')) {
+      if (link.startsWith('/') && !link.contains('.pdf') && !link.startsWith('/media/')) {
         // App deep link
         final ctx = rootNavigatorKey.currentContext;
         if (ctx != null) {
           GoRouter.of(ctx).push(link);
         }
-      } else if (await canLaunchUrlString(link)) {
-        await launchUrlString(link, mode: LaunchMode.externalApplication);
+      } else {
+        String finalUrl = link;
+        if (link.startsWith('/')) {
+           final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
+               ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
+               : AppConfig.apiBaseUrl;
+           finalUrl = '$baseUrl$link';
+        }
+        if (await canLaunchUrlString(finalUrl)) {
+          await launchUrlString(finalUrl, mode: LaunchMode.externalApplication);
+        }
       }
     }
     _handleDismiss();
@@ -340,7 +350,7 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
           children: [
             Container(
               decoration: BoxDecoration(
-                color: isBackground ? const Color(0xFF0B0E1A) : theme.colorScheme.surface,
+                color: isBackground ? theme.colorScheme.inverseSurface : theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
                 boxShadow: const [
@@ -426,7 +436,7 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   Widget _buildTextContent(BuildContext context, bool isBackground) {
     final theme = Theme.of(context);
     final titleColor = isBackground ? Colors.white : theme.colorScheme.onSurface;
-    final subtitleColor = isBackground ? const Color(0xFFFFD54F) : theme.colorScheme.primary;
+    final subtitleColor = isBackground ? Colors.amber.shade300 : theme.colorScheme.primary;
     final bodyColor = isBackground ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.onSurfaceVariant;
 
     return Column(

@@ -14,6 +14,9 @@ class ActionButtonPurple extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: onTap,
       child: Opacity(
@@ -21,11 +24,11 @@ class ActionButtonPurple extends StatelessWidget {
         child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF917CFF), // Purple from the UI
+          color: theme.colorScheme.primary,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -35,13 +38,13 @@ class ActionButtonPurple extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, color: const Color(0xFF140C2C), size: 24),
+              Icon(icon, color: isDark ? theme.scaffoldBackgroundColor : theme.colorScheme.onSurface, size: 24),
               const SizedBox(width: 8),
             ],
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF140C2C),
+              style: TextStyle(
+                color: isDark ? theme.scaffoldBackgroundColor : theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w900,
                 fontSize: 16,
               ),

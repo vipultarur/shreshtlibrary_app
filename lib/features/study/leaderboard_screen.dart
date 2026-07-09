@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
   return ref.watch(studentApiProvider).leaderboard();
@@ -15,17 +16,20 @@ class LeaderboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final boardAsync = ref.watch(leaderboardProvider);
+    final l10n = AppLocalizations.of(context)!;
 
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC),
-      appBar: const CommonAppBar(title: 'Leaderboard'),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CommonAppBar(title: l10n.leaderboard_title),
       body: Column(
         children: [
           Expanded(
             child: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1EFFC),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
               ),
               child: RefreshIndicator(
                 onRefresh: () async {
@@ -38,21 +42,21 @@ class LeaderboardScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(20),
                     child: boardAsync.when(
                       data: (board) {
-                        if (board.isEmpty) return _buildEmptyState('No Leaderboard Data', Icons.emoji_events_outlined);
+                        if (board.isEmpty) return _buildEmptyState(l10n.leaderboard_no_data, Icons.emoji_events_outlined, theme);
                         return Column(
                           children: [
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFF8B7DF1), Color(0xFF6B5CD1)]),
+                                gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)]),
                                 borderRadius: BorderRadius.circular(24),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
-                                  Icon(Icons.emoji_events, color: Colors.amber, size: 48),
-                                  SizedBox(height: 8),
-                                  Text('Top Scholars', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                                  const Icon(Icons.emoji_events, color: Colors.amber, size: 48),
+                                  const SizedBox(height: 8),
+                                  Text(l10n.leaderboard_top_scholars, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
                                 ],
                               ),
                             ),
@@ -72,9 +76,9 @@ class LeaderboardScreen extends ConsumerWidget {
                                 return Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: theme.colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: i < 3 ? Border.all(color: badgeColor, width: 2) : null,
+                                    border: i < 3 ? Border.all(color: badgeColor, width: 2) : Border.all(color: theme.dividerColor),
                                   ),
                                   child: Row(
                                     children: [
@@ -87,12 +91,12 @@ class LeaderboardScreen extends ConsumerWidget {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(entry.student.fullName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF140C2C))),
+                                            Text(entry.student.fullName, style: TextStyle(fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color)),
                                             Text(entry.levelInfo.title, style: TextStyle(color: badgeColor, fontSize: 11, fontWeight: FontWeight.bold)),
                                           ],
                                         ),
                                       ),
-                                      Text(entry.hoursFormatted, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF140C2C))),
+                                      Text(entry.hoursFormatted, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: theme.textTheme.bodyLarge?.color)),
                                     ],
                                   ),
                                 );
@@ -102,7 +106,7 @@ class LeaderboardScreen extends ConsumerWidget {
                         );
                       },
                       loading: () => const _SkeletonBox(height: 200),
-                      error: (e, s) => const Center(child: Text('Failed to load leaderboard')),
+                      error: (e, s) => Center(child: Text(l10n.leaderboard_failed_load)),
                     ),
                   ),
                 ),
@@ -114,16 +118,16 @@ class LeaderboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(String title, IconData icon) {
+  Widget _buildEmptyState(String title, IconData icon, ThemeData theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24)),
       child: Column(
         children: [
           Icon(icon, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF140C2C))),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color)),
         ],
       ),
     );
@@ -136,13 +140,16 @@ class _SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Shimmer.fromColors(
-      baseColor: Colors.black12,
-      highlightColor: Colors.white24,
+      baseColor: isDark ? Colors.white10 : Colors.black12,
+      highlightColor: isDark ? Colors.white24 : Colors.white24,
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
         ),
       ),

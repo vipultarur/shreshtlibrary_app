@@ -7,7 +7,13 @@ import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'features/notifications/widgets/global_overlay_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/services/locale_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shreshtlibrary/core/config/app_config.dart';
 
 class ShreshtStudentApp extends ConsumerStatefulWidget {
   const ShreshtStudentApp({super.key});
@@ -52,7 +58,30 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
 
       const shellRoutes = ['/home', '/attendance', '/study', '/leaderboard', '/profile'];
       
-      if (action.startsWith('payload:')) {
+      if (action.startsWith('open_link:')) {
+        final link = action.replaceFirst('open_link:', '');
+        
+        if (link.startsWith('/') && !link.contains('.pdf') && !link.startsWith('/media/')) {
+          if (shellRoutes.contains(link)) {
+            ref.read(routerProvider).go(link);
+          } else {
+            ref.read(routerProvider).push(link);
+          }
+        } else {
+          String finalUrl = link;
+          if (link.startsWith('/')) {
+             final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
+                 ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
+                 : AppConfig.apiBaseUrl;
+             finalUrl = '$baseUrl$link';
+          }
+          
+          final uri = Uri.tryParse(finalUrl);
+          if (uri != null) {
+            launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        }
+      } else if (action.startsWith('payload:')) {
         final payload = action.replaceFirst('payload:', '');
         if (payload.startsWith('/')) {
           if (shellRoutes.contains(payload)) {
@@ -142,14 +171,27 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
       title: 'Shresht Library',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
       scaffoldMessengerKey: rootScaffoldMessengerKey,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('hi'),
+        Locale('gu'),
+      ],
     );
   }
 }

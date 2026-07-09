@@ -18,10 +18,12 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -43,17 +45,17 @@ class StatCard extends StatelessWidget {
                 children: [
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF140C2C),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10, 
-                      color: Color(0xFF140C2C), 
+                      color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8), 
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,

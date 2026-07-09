@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // For facilitiesProvider
 
@@ -10,8 +11,11 @@ class FacilitiesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    
     return PageScaffold(
-      title: 'All Facilities',
+      title: l10n.lib_title_facilities,
       onRefresh: () async {
         ref.invalidate(facilitiesProvider);
       },
@@ -19,7 +23,7 @@ class FacilitiesScreen extends ConsumerWidget {
         value: ref.watch(facilitiesProvider),
         builder: (facilities) {
           if (facilities.isEmpty) {
-            return const Center(child: Text('No facilities listed.'));
+            return Center(child: Text(l10n.lib_no_facilities));
           }
           return ListView.separated(
             shrinkWrap: true,
@@ -31,8 +35,9 @@ class FacilitiesScreen extends ConsumerWidget {
               final facility = facilities[index];
               return Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -41,7 +46,7 @@ class FacilitiesScreen extends ConsumerWidget {
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: theme.colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         image: (facility.image != null && facility.image!.isNotEmpty)
                             ? DecorationImage(
@@ -51,7 +56,7 @@ class FacilitiesScreen extends ConsumerWidget {
                             : null,
                       ),
                       child: (facility.image == null || facility.image!.isEmpty)
-                          ? const Icon(Icons.check_circle_outline, color: Color(0xFF9CA3AF), size: 30)
+                          ? Icon(Icons.check_circle_outline, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 30)
                           : null,
                     ),
                     const SizedBox(width: 16),
@@ -61,19 +66,19 @@ class FacilitiesScreen extends ConsumerWidget {
                         children: [
                           Text(
                             facility.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF140C2C),
+                              color: theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                           if (facility.description != null && facility.description!.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
                               facility.description!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF78716C),
+                                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                               ),
                             ),
                           ],

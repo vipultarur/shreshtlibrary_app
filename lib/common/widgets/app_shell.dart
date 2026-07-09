@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -19,7 +21,7 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
 
   }
 
@@ -46,9 +48,13 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   @override
   Widget build(BuildContext context) {
     final currentIndex = widget.navigationShell.currentIndex;
+    final l10n = AppLocalizations.of(context)!;
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: widget.navigationShell, // SafeArea handled by individual screens to allow full bleed if needed
       extendBody: true,
       bottomNavigationBar: SafeArea(
@@ -56,11 +62,11 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
           margin: const EdgeInsets.fromLTRB(18, 0, 18, 20),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.bottomNavigationBarTheme.backgroundColor ?? Colors.white,
             borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -71,31 +77,31 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
             children: [
               _NavBarItem(
                 iconPath: 'assets/icons/shared/home.svg',
-                label: 'Home',
+                label: l10n.nav_home,
                 isSelected: currentIndex == 0,
                 onTap: () => _onTap(0),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/calender.svg',
-                label: 'Attendance',
+                label: l10n.nav_attendance,
                 isSelected: currentIndex == 1,
                 onTap: () => _onTap(1),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/target.svg',
-                label: 'Study',
+                label: l10n.nav_study,
                 isSelected: currentIndex == 2,
                 onTap: () => _onTap(2),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/bage.svg',
-                label: 'Leaderboard',
+                label: l10n.nav_leaderboard,
                 isSelected: currentIndex == 3,
                 onTap: () => _onTap(3),
               ),
               _NavBarItem(
                 iconPath: 'assets/icons/shared/profile.svg',
-                label: 'Profile',
+                label: l10n.nav_profile,
                 isSelected: currentIndex == 4,
                 onTap: () => _onTap(4),
               ),
@@ -122,7 +128,15 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? const Color(0xFF917CFF) : const Color(0xFFC4B8FF);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final color = isSelected
+        ? (theme.bottomNavigationBarTheme.selectedItemColor ?? theme.colorScheme.primary)
+        : (theme.bottomNavigationBarTheme.unselectedItemColor ?? theme.colorScheme.onSurfaceVariant);
+
+    final bgColor = isSelected
+        ? (isDark ? AppColors.darkNavSelectedBg : theme.colorScheme.primary.withValues(alpha: 0.1))
+        : Colors.transparent;
 
     return GestureDetector(
       onTap: onTap,
@@ -132,23 +146,21 @@ class _NavBarItem extends StatelessWidget {
         padding: isSelected
             ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
             : const EdgeInsets.all(6),
-        decoration: isSelected
-            ? BoxDecoration(
-                color: const Color(0xFFF4F2FF), // Very light purple background
-                borderRadius: BorderRadius.circular(30),
-              )
-            : BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(30),
-              ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(30),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-              SvgPicture.asset(
+            ColorFiltered(
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              child: SvgPicture.asset(
                 iconPath,
                 height: 24,
                 width: 24,
               ),
+            ),
             if (isSelected) ...[
               const SizedBox(width: 4),
               Text(

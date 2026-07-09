@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
-import 'package:shreshtlibrary/features/library/library_screen.dart'; // for libraryInfoProvider
 
 import 'common_app_bar.dart';
 export 'common_app_bar.dart';

@@ -8,9 +8,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // for providers
 import 'package:shreshtlibrary/features/home/widgets/home_slider.dart'; // for homeSlidersProvider
+import 'package:shreshtlibrary/core/theme/app_colors.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/common/widgets/section_header.dart';
 import 'package:shreshtlibrary/common/widgets/action_button_purple.dart';
@@ -28,12 +30,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
           Container(
-            color: const Color(0xFFCBB9FF),
+            color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             child: _buildHeader(ref),
           ),
@@ -52,9 +58,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFCBB9FF),
-                        borderRadius: BorderRadius.only(
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(40),
                           bottomRight: Radius.circular(40),
                         ),
@@ -88,17 +94,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             if (isHoliday) {
               return ActionButtonPurple(
-                label: 'Holiday',
+                label: l10n.home_holiday,
                 onTap: () {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text(dash?.holidayTitle ?? 'Holiday'),
-                      content: Text(dash?.holidayDescription ?? 'Attendance is closed today due to a holiday.'),
+                      title: Text(dash?.holidayTitle ?? l10n.home_holiday),
+                      content: Text(dash?.holidayDescription ?? l10n.home_holiday_desc),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('OK'),
+                          child: Text(l10n.home_ok),
                         ),
                       ],
                     ),
@@ -116,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }
 
             return ActionButtonPurple(
-              label: 'Scan',
+              label: l10n.home_scan,
               icon: Icons.qr_code_scanner,
               onTap: () {
                 context.push('/attendance/scan');
@@ -129,8 +135,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHeader(WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final libraryInfoAsync = ref.watch(libraryInfoProvider);
     final logoUrl = libraryInfoAsync.value?.logoSquare;
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -143,21 +153,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: 45,
                 height: 45,
                 decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
                 clipBehavior: Clip.hardEdge,
                 child: logoUrl != null 
-                    ? Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (c, e, s) => Image.asset('assets/images/logo.png', fit: BoxFit.cover))
-                    : Image.asset('assets/images/logo.png', fit: BoxFit.cover),
+                    ? Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (c, e, s) => Image.asset('assets/images/nlogo.png', fit: BoxFit.cover))
+                    : Image.asset('assets/images/nlogo.png', fit: BoxFit.cover),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Shreshtlibrary',
+              Text(
+                l10n.app_title,
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF140C2C),
+                  color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color,
                 ),
               ),
             ],
@@ -166,11 +176,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: 45,
             height: 45,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
             child: IconButton(
-              icon: const Icon(Icons.notifications_none, color: Color(0xFF140C2C)),
+              icon: Icon(Icons.notifications_none, color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color),
               onPressed: () {
                 final dash = ref.read(dashboardProvider).value;
                 if (dash != null && dash.restrictedFeatures.contains('notifications')) {
@@ -188,6 +198,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildGreetingAndStatus() {
     final dashboardAsync = ref.watch(dashboardProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -199,25 +212,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Good Moring',
+              Text(
+                l10n.home_good_morning,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF140C2C),
+                  color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Text(
-                    dashboard.fullName.toLowerCase(),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                    Text(
+                      dashboard.fullName.length > 9
+                          ? '${dashboard.fullName.toLowerCase().substring(0, 9)}...'
+                          : dashboard.fullName.toLowerCase(),
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: isDark ? AppColors.darkPrimaryText : Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 12),
                   StatusBadge(
                     status: status,
@@ -227,34 +242,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               if (dashboard.membershipStatus == 'PENDING') ...[
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.orange.shade200),
-                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isDark ? Colors.orange.shade700 : Colors.orange.shade200),
+                    ),
                   child: Row(
                     children: [
-                      Icon(Icons.hourglass_top_rounded, color: Colors.orange.shade700, size: 32),
+                      Icon(Icons.hourglass_top_rounded, color: isDark ? Colors.orange.shade300 : Colors.orange.shade700, size: 32),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Pending Activation',
+                              l10n.home_pending_activation,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.orange.shade900,
+                                color: isDark ? Colors.orange.shade200 : Colors.orange.shade900,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Please purchase a plan or contact admin to activate.',
+                              l10n.home_pending_activation_desc,
                               style: TextStyle(
-                                color: Colors.orange.shade800,
+                                color: isDark ? Colors.orange.shade100 : Colors.orange.shade800,
                                 fontSize: 13,
                               ),
                             ),
@@ -265,44 +280,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       TextButton(
                         onPressed: () => context.push('/payments'),
                         style: TextButton.styleFrom(
-                          backgroundColor: Colors.orange.shade100,
-                          foregroundColor: Colors.orange.shade900,
+                          backgroundColor: isDark ? Colors.orange.shade900 : Colors.orange.shade100,
+                          foregroundColor: isDark ? Colors.orange.shade50 : Colors.orange.shade900,
                         ),
-                        child: const Text('Plans'),
+                        child: Text(l10n.home_plans),
                       ),
                     ],
                   ),
                 ),
               ] else if (dashboard.membershipStatus == 'SUSPENDED') ...[
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.pink.shade200),
-                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.pink.shade900.withValues(alpha: 0.3) : Colors.pink.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isDark ? Colors.pink.shade700 : Colors.pink.shade200),
+                    ),
                   child: Row(
                     children: [
-                      Icon(Icons.block, color: Colors.pink.shade700, size: 32),
+                      Icon(Icons.block, color: isDark ? Colors.pink.shade300 : Colors.pink.shade700, size: 32),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              dashboard.expiryDialogTitle ?? 'Account Suspended',
+                              dashboard.expiryDialogTitle ?? l10n.home_account_suspended,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.pink.shade900,
+                                color: isDark ? Colors.pink.shade200 : Colors.pink.shade900,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              dashboard.expiryDialogMessage ?? 'Your account has been suspended by the administrator.',
+                              dashboard.expiryDialogMessage ?? l10n.home_account_suspended_desc,
                               style: TextStyle(
-                                color: Colors.pink.shade800,
+                                color: isDark ? Colors.pink.shade100 : Colors.pink.shade800,
                                 fontSize: 13,
                               ),
                             ),
@@ -314,34 +329,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ] else if (dashboard.membershipStatus == 'EXPIRED') ...[
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.shade200),
-                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isDark ? Colors.red.shade700 : Colors.red.shade200),
+                    ),
                   child: Row(
                     children: [
-                      Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 32),
+                      Icon(Icons.warning_amber_rounded, color: isDark ? Colors.red.shade400 : Colors.red.shade700, size: 32),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              dashboard.expiryDialogTitle ?? 'Membership Expired',
+                              dashboard.expiryDialogTitle ?? l10n.home_membership_expired,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.red.shade900,
+                                color: isDark ? Colors.red.shade200 : Colors.red.shade900,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              dashboard.expiryDialogMessage ?? 'Your membership has expired. Please renew to continue accessing library features.',
+                              dashboard.expiryDialogMessage ?? l10n.home_membership_expired_desc,
                               style: TextStyle(
-                                color: Colors.red.shade800,
+                                color: isDark ? Colors.red.shade100 : Colors.red.shade800,
                                 fontSize: 13,
                               ),
                             ),
@@ -352,10 +367,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       TextButton(
                         onPressed: () => context.push('/payments'),
                         style: TextButton.styleFrom(
-                          backgroundColor: Colors.red.shade100,
-                          foregroundColor: Colors.red.shade900,
+                          backgroundColor: isDark ? Colors.red.shade900 : Colors.red.shade100,
+                          foregroundColor: isDark ? Colors.red.shade50 : Colors.red.shade900,
                         ),
-                        child: const Text('Renew'),
+                        child: Text(l10n.home_renew),
                       ),
                     ],
                   ),
@@ -365,7 +380,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         },
         loading: () => const _SkeletonText(width: 200, height: 40),
-        error: (err, stack) => const Text('Failed to load user info'),
+        error: (err, stack) => Text(l10n.home_failed_load_user),
       ),
     );
   }
@@ -373,6 +388,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildSlider() {
     final slidersAsync = ref.watch(homeSlidersProvider);
     final dashboardAsync = ref.watch(dashboardProvider);
+    
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final isRestricted = dashboardAsync.value?.restrictedFeatures.contains('sliders') ?? false;
     if (isRestricted) {
@@ -405,7 +423,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   final slider = sliders[index];
                   Widget slideContent = Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB5B3AE), // Grey placeholder
+                      color: theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(24),
                       image: slider.image != null && slider.image!.isNotEmpty
                           ? DecorationImage(
@@ -426,7 +444,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B7DF1).withValues(alpha: 0.85), // Primary color pill
+                            color: theme.colorScheme.primary.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -442,7 +460,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B7DF1).withValues(alpha: 0.85),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -474,7 +492,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF8B7DF1).withValues(alpha: 0.7),
+                color: theme.colorScheme.primary.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -491,7 +509,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       width: isActive ? 16 : 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E1F63),
+                        color: theme.colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     );
@@ -518,10 +536,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildAchievers() {
     final achieversAsync = ref.watch(achieversProvider);
 
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         SectionHeader(
-          title: 'Achievers',
+          title: l10n.home_achievers,
           onViewAll: () {
             context.push('/achievers');
           },
@@ -533,7 +552,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final listCount = achievers.length;
 
               if (listCount == 0) {
-                return const Center(child: Text('No achievers yet.'));
+                return Center(child: Text(l10n.home_no_achievers));
               }
 
               return ListView.builder(
@@ -549,8 +568,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     width: 120, // Adjusted width
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28), // Perfectly rounded card
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: theme.dividerColor),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(6.0), // Tight even border
@@ -560,8 +580,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: const Color(0xFFAFAEA9), // Exact grey from image
-                                borderRadius: BorderRadius.circular(22), // Matching inner radius
+                                color: theme.colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(22),
                                 image: (photo != null && photo.isNotEmpty)
                                     ? DecorationImage(
                                         image: CachedNetworkImageProvider(
@@ -579,7 +599,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 width: 90,
                                 padding: const EdgeInsets.symmetric(horizontal: 6),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF7CE495), // Light green pill
+                                  color: Colors.greenAccent.shade400,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -591,7 +611,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         style: const TextStyle(
                                           fontSize: 9,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF140C2C), // Dark text color
+                                          color: Colors.black87,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -615,8 +635,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF1E2442), // Exact dark blue text
+                              style: TextStyle(
+                                color: theme.textTheme.bodyLarge?.color,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 14,
                               ),
@@ -640,10 +660,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildFacilities() {
     final facilitiesAsync = ref.watch(facilitiesProvider);
 
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         SectionHeader(
-          title: 'Facilities',
+          title: l10n.home_facilities,
           onViewAll: () {
             context.push('/facilities');
           },
@@ -655,7 +676,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final listCount = facilities.length;
 
               if (listCount == 0) {
-                return const Center(child: Text('No facilities available.'));
+                return Center(child: Text(l10n.home_no_facilities));
               }
 
               return ListView.builder(
@@ -693,10 +714,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color(0xFF140C2C),
+                          style: TextStyle(
+                            color: theme.textTheme.bodyLarge?.color,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13, // Increased from 12
+                            fontSize: 13,
                           ),
                         ),
                       ],

@@ -8,6 +8,7 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/payments/payments_screen.dart'; // To access providers
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class PaymentFormWidget extends ConsumerStatefulWidget {
   const PaymentFormWidget({super.key});
@@ -48,13 +49,15 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
 
   void _handlePaymentError(PaymentFailureResponse response) {
     if (mounted) {
-      showSnack(context, 'Payment Failed: ${response.message}');
+      final l10n = AppLocalizations.of(context)!;
+      showSnack(context, l10n.payment_failed(response.message ?? ''));
     }
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     if (mounted) {
-      showSnack(context, 'External Wallet Selected: ${response.walletName}');
+      final l10n = AppLocalizations.of(context)!;
+      showSnack(context, l10n.payment_external_wallet(response.walletName ?? ''));
     }
   }
 
@@ -62,7 +65,8 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
     final dashboard = ref.read(dashboardProvider).value;
     final rzpKey = dashboard?.razorpayKey;
     if (rzpKey == null || rzpKey.isEmpty) {
-      showSnack(context, 'Online payments are currently unavailable.');
+      final l10n = AppLocalizations.of(context)!;
+      showSnack(context, l10n.payment_unavailable);
       return;
     }
 
@@ -79,13 +83,17 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
     try {
       _razorpay.open(options);
     } catch (e) {
-      if (mounted) showSnack(context, 'Error launching Razorpay.');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.payment_razorpay_error);
+      }
     }
   }
 
   Future<void> _pay() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedPlan == null) {
-      showSnack(context, 'Select a membership plan.');
+      showSnack(context, l10n.payment_select_plan);
       return;
     }
     setState(() {
@@ -103,12 +111,12 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
       ref.invalidate(paymentHistoryProvider);
       ref.invalidate(membershipsProvider);
       ref.read(notificationServiceProvider).showNotification(
-            title: 'Payment Submitted',
-            body: 'Your payment has been submitted for verification.',
+            title: l10n.payment_noti_title,
+            body: l10n.payment_noti_body,
           );
       if (mounted) {
         _transaction.clear();
-        showSnack(context, 'Payment submitted for admin verification.');
+        showSnack(context, l10n.payment_submitted);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -127,6 +135,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
   @override
   Widget build(BuildContext context) {
     final plans = ref.watch(plansProvider);
+    final l10n = AppLocalizations.of(context)!;
     return AsyncPane(
       value: plans,
       builder: (items) => Column(
@@ -147,7 +156,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
             onChanged: (value) =>
                 setState(() => _selectedPlan = value),
             decoration: InputDecoration(
-              labelText: 'Plan',
+              labelText: l10n.payment_label_plan,
               errorText: _fieldErrors['plan_id'] is List ? _fieldErrors['plan_id'][0] : _fieldErrors['plan_id']?.toString(),
             ),
           ),
@@ -165,7 +174,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
             onChanged: (value) =>
                 setState(() => _mode = value ?? 'UPI'),
             decoration: InputDecoration(
-              labelText: 'Payment mode',
+              labelText: l10n.payment_label_mode,
               errorText: _fieldErrors['payment_mode'] is List ? _fieldErrors['payment_mode'][0] : _fieldErrors['payment_mode']?.toString(),
             ),
           ),
@@ -173,7 +182,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
           TextField(
             controller: _transaction,
             decoration: InputDecoration(
-              labelText: 'Transaction ID / UPI reference',
+              labelText: l10n.payment_label_transaction,
               errorText: _fieldErrors['transaction_id'] is List ? _fieldErrors['transaction_id'][0] : _fieldErrors['transaction_id']?.toString(),
             ),
           ),
@@ -184,7 +193,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
                 child: OutlinedButton.icon(
                   onPressed: _busy ? null : _pay,
                   icon: const Icon(Icons.upload_file),
-                  label: const Text('Submit Manual'),
+                  label: Text(l10n.payment_btn_manual),
                 ),
               ),
               const SizedBox(width: 12),
@@ -198,7 +207,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
                           _startRazorpay(plan);
                         },
                   icon: const Icon(Icons.payment),
-                  label: const Text('Pay Online'),
+                  label: Text(l10n.payment_btn_online),
                 ),
               ),
             ],

@@ -41,15 +41,18 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF140C2C),
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -63,9 +66,9 @@ class AuthTextField extends StatelessWidget {
           inputFormatters: inputFormatters,
           focusNode: focusNode,
           maxLines: maxLines,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
-            color: Colors.black87,
+            color: theme.textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
@@ -73,19 +76,19 @@ class AuthTextField extends StatelessWidget {
             hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
             errorText: errorText,
             filled: true,
-            fillColor: const Color(0xFFF1EFFC),
+            fillColor: theme.colorScheme.surface,
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? const Color(0xFFCBB9FF), width: 1.5),
+              borderSide: BorderSide(color: borderColor ?? theme.dividerColor, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? const Color(0xFFCBB9FF), width: 1.5),
+              borderSide: BorderSide(color: borderColor ?? theme.dividerColor, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? const Color(0xFF917CFF), width: 2),
+              borderSide: BorderSide(color: borderColor ?? theme.colorScheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

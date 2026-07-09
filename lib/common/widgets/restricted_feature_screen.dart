@@ -37,12 +37,14 @@ class RestrictedFeatureScreen extends StatelessWidget {
       color = theme.colorScheme.error;
     }
 
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EFFC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Access Denied', style: TextStyle(color: Colors.black87)),
+        title: Text('Access Denied', style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
         backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: theme.textTheme.bodyLarge?.color),
       ),
       body: Center(
         child: Padding(
@@ -57,7 +59,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 16),
@@ -65,7 +67,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: Colors.black54,
+                  color: theme.textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -144,14 +146,17 @@ class RestrictedFeatureScreen extends StatelessWidget {
         return const SizedBox.shrink();
     }
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -166,10 +171,10 @@ class RestrictedFeatureScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Unlock $title',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold, 
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
             ],
@@ -182,7 +187,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
                 const SizedBox(width: 12),
-                Expanded(child: Text(b, style: const TextStyle(color: Colors.black54))),
+                Expanded(child: Text(b, style: TextStyle(color: theme.textTheme.bodyMedium?.color))),
               ],
             ),
           )),

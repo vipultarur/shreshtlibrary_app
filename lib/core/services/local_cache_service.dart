@@ -15,6 +15,21 @@ class LocalCacheService {
   static const _idCardKey = 'cached_id_card';
   static const _notificationsKey = 'cached_notifications';
   static const _processedNotifsKey = 'processed_notifs_ids';
+  static const _languageCodeKey = 'selected_language_code';
+  static const _hasSelectedLanguageKey = 'has_selected_language';
+
+  bool hasSelectedLanguage() {
+    return _prefs.getBool(_hasSelectedLanguageKey) ?? false;
+  }
+
+  String? getLanguageCode() {
+    return _prefs.getString(_languageCodeKey);
+  }
+
+  Future<void> setLanguageCode(String code) async {
+    await _prefs.setString(_languageCodeKey, code);
+    await _prefs.setBool(_hasSelectedLanguageKey, true);
+  }
 
   static Future<LocalCacheService> init() async {
     final prefs = await SharedPreferences.getInstance();

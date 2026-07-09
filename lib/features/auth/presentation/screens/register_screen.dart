@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart'; // keep old showSnack import
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
@@ -163,8 +164,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _sendOtp() async {
     if (_sendingOtp) return;
     final mobile = _mobile.text.trim();
+    final l10n = AppLocalizations.of(context)!;
     if (mobile.length != 10) {
-      setState(() => _clientErrors['mobile'] = 'Enter a valid 10-digit mobile number.');
+      setState(() => _clientErrors['mobile'] = l10n.register_err_invalid_mobile);
       return;
     }
     setState(() {
@@ -193,7 +195,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             }
           });
         });
-        showSnack(context, 'OTP sent to your WhatsApp successfully!');
+        showSnack(context, l10n.register_snack_otp_success);
       }
     } on ApiFailure catch (e) {
       if (mounted) {
@@ -213,13 +215,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_verifyingOtp) return;
     final mobile = _mobile.text.trim();
     final otp = _otp.text.trim();
+    final l10n = AppLocalizations.of(context)!;
     
     if (otp.isEmpty) {
-      setState(() => _clientErrors['otp'] = 'OTP is required.');
+      setState(() => _clientErrors['otp'] = l10n.register_err_otp_required);
       return;
     }
     if (otp.length != 6) {
-      setState(() => _clientErrors['otp'] = 'Enter a valid 6-digit OTP.');
+      setState(() => _clientErrors['otp'] = l10n.register_err_invalid_otp);
       return;
     }
 
@@ -235,7 +238,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _otpVerified = true;
           _resendTimer?.cancel();
         });
-        showSnack(context, 'Mobile number verified successfully!');
+        showSnack(context, l10n.register_snack_mobile_verified);
       }
     } on ApiFailure catch (e) {
       if (mounted) {
@@ -262,14 +265,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final dob = _dob.text.trim();
     final password = _password.text;
     final confirmPassword = _confirmPassword.text;
+    final l10n = AppLocalizations.of(context)!;
 
     final duplicateMobile = _clientErrors['mobile'] == 'Mobile number already exists.';
     final duplicateEmail = _clientErrors['email'] == 'Email already exists.';
 
     setState(() {
       _clientErrors.clear();
-      if (duplicateMobile) _clientErrors['mobile'] = 'Mobile number already exists.';
-      if (duplicateEmail) _clientErrors['email'] = 'Email already exists.';
+      if (duplicateMobile) _clientErrors['mobile'] = l10n.register_err_mobile_exists;
+      if (duplicateEmail) _clientErrors['email'] = l10n.register_err_email_exists;
     });
 
     bool hasError = false;
@@ -283,50 +287,50 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       firstErrorFocus ??= focusNode;
     }
 
-    if (firstName.isEmpty) { addError('first_name', 'First name is required', _firstNameFocus); }
-    if (lastName.isEmpty) { addError('last_name', 'Last name is required', _lastNameFocus); }
+    if (firstName.isEmpty) { addError('first_name', l10n.register_err_first_name_required, _firstNameFocus); }
+    if (lastName.isEmpty) { addError('last_name', l10n.register_err_last_name_required, _lastNameFocus); }
     
     if (email.isEmpty) {
-      addError('email', 'Email is required', _emailFocus);
+      addError('email', l10n.register_err_email_required, _emailFocus);
     } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      addError('email', 'Please enter a valid email address.', _emailFocus);
+      addError('email', l10n.register_err_email_invalid, _emailFocus);
     } else if (duplicateEmail) {
       hasError = true;
       firstErrorFocus ??= _emailFocus;
     }
 
     if (mobile.isEmpty) {
-      addError('mobile', 'Mobile number is required', _mobileFocus);
+      addError('mobile', l10n.register_err_mobile_required, _mobileFocus);
     } else if (!RegExp(r'^[0-9]{10}$').hasMatch(mobile)) {
-      addError('mobile', 'Mobile number must be exactly 10 digits.', _mobileFocus);
+      addError('mobile', l10n.register_err_mobile_invalid, _mobileFocus);
     } else if (duplicateMobile) {
       hasError = true;
       firstErrorFocus ??= _mobileFocus;
     }
     
     if (_requireOtp && otp.isEmpty) {
-      addError('otp', 'OTP is required.', _otpFocus);
+      addError('otp', l10n.register_err_otp_required, _otpFocus);
     }
 
-    if (dob.isEmpty) { addError('dob', 'Birthday is required', _dobFocus); }
+    if (dob.isEmpty) { addError('dob', l10n.register_err_dob_required, _dobFocus); }
     
     if (password.isEmpty) {
-      addError('password', 'Password is required', _passwordFocus);
+      addError('password', l10n.register_err_password_required, _passwordFocus);
     } else if (password.length < 6) {
-      addError('password', 'Password must be at least 6 characters long', _passwordFocus);
+      addError('password', l10n.register_err_password_len, _passwordFocus);
     }
 
     if (confirmPassword.isEmpty) {
-      addError('confirm_password', 'Confirm password is required', _confirmPasswordFocus);
+      addError('confirm_password', l10n.register_err_confirm_password_required, _confirmPasswordFocus);
     } else if (password != confirmPassword) {
-      addError('confirm_password', 'Passwords do not match', _confirmPasswordFocus);
+      addError('confirm_password', l10n.register_err_password_mismatch, _confirmPasswordFocus);
     }
 
     if (hasError) {
       setState(() {});
       if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile') || _clientErrors.containsKey('otp'))) {
         setState(() => _step = 1);
-        showSnack(context, 'Please fix errors in Step 1');
+        showSnack(context, l10n.register_snack_fix_step1);
       }
       firstErrorFocus?.requestFocus();
       return;
@@ -350,7 +354,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
-      showSnack(context, 'Registration successful!');
+      showSnack(context, l10n.register_snack_success);
       final state = GoRouterState.of(context);
       final redirectTo = state.uri.queryParameters['redirect_to'];
       if (redirectTo != null && redirectTo.isNotEmpty) {
@@ -369,7 +373,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _otpSent = false;
           }
         });
-        showSnack(context, 'Please fix errors in Step 1');
+        showSnack(context, l10n.register_snack_fix_step1);
       } else {
         _handleError(auth, 'Registration failed.');
       }
@@ -377,7 +381,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _pickDob() async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
     final date = await showDatePicker(
       context: context,
@@ -388,31 +393,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         return Theme(
           data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
             colorScheme: isDark 
-                ? const ColorScheme.dark(
-                    primary: Color(0xFF917CFF),
+                ? ColorScheme.dark(
+                    primary: theme.colorScheme.primary,
                     onPrimary: Colors.white,
-                    surface: Color(0xFF1E1E2C),
+                    surface: theme.colorScheme.surface,
                     onSurface: Colors.white,
                   )
-                : const ColorScheme.light(
-                    primary: Color(0xFF917CFF),
+                : ColorScheme.light(
+                    primary: theme.colorScheme.primary,
                     onPrimary: Colors.white,
                     surface: Colors.white,
-                    onSurface: Color(0xFF140C2C),
+                    onSurface: theme.textTheme.bodyLarge?.color ?? Colors.black,
                   ),
-            dialogBackgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+            dialogBackgroundColor: theme.colorScheme.surface,
             datePickerTheme: DatePickerThemeData(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              headerBackgroundColor: const Color(0xFF917CFF),
+              headerBackgroundColor: theme.colorScheme.primary,
               headerForegroundColor: Colors.white,
-              backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+              backgroundColor: theme.colorScheme.surface,
               dayStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
               yearStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
               weekdayStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF917CFF),
+                foregroundColor: theme.colorScheme.primary,
                 textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Outfit'),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
@@ -429,6 +434,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final auth = ref.watch(authControllerProvider);
     final fieldErrors = auth.fieldErrors ?? const {};
 
@@ -441,14 +448,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (_step == 1) {
       return AuthLayout(
-        title: 'Create Account',
-        subtitle: 'Join us to access exclusive features',
+        title: l10n.register_title,
+        subtitle: l10n.register_subtitle,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Step 1 of 2: Personal Info',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
+            Text(
+              l10n.register_personal_info,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -456,8 +463,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 Expanded(
                   child: AuthTextField(
-                    label: 'First Name',
-                    hint: 'John',
+                    label: l10n.register_first_name,
+                    hint: l10n.register_first_name_hint,
                     controller: _firstName,
                     focusNode: _firstNameFocus,
                     errorText: errorFor('first_name'),
@@ -471,8 +478,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: AuthTextField(
-                    label: 'Last Name',
-                    hint: 'Doe',
+                    label: l10n.register_last_name,
+                    hint: l10n.register_last_name_hint,
                     controller: _lastName,
                     focusNode: _lastNameFocus,
                     errorText: errorFor('last_name'),
@@ -487,8 +494,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
             const SizedBox(height: 12),
             AuthTextField(
-              label: 'Email Address',
-              hint: 'john.doe@example.com',
+              label: l10n.register_email,
+              hint: l10n.register_email_hint,
               controller: _email,
               focusNode: _emailFocus,
               keyboardType: TextInputType.emailAddress,
@@ -502,8 +509,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ),
             const SizedBox(height: 12),
             AuthTextField(
-              label: 'Mobile Number',
-              hint: 'Your mobile number',
+              label: l10n.register_mobile,
+              hint: l10n.register_mobile_hint,
               controller: _mobile,
               focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
@@ -532,15 +539,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               },
             ),
             if (_requireOtp && _otpVerified)
-              const Padding(
-                padding: EdgeInsets.only(top: 8.0),
-                child: Text('Verified', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(l10n.register_verified, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             if (_requireOtp && _otpSent && !_otpVerified) ...[
               const SizedBox(height: 12),
               AuthTextField(
-                label: 'OTP (Sent to WhatsApp)',
-                hint: 'Enter 6-digit OTP',
+                label: l10n.register_otp_whatsapp,
+                hint: l10n.register_otp_hint,
                 controller: _otp,
                 focusNode: _otpFocus,
                 keyboardType: TextInputType.number,
@@ -565,7 +572,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: _sendingOtp 
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                         : Text(
-                            _resendSeconds > 0 ? 'Resend OTP in ${_resendSeconds}s' : 'Resend OTP', 
+                            _resendSeconds > 0 ? l10n.register_resend_otp_in(_resendSeconds.toString()) : l10n.register_resend_otp, 
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: _resendSeconds > 0 ? Colors.grey : Theme.of(context).colorScheme.primary,
@@ -583,7 +590,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     child: _verifyingOtp
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('Verify OTP'),
+                        : Text(l10n.register_verify_otp),
                   ),
                 ],
               ),
@@ -595,7 +602,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   onPressed: _sendOtp,
                   child: _sendingOtp 
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Send Verification OTP', style: TextStyle(fontWeight: FontWeight.bold)),
+                      : Text(l10n.register_send_otp, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -611,40 +618,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   firstErrorFocus ??= fn;
                 }
 
-                if (_firstName.text.trim().isEmpty) addError('first_name', 'First name is required', _firstNameFocus);
-                if (_lastName.text.trim().isEmpty) addError('last_name', 'Last name is required', _lastNameFocus);
-                if (_email.text.trim().isEmpty) addError('email', 'Email is required', _emailFocus);
-                if (_mobile.text.trim().isEmpty) addError('mobile', 'Mobile number is required', _mobileFocus);
+                if (_firstName.text.trim().isEmpty) addError('first_name', l10n.register_err_first_name_required, _firstNameFocus);
+                if (_lastName.text.trim().isEmpty) addError('last_name', l10n.register_err_last_name_required, _lastNameFocus);
+                if (_email.text.trim().isEmpty) addError('email', l10n.register_err_email_required, _emailFocus);
+                if (_mobile.text.trim().isEmpty) addError('mobile', l10n.register_err_mobile_required, _mobileFocus);
 
                 if (hasError) {
                   setState(() {});
-                  showSnack(context, 'Please fill all required fields in Step 1');
+                  showSnack(context, l10n.register_snack_fill_step1);
                   firstErrorFocus?.requestFocus();
                   return;
                 }
 
                 if (_requireOtp && !_otpVerified) {
-                  showSnack(context, 'Please verify your mobile number first.');
+                  showSnack(context, l10n.register_snack_verify_mobile);
                   return;
                 }
                 setState(() => _step = 2);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF917CFF),
-                foregroundColor: const Color(0xFF140C2C),
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 0,
               ),
-              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+              child: Text(l10n.btn_continue, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Already have an account?', style: TextStyle(color: Colors.black54)),
+                Text(l10n.register_already_have_acc, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6))),
                 TextButton(
                   onPressed: () {
                     final state = GoRouterState.of(context);
@@ -655,7 +662,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       context.go('/login');
                     }
                   },
-                  child: const Text('Sign In', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
+                  child: Text(l10n.register_sign_in, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -665,14 +672,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     return AuthLayout(
-      title: 'Almost There',
-      subtitle: 'We need a little more info to get you started',
+      title: l10n.register_step2_header,
+      subtitle: l10n.register_step2_subheader,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Step 2 of 2: Profile Details',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF140C2C)),
+          Text(
+            l10n.register_step2_header,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -681,8 +688,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               Expanded(
                 child: AuthTextField(
-                  label: 'Birthday',
-                  hint: 'YYYY-MM-DD',
+                  label: l10n.register_dob,
+                  hint: l10n.register_dob_hint,
                   controller: _dob,
                   focusNode: _dobFocus,
                   readOnly: true,
@@ -696,17 +703,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Gender',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+                    Text(
+                      l10n.register_gender,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: theme.dividerColor),
                       ),
                       child: Row(
                         children: [
@@ -729,8 +736,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     }),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Flexible(
-                                    child: Text('Male', style: TextStyle(fontSize: 13, color: Colors.black), overflow: TextOverflow.ellipsis),
+                                  Flexible(
+                                    child: Text(l10n.register_gender_male, style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color), overflow: TextOverflow.ellipsis),
                                   ),
                                 ],
                               ),
@@ -755,8 +762,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     }),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Flexible(
-                                    child: Text('Female', style: TextStyle(fontSize: 13, color: Colors.black), overflow: TextOverflow.ellipsis),
+                                  Flexible(
+                                    child: Text(l10n.register_gender_female, style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color), overflow: TextOverflow.ellipsis),
                                   ),
                                 ],
                               ),
@@ -778,34 +785,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Study Goal',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF140C2C)),
+                    Text(
+                      l10n.register_goal,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       initialValue: _goal,
-                      dropdownColor: Colors.white,
+                      dropdownColor: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF140C2C)),
-                      style: const TextStyle(color: Colors.black, fontSize: 14),
-                      items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal, style: const TextStyle(color: Colors.black)))).toList(),
+                      icon: Icon(Icons.keyboard_arrow_down_rounded, color: theme.textTheme.bodyLarge?.color),
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 14),
+                      items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal, style: TextStyle(color: theme.textTheme.bodyLarge?.color)))).toList(),
                       onChanged: (value) => setState(() => _goal = value ?? 'Other'),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFFF1EFFC),
+                        fillColor: theme.colorScheme.surface,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+                          borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+                          borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
+                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
                         ),
                       ),
                     ),
@@ -815,8 +822,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: AuthTextField(
-                  label: 'Parent Mobile',
-                  hint: 'Optional',
+                  label: l10n.register_parent_mobile,
+                  hint: l10n.register_parent_mobile_hint,
                   controller: _parentMobile,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
@@ -830,8 +837,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           const SizedBox(height: 12),
           AuthTextField(
-            label: 'Full Address',
-            hint: 'Your Home Address',
+            label: l10n.register_full_address,
+            hint: l10n.register_full_address_hint,
             controller: _address,
             maxLines: 2,
             errorText: errorFor('address'),
@@ -842,7 +849,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               Expanded(
                 child: AuthTextField(
-                  label: 'Password',
+                  label: l10n.register_pwd,
                   hint: '********',
                   controller: _password,
                   focusNode: _passwordFocus,
@@ -855,8 +862,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: AuthTextField(
-                  label: 'Confirm Pass',
-                  hint: '********',
+                  label: l10n.register_confirm_pwd,
+                  hint: l10n.register_confirm_pwd_hint,
                   controller: _confirmPassword,
                   focusNode: _confirmPasswordFocus,
                   obscureText: _obscureConfirmPassword,
@@ -871,8 +878,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ElevatedButton(
             onPressed: _busy ? null : _register,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF917CFF),
-              foregroundColor: const Color(0xFF140C2C),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -883,16 +890,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                : Text(l10n.register_title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () {
               setState(() => _step = 1);
             },
-            child: const Text('Back to Step 1', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+            child: Text(l10n.register_back_step1, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6), fontWeight: FontWeight.bold)),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class MaintenanceScreen extends ConsumerWidget {
   const MaintenanceScreen({super.key});
@@ -9,6 +10,7 @@ class MaintenanceScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -35,7 +37,7 @@ class MaintenanceScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 48),
               Text(
-                'We\'re Under Maintenance',
+                l10n.maintenance_title,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -44,7 +46,7 @@ class MaintenanceScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Sorry for the inconvenience. We\'re performing some updates and maintenance on our servers to improve your experience. Please check back later.',
+                l10n.maintenance_desc,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: isDark ? Colors.white70 : Colors.black54,
@@ -60,7 +62,7 @@ class MaintenanceScreen extends ConsumerWidget {
                     ref.invalidate(authControllerProvider);
                   },
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Refresh'),
+                  label: Text(l10n.btn_refresh),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),

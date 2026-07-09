@@ -5,6 +5,7 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart'; // For reviewsProvider and reviewSummaryProvider
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ReviewForm extends ConsumerStatefulWidget {
   const ReviewForm({super.key});
@@ -33,7 +34,10 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
       _comment.clear();
       ref.invalidate(reviewsProvider);
       ref.invalidate(reviewSummaryProvider);
-      if (mounted) showSnack(context, 'Review submitted for approval.');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.review_submitted);
+      }
     } on ApiFailure catch (failure) {
       if (mounted) {
         if (failure.errors is Map<String, dynamic>) {
@@ -48,6 +52,7 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         DropdownButtonFormField<int>(
@@ -56,13 +61,13 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
               .map(
                 (rating) => DropdownMenuItem(
                   value: rating,
-                  child: Text('$rating stars'),
+                  child: Text(l10n.review_stars(rating)),
                 ),
               )
               .toList(),
           onChanged: (value) => setState(() => _rating = value ?? 5),
           decoration: InputDecoration(
-            labelText: 'Rating',
+            labelText: l10n.review_label_rating,
             errorText: _fieldErrors['rating'] is List ? _fieldErrors['rating'][0] : _fieldErrors['rating']?.toString(),
           ),
         ),
@@ -70,7 +75,7 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
         TextField(
           controller: _comment,
           decoration: InputDecoration(
-            labelText: 'Review',
+            labelText: l10n.review_label_review,
             errorText: _fieldErrors['comment'] is List ? _fieldErrors['comment'][0] : _fieldErrors['comment']?.toString(),
           ),
           maxLines: 3,
@@ -80,7 +85,7 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
           alignment: Alignment.centerRight,
           child: FilledButton(
             onPressed: _submit,
-            child: const Text('Submit review'),
+            child: Text(l10n.review_btn_submit),
           ),
         ),
       ],

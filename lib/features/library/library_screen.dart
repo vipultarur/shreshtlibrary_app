@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
@@ -35,8 +35,9 @@ class LibraryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return PageScaffold(
-      title: 'Library',
+      title: l10n.library_title,
       onRefresh: () async {
         ref.invalidate(libraryInfoProvider);
         ref.invalidate(facilitiesProvider);
@@ -51,7 +52,7 @@ class LibraryScreen extends ConsumerWidget {
           AsyncPane(
               value: ref.watch(libraryInfoProvider),
               builder: (info) => SectionCard(
-                title: 'Library Details',
+                title: l10n.library_details,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -104,43 +105,43 @@ class LibraryScreen extends ConsumerWidget {
                       ),
                     if (info.address != null)
                       InfoTile(
-                        label: 'Address',
+                        label: l10n.library_label_address,
                         value: info.address!,
                         icon: Icons.location_on_outlined,
                       ),
                     if (info.phonePrimary != null)
                       InfoTile(
-                        label: 'Phone',
+                        label: l10n.library_label_phone,
                         value: info.phonePrimary!,
                         icon: Icons.phone_outlined,
                       ),
                     if (info.email != null)
                       InfoTile(
-                        label: 'Email',
+                        label: l10n.library_label_email,
                         value: info.email!,
                         icon: Icons.mail_outline,
                       ),
                     if (info.whatsappNumber != null)
                       InfoTile(
-                        label: 'WhatsApp',
+                        label: l10n.library_label_whatsapp,
                         value: info.whatsappNumber!,
                         icon: Icons.chat_outlined,
                       ),
                     if (info.emergencyContact != null)
                       InfoTile(
-                        label: 'Emergency Contact',
+                        label: l10n.library_label_emergency_contact,
                         value: info.emergencyContact!,
                         icon: Icons.warning_amber_outlined,
                       ),
                     if (info.openingTime != null && info.closingTime != null)
                       InfoTile(
-                        label: 'Working Hours',
-                        value: '${info.openingTime} - ${info.closingTime} ${info.weeklyOff != null ? '(Off: ${info.weeklyOff})' : ''}',
+                        label: l10n.library_label_working_hours,
+                        value: '${info.openingTime} - ${info.closingTime} ${info.weeklyOff != null ? l10n.library_weekly_off(info.weeklyOff!) : ''}',
                         icon: Icons.access_time,
                       ),
                     if (info.website != null)
                       InfoTile(
-                        label: 'Website',
+                        label: l10n.library_label_website,
                         value: info.website!,
                         icon: Icons.language,
                       ),
@@ -156,14 +157,14 @@ class LibraryScreen extends ConsumerWidget {
                 children: [
                   if (info.totalCapacity != null || info.statisticsDescription != null)
                     SectionCard(
-                      title: 'Library Capacity & Stats',
+                      title: l10n.library_capacity_stats,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (info.totalCapacity != null)
-                            Text('Total Capacity: ${info.totalCapacity} Seats', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_total_capacity(info.totalCapacity!), style: const TextStyle(fontWeight: FontWeight.bold)),
                           if (info.availableSeats != null)
-                            Text('Currently Available: ${info.availableSeats} Seats', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                            Text(l10n.library_currently_available(info.availableSeats!), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
                           if (info.statisticsDescription != null) ...[
                             const SizedBox(height: 8),
                             Text(info.statisticsDescription!),
@@ -173,7 +174,7 @@ class LibraryScreen extends ConsumerWidget {
                     ),
                   if (info.welcomeMessage != null || info.history != null || info.mission != null || info.vision != null)
                     SectionCard(
-                      title: 'About Us',
+                      title: l10n.library_about_us,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -182,17 +183,17 @@ class LibraryScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                           ],
                           if (info.history != null) ...[
-                            const Text('History', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_history, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.history!),
                             const SizedBox(height: 12),
                           ],
                           if (info.mission != null) ...[
-                            const Text('Mission', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_mission, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.mission!),
                             const SizedBox(height: 12),
                           ],
                           if (info.vision != null) ...[
-                            const Text('Vision', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_vision, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.vision!),
                           ],
                         ],
@@ -201,17 +202,17 @@ class LibraryScreen extends ConsumerWidget {
                   if (info.services != null || info.coursesSupported != null) ...[
                     const SizedBox(height: 16),
                     SectionCard(
-                      title: 'Services & Courses',
+                      title: l10n.library_services_courses,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (info.services != null) ...[
-                            const Text('Services Offered', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_services_offered, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.services!),
                             const SizedBox(height: 12),
                           ],
                           if (info.coursesSupported != null) ...[
-                            const Text('Courses Supported', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_courses_supported, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.coursesSupported!),
                           ],
                         ],
@@ -221,27 +222,27 @@ class LibraryScreen extends ConsumerWidget {
                   if (info.membershipDetails != null || info.membershipBenefits != null) ...[
                     const SizedBox(height: 16),
                     SectionCard(
-                      title: 'Membership Information',
+                      title: l10n.library_membership_info,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (info.membershipDetails != null) ...[
-                            const Text('Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_details_lbl, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.membershipDetails!),
                             const SizedBox(height: 12),
                           ],
                           if (info.membershipBenefits != null) ...[
-                            const Text('Benefits', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_benefits_lbl, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.membershipBenefits!),
                             const SizedBox(height: 12),
                           ],
                           if (info.registrationProcess != null) ...[
-                            const Text('Registration Process', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_registration_process, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.registrationProcess!),
                             const SizedBox(height: 12),
                           ],
                           if (info.requiredDocuments != null) ...[
-                            const Text('Required Documents', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_required_documents, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.requiredDocuments!),
                           ],
                         ],
@@ -251,17 +252,17 @@ class LibraryScreen extends ConsumerWidget {
                   if (info.libraryRules != null || info.faq != null) ...[
                     const SizedBox(height: 16),
                     SectionCard(
-                      title: 'Rules & Guidelines',
+                      title: l10n.library_rules_guidelines,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (info.libraryRules != null) ...[
-                            const Text('Library Rules', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_rules, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.libraryRules!),
                             const SizedBox(height: 12),
                           ],
                           if (info.faq != null) ...[
-                            const Text('Frequently Asked Questions', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.library_faq, style: const TextStyle(fontWeight: FontWeight.bold)),
                             Text(info.faq!),
                           ],
                         ],
@@ -271,7 +272,7 @@ class LibraryScreen extends ConsumerWidget {
                   if (info.googleMapUrl != null && info.latitude != null && info.longitude != null) ...[
                     const SizedBox(height: 16),
                     SectionCard(
-                      title: 'Location',
+                      title: l10n.library_location,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -287,7 +288,7 @@ class LibraryScreen extends ConsumerWidget {
                               // Open google maps URL logic here
                             },
                             icon: const Icon(Icons.directions),
-                            label: const Text('Get Directions'),
+                            label: Text(l10n.library_get_directions),
                           ),
                         ],
                       ),
@@ -298,16 +299,16 @@ class LibraryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Facilities',
+              title: l10n.library_facilities,
               child: AsyncPane(
                 value: ref.watch(facilitiesProvider),
                 builder: (rows) => rows.isEmpty
-                    ? const Text('No facilities listed.')
+                    ? Text(l10n.library_no_facilities)
                     : Column(
                         children: rows
                             .map(
                               (facility) => InfoTile(
-                                label: facility.description ?? 'Facility',
+                                label: facility.description ?? l10n.library_facility_fallback,
                                 value: facility.name,
                                 icon: Icons.check_circle_outline,
                               ),
@@ -318,31 +319,31 @@ class LibraryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Featured Achievers',
+              title: l10n.library_featured_achievers,
               child: AsyncPane(
                 value: ref.watch(featuredAchieversProvider),
                 builder: (rows) => rows.isEmpty
-                    ? const Text('No featured achievers yet.')
+                    ? Text(l10n.library_no_featured_achievers)
                     : AchieverCarousel(rows),
               ),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'All Achievers',
+              title: l10n.library_all_achievers_title,
               child: AsyncPane(
                 value: ref.watch(achieversProvider),
                 builder: (rows) => rows.isEmpty
-                    ? const Text('No achievers yet.')
+                    ? Text(l10n.library_no_achievers)
                     : AchieverCarousel(rows),
               ),
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Gallery',
+              title: l10n.library_gallery,
               child: AsyncPane(
                 value: ref.watch(galleryImagesProvider),
                 builder: (rows) => rows.isEmpty
-                    ? const Text('No images yet.')
+                    ? Text(l10n.library_no_gallery_images)
                     : SizedBox(
                         height: 200,
                         child: ListView.separated(
@@ -366,14 +367,14 @@ class LibraryScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             SectionCard(
-              title: 'Reviews',
+              title: l10n.library_reviews,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AsyncPane(
                     value: ref.watch(reviewSummaryProvider),
                     builder: (summary) => Text(
-                      '${summary.averageRating.toStringAsFixed(1)} average from ${summary.count} reviews',
+                      l10n.library_reviews_summary(summary.averageRating.toStringAsFixed(1), summary.count),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -382,7 +383,7 @@ class LibraryScreen extends ConsumerWidget {
                   AsyncPane(
                     value: ref.watch(reviewsProvider),
                     builder: (rows) => rows.isEmpty
-                        ? const Text('No reviews yet.')
+                        ? Text(l10n.library_no_reviews)
                         : Column(
                             children: rows
                                 .map(
@@ -408,7 +409,7 @@ class LibraryScreen extends ConsumerWidget {
                 children: [
                   if (info.facebookUrl != null || info.instagramUrl != null || info.youtubeUrl != null || info.telegramUrl != null)
                     SectionCard(
-                      title: 'Social Media',
+                      title: l10n.library_social_media,
                       child: Wrap(
                         spacing: 16,
                         children: [

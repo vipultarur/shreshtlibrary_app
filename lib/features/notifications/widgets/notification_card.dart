@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:intl/intl.dart';
-
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shreshtlibrary/core/config/app_config.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart'; // For notificationsProvider
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class NotificationCard extends ConsumerWidget {
   const NotificationCard(this.item, {super.key});
@@ -18,15 +20,31 @@ class NotificationCard extends ConsumerWidget {
     try {
       await ref.read(studentApiProvider).markNotificationRead(item.id);
       ref.invalidate(notificationsProvider);
-      if (context.mounted) showSnack(context, 'Marked as read.');
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.noti_marked_read);
+      }
     } on ApiFailure catch (failure) {
       if (context.mounted) showSnack(context, failure.message);
     }
   }
 
-  void _launchUrl(String url) async {
-    if (url.isNotEmpty && await canLaunchUrlString(url)) {
-      await launchUrlString(url, mode: LaunchMode.externalApplication);
+  void _launchUrl(BuildContext context, String url) async {
+    if (url.isEmpty) return;
+    
+    if (url.startsWith('/') && !url.contains('.pdf') && !url.startsWith('/media/')) {
+      GoRouter.of(context).push(url);
+    } else {
+      String finalUrl = url;
+      if (url.startsWith('/')) {
+         final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
+             ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
+             : AppConfig.apiBaseUrl;
+         finalUrl = '$baseUrl$url';
+      }
+      if (await canLaunchUrlString(finalUrl)) {
+        await launchUrlString(finalUrl, mode: LaunchMode.externalApplication);
+      }
     }
   }
 
@@ -46,6 +64,7 @@ class NotificationCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isUnread = !item.isRead;
+    final l10n = AppLocalizations.of(context)!;
 
     Widget content;
     switch (item.layout) {
@@ -95,7 +114,7 @@ class NotificationCard extends ConsumerWidget {
                         ? TextButton.icon(
                             onPressed: () => _markRead(context, ref),
                             icon: const Icon(Icons.check, size: 16),
-                            label: const Text('Mark Read'),
+                            label: Text(l10n.noti_btn_mark_read),
                             style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
                           )
                         : Icon(Icons.done_all, color: theme.colorScheme.primary, size: 18),
@@ -262,12 +281,13 @@ class NotificationCard extends ConsumerWidget {
 
   Widget _buildLinkButton(BuildContext context) {
     if (item.linkUrl == null || item.linkUrl!.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: FilledButton.icon(
-        onPressed: () => _launchUrl(item.linkUrl!),
+        onPressed: () => _launchUrl(context, item.linkUrl!),
         icon: const Icon(Icons.open_in_new, size: 16),
-        label: Text(item.linkButtonText?.isNotEmpty == true ? item.linkButtonText! : 'View Details'),
+        label: Text(item.linkButtonText?.isNotEmpty == true ? item.linkButtonText! : l10n.noti_btn_view_details),
         style: FilledButton.styleFrom(
           visualDensity: VisualDensity.compact,
           backgroundColor: item.layout == 'background_image' ? Colors.white : Theme.of(context).colorScheme.primary,

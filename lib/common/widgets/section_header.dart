@@ -12,6 +12,9 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -19,10 +22,10 @@ class SectionHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF140C2C),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           TextButton(
@@ -35,7 +38,7 @@ class SectionHeader extends StatelessWidget {
             child: const Text(
               'View All',
               style: TextStyle(
-                color: Color(0xFF917CFF),
+                color: theme.colorScheme.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

@@ -9,6 +9,7 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/profile/profile_screen.dart'; // To access profileProvider
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ProfileEditor extends ConsumerStatefulWidget {
   const ProfileEditor({super.key, required this.profile});
@@ -86,7 +87,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             ),
           );
       ref.invalidate(profileProvider);
-      if (mounted) showSnack(context, 'Profile updated.');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.profile_updated);
+      }
     } on ApiFailure catch (failure) {
       if (mounted) {
         if (failure.errors is Map<String, dynamic>) {
@@ -111,7 +115,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     try {
       await ref.read(studentApiProvider).uploadProfilePhoto(image.path);
       ref.invalidate(profileProvider);
-      if (mounted) showSnack(context, 'Photo updated.');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.profile_photo_updated);
+      }
     } on ApiFailure catch (failure) {
       if (mounted) showSnack(context, failure.message);
     } finally {
@@ -119,36 +126,44 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     }
   }
 
-  InputDecoration _buildInputDecoration(String label, String? errorText) {
+  InputDecoration _buildInputDecoration(BuildContext context, String label, String? errorText) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InputDecoration(
       labelText: label,
       errorText: errorText,
       filled: true,
-      fillColor: const Color(0xFFF1EFFC),
+      fillColor: theme.colorScheme.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+        borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFCBB9FF), width: 1.5),
+        borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF917CFF), width: 2),
+        borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
+        borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      labelStyle: const TextStyle(color: Color(0xFF140C2C)),
+      labelStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final photo = widget.profile.profilePhoto;
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textColor = theme.textTheme.bodyLarge?.color;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -181,9 +196,9 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF140C2C),
+                      color: theme.colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
+                      border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.1),
@@ -203,10 +218,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         Center(
           child: Text(
             '${widget.profile.firstName} ${widget.profile.lastName}'.trim(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: textColor,
             ),
           ),
         ),
@@ -220,9 +235,9 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           ),
         ),
         const SizedBox(height: 32),
-        const Text(
-          'Personal Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+        Text(
+          l10n.profile_personal_info,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
         ),
         const SizedBox(height: 16),
         Row(
@@ -231,9 +246,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             Expanded(
               child: TextField(
                 controller: _firstName,
-                style: const TextStyle(color: Colors.black87),
+                style: TextStyle(color: textColor),
                 decoration: _buildInputDecoration(
-                  'First name',
+                  context,
+                  l10n.profile_first_name,
                   _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
                 ),
               ),
@@ -242,9 +258,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             Expanded(
               child: TextField(
                 controller: _lastName,
-                style: const TextStyle(color: Colors.black87),
+                style: TextStyle(color: textColor),
                 decoration: _buildInputDecoration(
-                  'Last name',
+                  context,
+                  l10n.profile_last_name,
                   _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
                 ),
               ),
@@ -255,27 +272,30 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         TextField(
           controller: _email,
           keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           decoration: _buildInputDecoration(
-            'Email',
+            context,
+            l10n.profile_email,
             _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
           ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _goal,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           decoration: _buildInputDecoration(
-            'Goal (e.g. UPSC, SSC)',
+            context,
+            l10n.profile_goal,
             _fieldErrors['goal'] is List ? _fieldErrors['goal'][0] : _fieldErrors['goal']?.toString(),
           ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _dob,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           decoration: _buildInputDecoration(
-            'Date of Birth (YYYY-MM-DD)',
+            context,
+            l10n.profile_dob,
             _fieldErrors['dob'] is List ? _fieldErrors['dob'][0] : _fieldErrors['dob']?.toString(),
           ),
         ),
@@ -283,22 +303,24 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         TextField(
           controller: _parentMobile,
           keyboardType: TextInputType.phone,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(10),
           ],
           decoration: _buildInputDecoration(
-            'Parent Mobile Number',
+            context,
+            l10n.profile_parent_mobile,
             _fieldErrors['parent_mobile'] is List ? _fieldErrors['parent_mobile'][0] : _fieldErrors['parent_mobile']?.toString(),
           ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _caste,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           decoration: _buildInputDecoration(
-            'Caste',
+            context,
+            l10n.profile_caste,
             _fieldErrors['caste'] is List ? _fieldErrors['caste'][0] : _fieldErrors['caste']?.toString(),
           ),
         ),
@@ -306,9 +328,10 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         TextField(
           controller: _address,
           maxLines: 3,
-          style: const TextStyle(color: Colors.black87),
+          style: TextStyle(color: textColor),
           decoration: _buildInputDecoration(
-            'Address',
+            context,
+            l10n.profile_address,
             _fieldErrors['address'] is List ? _fieldErrors['address'][0] : _fieldErrors['address']?.toString(),
           ),
         ),
@@ -318,21 +341,21 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           child: FilledButton(
             onPressed: _busy ? null : _save,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF917CFF),
-              foregroundColor: const Color(0xFF140C2C),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
             child: _busy
-                ? const SizedBox(
+                ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
+                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
-                : const Text(
-                    'Save Changes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF140C2C)),
+                : Text(
+                    l10n.profile_save_changes,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
                   ),
           ),
         ),

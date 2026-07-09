@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:shreshtlibrary/core/models/models.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/services/locale_provider.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
@@ -35,16 +37,137 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
 
+  String _getLanguageName(String code) {
+    switch (code) {
+      case 'hi':
+        return 'हिन्दी';
+      case 'gu':
+        return 'ગુજરાતી';
+      case 'en':
+      default:
+        return 'English';
+    }
+  }
+
+  void _showLanguagePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final activeLocale = ref.watch(localeProvider);
+            final l10n = AppLocalizations.of(context)!;
+            
+            return Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 100),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.profile_select_language,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildLanguageOption(
+                    context, 
+                    ref, 
+                    label: 'English', 
+                    code: 'en', 
+                    isActive: activeLocale.languageCode == 'en'
+                  ),
+                  const SizedBox(height: 12),
+                  _buildLanguageOption(
+                    context, 
+                    ref, 
+                    label: 'हिन्दी', 
+                    code: 'hi', 
+                    isActive: activeLocale.languageCode == 'hi'
+                  ),
+                  const SizedBox(height: 12),
+                  _buildLanguageOption(
+                    context, 
+                    ref, 
+                    label: 'ગુજરાતી', 
+                    code: 'gu', 
+                    isActive: activeLocale.languageCode == 'gu'
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption(
+    BuildContext context, 
+    WidgetRef ref, {
+    required String label, 
+    required String code, 
+    required bool isActive
+  }) {
+    return InkWell(
+      onTap: () {
+        ref.read(localeProvider.notifier).setLocale(code);
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive ? theme.colorScheme.primary : theme.dividerColor,
+            width: isActive ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? theme.colorScheme.primary : theme.textTheme.bodyLarge?.color,
+              ),
+            ),
+            if (isActive)
+              Icon(
+                Icons.check_circle,
+                color: theme.colorScheme.primary,
+              )
+            else
+              const SizedBox(width: 24, height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black87;
+    final locale = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: CommonAppBar(
-        title: 'Profile',
+        title: l10n.profile_title,
         rightIcon: Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: InkWell(
@@ -53,7 +176,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               width: 45,
               height: 45,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(Icons.more_horiz, color: textColor, size: 20),
@@ -76,38 +199,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               const ProfileSummaryCard(),
               
-              const SectionTitle('Account'),
+              SectionTitle(l10n.profile_section_account),
               SectionCard(
                 children: [
                   SettingsTile(
                     icon: Icons.person_outline,
-                    title: 'Account Information',
+                    title: l10n.profile_tile_info,
                     onTap: () => context.push('/profile/account'),
                   ),
                   SettingsTile(
                     icon: Icons.badge_outlined,
-                    title: 'Digital ID Card',
+                    title: l10n.profile_tile_id_card,
                     onTap: () => context.push('/profile/id-card'),
                     showDivider: false,
                   ),
                 ],
               ),
 
-              const SectionTitle('Accounts & Subscription'),
+              SectionTitle(l10n.profile_section_subscription),
               SectionCard(
                 children: [
                   SettingsTile(
                     icon: Icons.payment_outlined,
-                    title: 'My Payments',
+                    title: l10n.profile_tile_payments,
                     onTap: () => context.push('/payments'),
                   ),
                   SettingsTile(
                     icon: Icons.notifications_none,
-                    title: 'Notifications',
+                    title: l10n.profile_tile_notifications,
                     trailing: Switch(
                       value: _notificationsEnabled,
                       onChanged: (val) => setState(() => _notificationsEnabled = val),
-                      activeThumbColor: const Color(0xFF917CFF),
+                      activeThumbColor: theme.colorScheme.primary,
                     ),
                     onTap: () => setState(() => _notificationsEnabled = !_notificationsEnabled),
                     showDivider: false,
@@ -115,12 +238,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
 
-              const SectionTitle('Settings'),
+              SectionTitle(l10n.profile_settings),
               SectionCard(
                 children: [
                   SettingsTile(
+                    icon: Icons.language,
+                    title: l10n.profile_language,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _getLanguageName(locale.languageCode),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Colors.grey.shade400,
+                        ),
+                      ],
+                    ),
+                    onTap: () => _showLanguagePicker(context),
+                  ),
+                  SettingsTile(
                     icon: Icons.logout,
-                    title: 'Logout',
+                    title: l10n.profile_tile_logout,
                     onTap: () => ref.read(authControllerProvider.notifier).logout(),
                     iconColor: Colors.redAccent,
                     textColor: Colors.redAccent,
@@ -141,8 +287,9 @@ class ProfileSummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final dashAsync = ref.watch(dashboardProvider);
-    final status = dashAsync.value?.membershipStatus ?? 'Loading...';
+    final status = dashAsync.value?.membershipStatus ?? l10n.profile_label_loading;
     
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -204,7 +351,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      profile.email.isNotEmpty ? profile.email : 'No email provided',
+                      profile.email.isNotEmpty ? profile.email : l10n.profile_no_email,
                       style: TextStyle(
                         fontSize: 13,
                         color: secondaryTextColor,
@@ -233,7 +380,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                       Icon(Icons.edit_outlined, size: 16, color: textColor),
                       const SizedBox(width: 6),
                       Text(
-                        'Edit',
+                        l10n.profile_edit_btn,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
                       ),
                     ],
@@ -368,9 +515,11 @@ class AccountInfoScreen extends ConsumerWidget {
   const AccountInfoScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CommonAppBar(title: 'Account Information'),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CommonAppBar(title: l10n.profile_tile_info),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: AsyncPane(
@@ -386,9 +535,13 @@ class IdCardScreen extends ConsumerWidget {
   const IdCardScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CommonAppBar(title: 'Digital ID Card'),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CommonAppBar(title: l10n.profile_tile_id_card),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: AsyncPane(
@@ -396,23 +549,23 @@ class IdCardScreen extends ConsumerWidget {
           builder: (card) => Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1EFFC),
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               children: [
                 InfoTile(
-                  label: 'Name',
+                  label: l10n.profile_label_name,
                   value: card.fullName,
                   icon: Icons.badge_outlined,
                 ),
                 InfoTile(
-                  label: 'Mobile',
+                  label: l10n.profile_label_mobile,
                   value: card.mobile,
                   icon: Icons.phone_outlined,
                 ),
                 InfoTile(
-                  label: 'Goal',
+                  label: l10n.profile_label_goal,
                   value: card.goal,
                   icon: Icons.flag_outlined,
                 ),
@@ -420,18 +573,18 @@ class IdCardScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.qr_code_2, size: 24, color: Colors.black54),
+                      Icon(Icons.qr_code_2, size: 24, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6)),
                       const SizedBox(width: 8),
                       SelectableText(
                         card.qrData,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.textTheme.bodyLarge?.color),
                       ),
                     ],
                   ),
@@ -449,20 +602,21 @@ class ReferralsScreen extends ConsumerWidget {
   const ReferralsScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Referrals', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CommonAppBar(
+        title: l10n.profile_tile_referrals,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Referral Program', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(l10n.profile_referral_program, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color)),
             const SizedBox(height: 16),
             AsyncPane(
               value: ref.watch(referralProvider),
@@ -470,17 +624,17 @@ class ReferralsScreen extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF140C2C), Color(0xFF2C1B54)],
+                  gradient: LinearGradient(
+                    colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
                   ),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Your Referral Code',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    Text(
+                      l10n.profile_your_referral_code,
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const SizedBox(height: 8),
                     SelectableText(
@@ -494,8 +648,8 @@ class ReferralsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Used by ${referral.usedByCount} students',
-                      style: const TextStyle(color: Color(0xFFCBB9FF), fontSize: 14),
+                      l10n.profile_referral_used_by(referral.usedByCount),
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
                 ),
@@ -504,9 +658,9 @@ class ReferralsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             const ReferralApplyForm(),
             const SizedBox(height: 24),
-            const Text(
-              'Referral History',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            Text(
+              l10n.profile_referral_history,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
             ),
             const SizedBox(height: 16),
             AsyncPane(
@@ -515,11 +669,11 @@ class ReferralsScreen extends ConsumerWidget {
                   ? Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: isDark ? theme.colorScheme.surface : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: const Center(
-                        child: Text('No referral history yet.', style: TextStyle(color: Colors.grey)),
+                      child: Center(
+                        child: Text(l10n.profile_no_referral_history, style: const TextStyle(color: Colors.grey)),
                       ),
                     )
                   : Column(
@@ -529,9 +683,9 @@ class ReferralsScreen extends ConsumerWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade200),
+                                border: Border.all(color: theme.dividerColor),
                               ),
                               child: InfoTile(
                                 label: row.appliedAt,

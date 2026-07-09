@@ -5,6 +5,7 @@ import 'package:shreshtlibrary/common/widgets/widgets.dart'; // Keep old path fo
 import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -44,6 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (_busy) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final input = _email.text.trim();
     final password = _password.text;
 
@@ -54,21 +56,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool hasError = false;
 
     if (input.isEmpty) {
-      _clientErrors['email'] = 'Email or mobile number is required';
+      _clientErrors['email'] = l10n.err_required;
       hasError = true;
     } else {
       final isMobile = RegExp(r'^[0-9]+$').hasMatch(input);
       if (isMobile && !RegExp(r'^[0-9]{10}$').hasMatch(input)) {
-        _clientErrors['email'] = 'Mobile number must contain exactly 10 digits.';
+        _clientErrors['email'] = l10n.err_invalid_mobile;
         hasError = true;
       } else if (!isMobile && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input)) {
-        _clientErrors['email'] = 'Please enter a valid email address.';
+        _clientErrors['email'] = l10n.err_invalid_email;
         hasError = true;
       }
     }
 
     if (password.isEmpty) {
-      _clientErrors['password'] = 'Password is required';
+      _clientErrors['password'] = l10n.err_required;
       hasError = true;
     }
 
@@ -88,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
-      showSnack(context, 'Login successful!');
+      showSnack(context, l10n.login_success);
       final state = GoRouterState.of(context);
       final redirectTo = state.uri.queryParameters['redirect_to'];
       if (redirectTo != null && redirectTo.isNotEmpty) {
@@ -97,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context.go('/home');
       }
     } else {
-      _handleError(ref.read(authControllerProvider), 'Login failed.');
+      _handleError(ref.read(authControllerProvider), l10n.login_failed);
     }
   }
 
@@ -114,25 +116,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return fieldError?.toString();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return AuthLayout(
-      title: 'Welcome Back',
-      subtitle: 'Sign in to continue your learning journey',
+      title: l10n.login_title,
+      subtitle: l10n.login_subtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Sign In',
+          Text(
+            l10n.login_btn,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF140C2C),
+              color: theme.textTheme.bodyLarge?.color,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
           AuthTextField(
-            label: 'Email / Mobile',
-            hint: 'Enter your email or mobile',
+            label: l10n.login_email_mobile_label,
+            hint: l10n.login_email_mobile_hint,
             controller: _email,
             suffixIcon: Icons.person_outline,
             errorText: errorFor('email') ?? errorFor('mobile') ?? errorFor('username'),
@@ -144,8 +149,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           const SizedBox(height: 20),
           AuthTextField(
-            label: 'Password',
-            hint: 'Enter your password',
+            label: l10n.login_password_label,
+            hint: l10n.login_password_hint,
             controller: _password,
             obscureText: _obscurePassword,
             suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -168,13 +173,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Checkbox(
                       value: _rememberMe,
                       onChanged: (v) => setState(() => _rememberMe = v ?? false),
-                      activeColor: const Color(0xFF140C2C),
+                      activeColor: theme.colorScheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     ),
-                    const Flexible(
+                    Flexible(
                       child: Text(
-                        'Remember me', 
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                        l10n.login_remember_me, 
+                        style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -191,7 +196,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     context.go('/forgot-password');
                   }
                 },
-                child: const Text('Forgot Password?', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
+                child: Text(l10n.login_forgot_pwd, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -199,8 +204,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ElevatedButton(
             onPressed: disabled ? null : _login,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF917CFF),
-              foregroundColor: const Color(0xFF140C2C),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -211,15 +216,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Color(0xFF140C2C), strokeWidth: 2),
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
-                : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                : Text(l10n.login_btn, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Don't have an account?", style: TextStyle(color: Colors.black54)),
+              Text(l10n.login_no_acc, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6))),
               TextButton(
                 onPressed: () {
                   final state = GoRouterState.of(context);
@@ -230,7 +235,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     context.go('/register');
                   }
                 },
-                child: const Text('Sign Up', style: TextStyle(color: Color(0xFF140C2C), fontWeight: FontWeight.bold)),
+                child: Text(l10n.login_sign_up, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

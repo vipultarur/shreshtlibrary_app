@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ReferralApplyForm extends ConsumerStatefulWidget {
   const ReferralApplyForm({super.key});
@@ -26,7 +27,10 @@ class _ReferralApplyFormState extends ConsumerState<ReferralApplyForm> {
     setState(() => _fieldErrors = {});
     try {
       await ref.read(studentApiProvider).applyReferral(_code.text.trim());
-      if (mounted) showSnack(context, 'Referral code is valid.');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        showSnack(context, l10n.referral_code_valid);
+      }
     } on ApiFailure catch (failure) {
       if (mounted) {
         if (failure.errors is Map<String, dynamic>) {
@@ -41,19 +45,20 @@ class _ReferralApplyFormState extends ConsumerState<ReferralApplyForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _code,
             decoration: InputDecoration(
-              labelText: 'Apply referral code',
+              labelText: l10n.referral_apply_label,
               errorText: _fieldErrors['code'] is List ? _fieldErrors['code'][0] : _fieldErrors['code']?.toString(),
             ),
           ),
         ),
         const SizedBox(width: 10),
-        FilledButton(onPressed: _apply, child: const Text('Apply')),
+        FilledButton(onPressed: _apply, child: Text(l10n.referral_btn_apply)),
       ],
     );
   }
