@@ -62,14 +62,25 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       final isNumber = RegExp(r'^[0-9]+$').hasMatch(identifier);
       if (isNumber) {
         setState(() {
-          _fieldErrors = {'identifier': 'Enter email, option send on mail.'};
+          _fieldErrors = {'identifier': 'WhatsApp is disabled. Please enter your email address.'};
           _requesting = false;
         });
         return;
       }
-      if (!identifier.contains('@')) {
+      if (!identifier.contains('@') || !identifier.contains('.')) {
         setState(() {
-          _fieldErrors = {'identifier': 'Please enter a valid email address.'};
+          _fieldErrors = {'identifier': 'Please enter a valid email address (e.g. student@gmail.com).'};
+          _requesting = false;
+        });
+        return;
+      }
+    } else {
+      // WhatsApp enabled: must be either email or 10-digit number
+      final isEmail = identifier.contains('@');
+      final isMobile = RegExp(r'^[0-9]{10,}$').hasMatch(identifier);
+      if (!isEmail && !isMobile) {
+        setState(() {
+          _fieldErrors = {'identifier': 'Enter a valid email or mobile number.'};
           _requesting = false;
         });
         return;
@@ -82,8 +93,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() {
           _requesting = false;
         });
-        final l10n = AppLocalizations.of(context)!;
-        showSnack(context, 'OTP sent to your email.');
+        showSnack(context, 'OTP sent! Check your email.');
         context.go('/reset-password?identifier=${Uri.encodeComponent(identifier)}');
       }
     } on ApiFailure catch (failure) {
@@ -128,10 +138,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           const SizedBox(height: 32),
           AuthTextField(
             label: _whatsappEnabled ? l10n.forgot_pwd_label_input : l10n.register_email,
-            hint: _whatsappEnabled ? l10n.forgot_pwd_hint_input : l10n.register_email_hint,
+            hint: _whatsappEnabled ? l10n.forgot_pwd_hint_input : 'student@gmail.com',
             controller: _identifier,
-            keyboardType: _whatsappEnabled ? TextInputType.emailAddress : TextInputType.emailAddress,
-            suffixIcon: Icons.account_circle_outlined,
+            keyboardType: TextInputType.emailAddress,
+            suffixIcon: Icons.email_outlined,
             errorText: _fieldErrors['identifier'] is List ? _fieldErrors['identifier'][0] : (_fieldErrors['identifier'] ?? _fieldErrors['email'])?.toString(),
           ),
           const SizedBox(height: 24),
