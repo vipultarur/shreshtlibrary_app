@@ -153,13 +153,10 @@ class _NavBarItem extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ColorFiltered(
-              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-              child: SvgPicture.asset(
-                iconPath,
-                height: 24,
-                width: 24,
-              ),
+            SvgPicture.asset(
+              iconPath,
+              height: 24,
+              width: 24,
             ),
             if (isSelected) ...[
               const SizedBox(width: 4),
