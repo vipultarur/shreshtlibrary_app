@@ -12,6 +12,7 @@ import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
+import 'package:shreshtlibrary/core/theme/theme_provider.dart';
 
 final profileProvider = FutureProvider.autoDispose<StudentProfile>(
   (ref) => ref.watch(studentApiProvider).profile(),
@@ -156,12 +157,132 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  String _getThemeName(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+      default:
+        return 'System Default';
+    }
+  }
+
+  void _showThemePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final activeTheme = ref.watch(themeModeProvider);
+            
+            return Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 100),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'App Theme',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildThemeOption(
+                    context, 
+                    ref, 
+                    label: 'System Default', 
+                    mode: ThemeMode.system, 
+                    isActive: activeTheme == ThemeMode.system
+                  ),
+                  const SizedBox(height: 12),
+                  _buildThemeOption(
+                    context, 
+                    ref, 
+                    label: 'Light', 
+                    mode: ThemeMode.light, 
+                    isActive: activeTheme == ThemeMode.light
+                  ),
+                  const SizedBox(height: 12),
+                  _buildThemeOption(
+                    context, 
+                    ref, 
+                    label: 'Dark', 
+                    mode: ThemeMode.dark, 
+                    isActive: activeTheme == ThemeMode.dark
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context, 
+    WidgetRef ref, {
+    required String label, 
+    required ThemeMode mode, 
+    required bool isActive
+  }) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () {
+        ref.read(themeModeProvider.notifier).setTheme(mode);
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive ? theme.colorScheme.primary : theme.dividerColor,
+            width: isActive ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? theme.colorScheme.primary : theme.textTheme.bodyLarge?.color,
+              ),
+            ),
+            if (isActive)
+              Icon(
+                Icons.check_circle,
+                color: theme.colorScheme.primary,
+              )
+            else
+              const SizedBox(width: 24, height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black87;
     final locale = ref.watch(localeProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -241,6 +362,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               SectionTitle(l10n.profile_settings),
               SectionCard(
                 children: [
+                  SettingsTile(
+                    icon: Icons.brightness_6_outlined,
+                    title: 'App Theme',
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _getThemeName(themeMode),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Colors.grey.shade400,
+                        ),
+                      ],
+                    ),
+                    onTap: () => _showThemePicker(context),
+                  ),
                   SettingsTile(
                     icon: Icons.language,
                     title: l10n.profile_language,
