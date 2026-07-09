@@ -117,6 +117,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String code, 
     required bool isActive
   }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () {
         ref.read(localeProvider.notifier).setLocale(code);
@@ -278,8 +279,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scaffoldBg = theme.scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black87;
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);

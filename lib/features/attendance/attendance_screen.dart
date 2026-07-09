@@ -10,6 +10,7 @@ import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 final attendanceLogsProvider =
     FutureProvider.autoDispose<List<AttendanceRecord>>((ref) {

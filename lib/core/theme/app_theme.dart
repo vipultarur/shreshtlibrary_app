@@ -123,7 +123,7 @@ class AppTheme {
         selectedItemColor: AppColors.darkPrimary,
         unselectedItemColor: AppColors.darkNavUnselected,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(

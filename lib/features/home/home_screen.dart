@@ -535,6 +535,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildAchievers() {
     final achieversAsync = ref.watch(achieversProvider);
+    final theme = Theme.of(context);
 
     final l10n = AppLocalizations.of(context)!;
     return Column(
@@ -659,6 +660,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildFacilities() {
     final facilitiesAsync = ref.watch(facilitiesProvider);
+    final theme = Theme.of(context);
 
     final l10n = AppLocalizations.of(context)!;
     return Column(

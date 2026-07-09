@@ -35,7 +35,7 @@ class SectionHeader extends StatelessWidget {
               minimumSize: const Size(50, 30),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
+            child: Text(
               'View All',
               style: TextStyle(
                 color: theme.colorScheme.primary,

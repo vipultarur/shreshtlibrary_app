@@ -48,7 +48,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                       child: IconButton(
                         icon: Icon(Icons.arrow_back, color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color),
-                        onPressed: onBackPressed ?? () {
+                        onPressed: () {
                           if (canPop) {
                             context.pop();
                           }
