@@ -85,6 +85,14 @@ class StudentApi {
     _client.unwrap(response, (_) => null);
   }
 
+  Future<void> verifyForgotPasswordOtp(String identifier, String token) async {
+    final response = await _client.post<dynamic>(
+      '/auth/forgot-password/verify',
+      data: {'identifier': identifier, 'token': token},
+    );
+    _client.unwrap(response, (_) => null);
+  }
+
   Future<void> resetPassword(String identifier, String token, String password) async {
     final response = await _client.post<dynamic>(
       '/auth/reset-password',

@@ -169,6 +169,9 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> forgotPassword(String identifier) => _api.forgotPassword(identifier);
 
+  Future<void> verifyForgotPasswordOtp(String identifier, String token) =>
+      _api.verifyForgotPasswordOtp(identifier, token);
+
   Future<void> resetPassword(String identifier, String token, String password) =>
       _api.resetPassword(identifier, token, password);
 

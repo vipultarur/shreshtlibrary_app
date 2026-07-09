@@ -9,6 +9,7 @@ import 'package:shreshtlibrary/features/auth/presentation/screens/maintenance_sc
 import 'package:shreshtlibrary/features/auth/presentation/screens/login_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/register_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/verify_reset_otp_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/splash_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/language_selection_screen.dart';
@@ -85,6 +86,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/login' ||
           path == '/register' ||
           path == '/forgot-password' ||
+          path == '/verify-reset-otp' ||
           path == '/reset-password' ||
           path == '/maintenance' ||
           path == '/splash' ||
@@ -105,7 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login?redirect_to=$currentUrl';
       }
       
-      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password' || path == '/reset-password')) {
+      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password' || path == '/verify-reset-otp' || path == '/reset-password')) {
         final redirectTo = state.uri.queryParameters['redirect_to'];
         if (redirectTo != null && redirectTo.isNotEmpty) {
           return Uri.decodeComponent(redirectTo);
@@ -143,10 +145,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
+        path: '/verify-reset-otp',
+        builder: (context, state) {
+          final identifier = state.uri.queryParameters['identifier'] ?? '';
+          return VerifyResetOtpScreen(identifier: identifier);
+        },
+      ),
+      GoRoute(
         path: '/reset-password',
         builder: (context, state) {
           final identifier = state.uri.queryParameters['identifier'] ?? '';
-          return ResetPasswordScreen(identifier: identifier);
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ResetPasswordScreen(identifier: identifier, token: token);
         },
       ),
       StatefulShellRoute.indexedStack(

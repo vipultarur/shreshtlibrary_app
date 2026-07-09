@@ -94,7 +94,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           _requesting = false;
         });
         showSnack(context, 'OTP sent! Check your email.');
-        context.go('/reset-password?identifier=${Uri.encodeComponent(identifier)}');
+        context.go('/verify-reset-otp?identifier=${Uri.encodeComponent(identifier)}');
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
