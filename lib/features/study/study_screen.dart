@@ -653,7 +653,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
@@ -741,7 +741,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(

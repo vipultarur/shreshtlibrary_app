@@ -390,6 +390,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
             colorScheme: isDark 
@@ -583,13 +584,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     onPressed: _verifyingOtp ? null : _verifyOtp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: _verifyingOtp
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2))
                         : Text(l10n.register_verify_otp),
                   ),
                 ],
@@ -638,7 +639,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -800,7 +801,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onChanged: (value) => setState(() => _goal = value ?? 'Other'),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: theme.colorScheme.surface,
+                        fillColor: theme.colorScheme.primaryContainer,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -879,7 +880,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             onPressed: _busy ? null : _register,
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: theme.colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -887,10 +888,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               elevation: 0,
             ),
             child: _busy
-                ? const SizedBox(
+                ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2),
                   )
                 : Text(l10n.register_title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
           ),

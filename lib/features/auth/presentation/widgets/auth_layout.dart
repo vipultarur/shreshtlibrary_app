@@ -18,11 +18,11 @@ class AuthLayout extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+      backgroundColor: theme.colorScheme.primary,
       body: Column(
         children: [
           Container(
-            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+            color: theme.colorScheme.primary,
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 20,
               bottom: 24,
@@ -35,18 +35,18 @@ class AuthLayout extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.w900,
-                    color: theme.textTheme.headlineLarge?.color,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
-                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                    color: Colors.white70,
                   ),
                 ),
               ],

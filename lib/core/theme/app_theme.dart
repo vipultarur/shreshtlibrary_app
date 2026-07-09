@@ -10,8 +10,11 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       colorScheme: const ColorScheme.light(
         primary: AppColors.lightPrimary,
+        onPrimary: AppColors.lightOnPrimary,
+        primaryContainer: AppColors.lightPrimaryContainer,
         secondary: AppColors.lightSecondary,
         surface: AppColors.lightSurface,
+        onSurfaceVariant: AppColors.lightSecondary, // C4B8FF
         error: AppColors.lightError,
       ),
       textTheme: const TextTheme(
@@ -24,7 +27,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.lightPrimary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.lightOnPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -57,6 +60,11 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
       ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.lightPrimary,
+        unselectedItemColor: AppColors.lightSecondary,
+      ),
       dividerColor: AppColors.lightBorder,
     );
   }
@@ -68,11 +76,12 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.darkPrimary,
+        primaryContainer: AppColors.darkPrimaryContainer,
         secondary: AppColors.darkSecondary,
         surface: AppColors.darkSurface,
         error: AppColors.darkError,
         onSurface: AppColors.darkTextPrimary,
-        onPrimary: AppColors.darkBackground,
+        onPrimary: Colors.white,
       ),
       textTheme: const TextTheme(
         displayLarge: AppTextStyles.darkHeadline1,
@@ -85,7 +94,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.darkPrimary,
-          foregroundColor: AppColors.darkBackground,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -96,7 +105,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.darkSurface,
+        fillColor: AppColors.darkPrimaryContainer,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.darkBorder),

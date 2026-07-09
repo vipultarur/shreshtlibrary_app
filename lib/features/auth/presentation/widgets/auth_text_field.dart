@@ -42,7 +42,6 @@ class AuthTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +75,7 @@ class AuthTextField extends StatelessWidget {
             hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
             errorText: errorText,
             filled: true,
-            fillColor: theme.colorScheme.surface,
+            fillColor: theme.colorScheme.primaryContainer,
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

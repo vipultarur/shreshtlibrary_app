@@ -39,7 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Column(
         children: [
           Container(
-            color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
+            color: theme.colorScheme.primary.withValues(alpha: isDark ? 0.1 : 0.2),
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             child: _buildHeader(ref),
           ),
@@ -59,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
+                        color: theme.colorScheme.primary.withValues(alpha: isDark ? 0.1 : 0.2),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(40),
                           bottomRight: Radius.circular(40),
@@ -180,7 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: IconButton(
-              icon: Icon(Icons.notifications_none, color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color),
+              icon: Icon(Icons.notifications_none, color: theme.textTheme.bodyLarge?.color),
               onPressed: () {
                 final dash = ref.read(dashboardProvider).value;
                 if (dash != null && dash.restrictedFeatures.contains('notifications')) {
@@ -217,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 4),
@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           : dashboard.fullName.toLowerCase(),
                       style: TextStyle(
                         fontSize: 22,
-                        color: isDark ? AppColors.darkPrimaryText : Colors.white,
+                        color: theme.textTheme.bodyLarge?.color,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -697,9 +697,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           width: 100, // Increased from 70
                           height: 100, // Increased from 70
                           decoration: BoxDecoration(
-                            color: Colors.transparent, // Show background through
+                            color: theme.colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white, width: 3),
+                            border: Border.all(color: theme.dividerColor, width: 1.5),
                             image: (photo != null && photo.isNotEmpty)
                                 ? DecorationImage(
                                     image: CachedNetworkImageProvider(

@@ -128,13 +128,12 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
 
   InputDecoration _buildInputDecoration(BuildContext context, String label, String? errorText) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     
     return InputDecoration(
       labelText: label,
       errorText: errorText,
       filled: true,
-      fillColor: theme.colorScheme.surface,
+      fillColor: theme.colorScheme.primaryContainer,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
@@ -161,7 +160,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     final photo = widget.profile.profilePhoto;
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final textColor = theme.textTheme.bodyLarge?.color;
     
     return Column(
@@ -207,7 +205,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                    child: Icon(Icons.camera_alt, size: 20, color: theme.colorScheme.onPrimary),
                   ),
                 ),
               ),
@@ -342,7 +340,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             onPressed: _busy ? null : _save,
             style: FilledButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: theme.colorScheme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -351,11 +349,11 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                 ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2),
                   )
                 : Text(
                     l10n.profile_save_changes,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: theme.colorScheme.onPrimary),
                   ),
           ),
         ),

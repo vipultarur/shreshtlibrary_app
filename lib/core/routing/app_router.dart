@@ -9,6 +9,7 @@ import 'package:shreshtlibrary/features/auth/presentation/screens/maintenance_sc
 import 'package:shreshtlibrary/features/auth/presentation/screens/login_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/register_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/splash_screen.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/language_selection_screen.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
@@ -84,6 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/login' ||
           path == '/register' ||
           path == '/forgot-password' ||
+          path == '/reset-password' ||
           path == '/loading' ||
           path == '/maintenance' ||
           path == '/splash' ||
@@ -104,7 +106,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login?redirect_to=$currentUrl';
       }
       
-      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password')) {
+      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password' || path == '/reset-password')) {
         final redirectTo = state.uri.queryParameters['redirect_to'];
         if (redirectTo != null && redirectTo.isNotEmpty) {
           return Uri.decodeComponent(redirectTo);
@@ -144,6 +146,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) {
+          final identifier = state.uri.queryParameters['identifier'] ?? '';
+          return ResetPasswordScreen(identifier: identifier);
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
