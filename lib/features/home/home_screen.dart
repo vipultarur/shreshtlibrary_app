@@ -650,7 +650,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 4,
+              itemBuilder: (context, index) => Container(
+                width: 120,
+                margin: const EdgeInsets.only(right: 12),
+                child: Shimmer.fromColors(
+                  baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                  highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             error: (_, _) => const SizedBox.shrink(),
           ),
         ),
@@ -728,7 +746,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 4,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Column(
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                      highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Shimmer.fromColors(
+                      baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                      highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                      child: Container(
+                        width: 80,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             error: (_, _) => const SizedBox.shrink(),
           ),
         ),

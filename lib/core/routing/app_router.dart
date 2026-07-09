@@ -86,7 +86,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/register' ||
           path == '/forgot-password' ||
           path == '/reset-password' ||
-          path == '/loading' ||
           path == '/maintenance' ||
           path == '/splash' ||
           path == '/language-selection';
@@ -95,7 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (path == '/splash' || path == '/language-selection') {
           return null;
         }
-        return path == '/loading' ? null : '/loading';
+        return '/splash';
       }
       if (auth.isMaintenance) {
         return path == '/maintenance' ? null : '/maintenance';
@@ -129,10 +128,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/language-selection',
         builder: (context, state) => const LanguageSelectionScreen(),
-      ),
-      GoRoute(
-        path: '/loading',
-        builder: (context, state) => const LoadingScreen(),
       ),
       GoRoute(
         path: '/maintenance',
@@ -353,11 +348,3 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}

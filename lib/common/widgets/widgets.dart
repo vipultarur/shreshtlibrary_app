@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
@@ -186,10 +187,22 @@ class AsyncPane<T> extends StatelessWidget {
     final theme = Theme.of(context);
     return value.when(
       data: builder,
-      loading: () => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: CircularProgressIndicator(color: theme.colorScheme.primary),
+      loading: () => ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: 6,
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Shimmer.fromColors(
+            baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+            highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+            child: Container(
+              height: 100,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
         ),
       ),
       error: (error, _) => ErrorPane(error: error),

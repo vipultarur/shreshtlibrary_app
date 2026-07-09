@@ -190,7 +190,6 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<bool> _completeLogin(Future<LoginResult> Function() action) async {
-    state = const AuthState.loading();
     try {
       final result = await action();
       await ref.read(tokenStoreProvider).save(result.tokens);

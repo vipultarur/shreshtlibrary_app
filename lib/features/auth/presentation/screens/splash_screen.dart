@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
+import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -36,11 +37,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
+    // Wait until auth is no longer loading
+    while (ref.read(authControllerProvider).isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+
     final cache = ref.read(localCacheServiceProvider);
-    if (cache.hasSelectedLanguage()) {
+    final auth = ref.read(authControllerProvider);
+    
+    if (!cache.hasSelectedLanguage()) {
+      context.go('/language-selection');
+    } else if (auth.isAuthenticated) {
       context.go('/home');
     } else {
-      context.go('/language-selection');
+      context.go('/login');
     }
   }
 

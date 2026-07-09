@@ -244,7 +244,30 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 ),
               );
             },
-            loading: () => SizedBox(height: 425, child: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))),
+            loading: () => Container(
+              height: 425,
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Shimmer.fromColors(
+                baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                child: Column(
+                  children: [
+                    Container(height: 160, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32))),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24)))),
+                        const SizedBox(width: 12),
+                        Expanded(child: Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24)))),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24))),
+                  ],
+                ),
+              ),
+            ),
             error: (_, __) => SizedBox(height: 425, child: Center(child: Text(l10n.study_failed_chart))),
           ),
         ],
@@ -580,9 +603,16 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     
     final logsAsync = ref.watch(attendanceLogsProvider);
     if (logsAsync.isLoading) {
-      return SizedBox(
+      return Container(
         height: 300,
-        child: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        child: Shimmer.fromColors(
+          baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+          highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+          child: Container(
+            decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32)),
+          ),
+        ),
       );
     }
     
@@ -642,9 +672,16 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     }
 
     if (state.status == StudySessionStatus.starting) {
-      return SizedBox(
+      return Container(
         height: 300,
-        child: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        child: Shimmer.fromColors(
+          baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+          highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+          child: Container(
+            decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32)),
+          ),
+        ),
       );
     }
 
