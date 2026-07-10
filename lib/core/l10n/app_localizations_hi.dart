@@ -926,4 +926,17 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get lib_no_facilities => 'कोई सुविधा सूचीबद्ध नहीं है।';
+
+  @override
+  String get err_failed_load_permissions => 'अनुमतियां लोड करने में विफल।';
+
+  @override
+  String get err_check_connection =>
+      'कृपया अपने कनेक्शन की जांच करें और पुनः प्रयास करें।';
+
+  @override
+  String get err_no_internet => 'कोई इंटरनेट कनेक्शन नहीं';
+
+  @override
+  String get btn_retry => 'पुनः प्रयास करें';
 }

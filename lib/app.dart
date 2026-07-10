@@ -14,6 +14,7 @@ import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/locale_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shreshtlibrary/core/config/app_config.dart';
+import 'package:shreshtlibrary/common/widgets/connectivity_wrapper.dart';
 
 class ShreshtStudentApp extends ConsumerStatefulWidget {
   const ShreshtStudentApp({super.key});
@@ -179,6 +180,11 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
+      builder: (context, child) {
+        return ConnectivityWrapper(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       locale: locale,
       localizationsDelegates: const [

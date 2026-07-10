@@ -356,5 +356,9 @@
   "lib_title_achievers": "બધા સફળ વિદ્યાર્થીઓ",
   "lib_no_achievers": "કોઈ સફળ વિદ્યાર્થીઓ સૂચિબદ્ધ નથી.",
   "lib_title_facilities": "બધી સુવિધાઓ",
-  "lib_no_facilities": "કોઈ સુવિધાઓ સૂચિબદ્ધ નથી."
+  "lib_no_facilities": "કોઈ સુવિધાઓ સૂચિબદ્ધ નથી.",
+  "err_failed_load_permissions": "પરવાનગીઓ લોડ કરવામાં નિષ્ફળ.",
+  "err_check_connection": "કૃપા કરીને તમારું કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.",
+  "err_no_internet": "કોઈ ઇન્ટરનેટ કનેક્શન નથી",
+  "btn_retry": "ફરી પ્રયાસ કરો"
 }

@@ -924,4 +924,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lib_no_facilities => 'No facilities listed.';
+
+  @override
+  String get err_failed_load_permissions => 'Failed to load permissions.';
+
+  @override
+  String get err_check_connection =>
+      'Please check your connection and try again.';
+
+  @override
+  String get err_no_internet => 'No Internet Connection';
+
+  @override
+  String get btn_retry => 'Retry';
 }

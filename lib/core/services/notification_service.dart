@@ -13,6 +13,30 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
 });
 
+// ─── Notification Icons Helper ────────────────────────────────────────────────
+String _addIconToTitle(String title, String body, String type) {
+  final lowerTitle = title.toLowerCase();
+  final lowerBody = body.toLowerCase();
+  
+  if (lowerTitle.contains('absent') || lowerBody.contains('absent')) {
+    return '❌ $title';
+  } else if (lowerTitle.contains('alert') || lowerBody.contains('alert') || lowerTitle.contains('warning')) {
+    return '🚨 $title';
+  } else if (lowerTitle.contains('present') || lowerBody.contains('present')) {
+    return '✅ $title';
+  } else if (type.toUpperCase() == 'ATTENDANCE') {
+    return '📅 $title';
+  } else if (type.toUpperCase() == 'BILLING' || type.toUpperCase() == 'EXPIRY') {
+    return '💰 $title';
+  } else if (type.toUpperCase() == 'ACCOUNT') {
+    return '👤 $title';
+  } else if (lowerTitle.contains('success')) {
+    return '✅ $title';
+  }
+  
+  return '🔔 $title';
+}
+
 // ─── Background handler (top-level, @pragma required) ────────────────────────
 // This fires when the app is BACKGROUND or TERMINATED and a data-only FCM
 // message arrives. It creates a local notification manually.
@@ -22,7 +46,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   final plugin = FlutterLocalNotificationsPlugin();
   const androidSettings =
-      AndroidInitializationSettings('@drawable/ic_notification');
+      AndroidInitializationSettings('@drawable/nlogo');
   await plugin.initialize(
       settings: const InitializationSettings(android: androidSettings));
 
@@ -62,7 +86,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     ),
   );
 
-  final String title =
+  String title =
       message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
   final String body =
       message.notification?.body ?? message.data['body'] ?? '';
@@ -76,6 +100,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           : 'View Details';
 
   final String type = message.data['type'] ?? 'GENERAL';
+  title = _addIconToTitle(title, body, type);
 
   final displayBody = subtitle.isNotEmpty ? '$subtitle\n$body' : body;
   final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
@@ -201,7 +226,7 @@ Future<void> _showRichNotification({
         visibility: NotificationVisibility.public,
         playSound: true,
         enableVibration: true,
-        icon: '@drawable/ic_notification',
+        icon: '@drawable/nlogo',
         largeIcon: largeIconBitmap,
         styleInformation: styleInformation,
         actions: actions,
@@ -295,7 +320,7 @@ class NotificationService {
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
       const AndroidInitializationSettings androidSettings =
-          AndroidInitializationSettings('@drawable/ic_notification');
+          AndroidInitializationSettings('@drawable/nlogo');
 
       await flutterLocalNotificationsPlugin.initialize(
         settings: const InitializationSettings(android: androidSettings),
@@ -400,7 +425,7 @@ class NotificationService {
           visibility: NotificationVisibility.public,
           playSound: true,
           enableVibration: true,
-          icon: '@drawable/ic_notification',
+          icon: '@drawable/nlogo',
           styleInformation: BigTextStyleInformation(body),
         ),
       ),
@@ -409,9 +434,10 @@ class NotificationService {
   }
 
   Future<void> showSystemNotification(RemoteMessage message) async {
-    final title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
+    String title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
     final body = message.notification?.body ?? message.data['body'] ?? '';
     final type = message.data['type'] ?? 'GENERAL';
+    title = _addIconToTitle(title, body, type);
     final payload = message.data['link_url'] ?? '';
 
     String channelId = 'default_notifications';

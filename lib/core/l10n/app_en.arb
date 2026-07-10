@@ -405,5 +405,9 @@
   "lib_title_achievers": "All Achievers",
   "lib_no_achievers": "No achievers listed.",
   "lib_title_facilities": "All Facilities",
-  "lib_no_facilities": "No facilities listed."
+  "lib_no_facilities": "No facilities listed.",
+  "err_failed_load_permissions": "Failed to load permissions.",
+  "err_check_connection": "Please check your connection and try again.",
+  "err_no_internet": "No Internet Connection",
+  "btn_retry": "Retry"
 }

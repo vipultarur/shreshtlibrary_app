@@ -1827,6 +1827,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No facilities listed.'**
   String get lib_no_facilities;
+
+  /// No description provided for @err_failed_load_permissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load permissions.'**
+  String get err_failed_load_permissions;
+
+  /// No description provided for @err_check_connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your connection and try again.'**
+  String get err_check_connection;
+
+  /// No description provided for @err_no_internet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Internet Connection'**
+  String get err_no_internet;
+
+  /// No description provided for @btn_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get btn_retry;
 }
 
 class _AppLocalizationsDelegate

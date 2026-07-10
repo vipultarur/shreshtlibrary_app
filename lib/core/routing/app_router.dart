@@ -28,6 +28,8 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class ProtectedRoute extends ConsumerWidget {
   const ProtectedRoute({
     super.key,
@@ -50,12 +52,45 @@ class ProtectedRoute extends ConsumerWidget {
         return child;
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: const Center(
-          child: Text('Failed to load permissions. Please check your connection and try again.'),
-        ),
-      ),
+      error: (error, stack) {
+        final l10n = AppLocalizations.of(context);
+        return Scaffold(
+          body: Center(
+            child: Card(
+              margin: const EdgeInsets.all(24),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.wifi_off, size: 64, color: Colors.redAccent),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n?.err_failed_load_permissions ?? 'Failed to load permissions.',
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n?.err_check_connection ?? 'Please check your connection and try again.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ref.invalidate(dashboardProvider);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: Text(l10n?.btn_retry ?? 'Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

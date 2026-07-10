@@ -925,4 +925,17 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get lib_no_facilities => 'કોઈ સુવિધાઓ સૂચિબદ્ધ નથી.';
+
+  @override
+  String get err_failed_load_permissions => 'પરવાનગીઓ લોડ કરવામાં નિષ્ફળ.';
+
+  @override
+  String get err_check_connection =>
+      'કૃપા કરીને તમારું કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.';
+
+  @override
+  String get err_no_internet => 'કોઈ ઇન્ટરનેટ કનેક્શન નથી';
+
+  @override
+  String get btn_retry => 'ફરી પ્રયાસ કરો';
 }

@@ -356,5 +356,9 @@
   "lib_title_achievers": "सभी सफल छात्र",
   "lib_no_achievers": "कोई सफल छात्र सूचीबद्ध नहीं है।",
   "lib_title_facilities": "सभी सुविधाएं",
-  "lib_no_facilities": "कोई सुविधा सूचीबद्ध नहीं है।"
+  "lib_no_facilities": "कोई सुविधा सूचीबद्ध नहीं है।",
+  "err_failed_load_permissions": "अनुमतियां लोड करने में विफल।",
+  "err_check_connection": "कृपया अपने कनेक्शन की जांच करें और पुनः प्रयास करें।",
+  "err_no_internet": "कोई इंटरनेट कनेक्शन नहीं",
+  "btn_retry": "पुनः प्रयास करें"
 }
