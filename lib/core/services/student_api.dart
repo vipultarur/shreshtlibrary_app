@@ -115,6 +115,22 @@ class StudentApi {
     _client.unwrap(response, (_) => null);
   }
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final response = await _client.post<dynamic>(
+      '/auth/change-password',
+      data: {
+        'old_password': oldPassword,
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      },
+    );
+    _client.unwrap(response, (_) => null);
+  }
+
   Future<StudentDashboard> dashboard() async {
     final response = await _client.get<dynamic>('/student/dashboard');
     return _client.unwrap(

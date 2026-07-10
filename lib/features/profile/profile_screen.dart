@@ -13,6 +13,7 @@ import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/core/theme/theme_provider.dart';
+import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
 final profileProvider = FutureProvider.autoDispose<StudentProfile>(
   (ref) => ref.watch(studentApiProvider).profile(),
@@ -665,17 +666,147 @@ class AccountInfoScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: CommonAppBar(title: l10n.profile_tile_info),
+      appBar: CommonAppBar(
+        title: l10n.profile_tile_info,
+        rightIcon: IconButton(
+          icon: const Icon(Icons.password),
+          onPressed: () => context.push('/profile/change-password'),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: AsyncPane(
-          value: ref.watch(profileProvider),
-          builder: (profile) => ProfileEditor(profile: profile),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AsyncPane(
+              value: ref.watch(profileProvider),
+              builder: (profile) => ProfileEditor(profile: profile),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () => context.push('/profile/change-password'),
+              icon: const Icon(Icons.lock_reset),
+              label: Text('Change Password'), // TODO localization
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+class ChangePasswordScreen extends ConsumerStatefulWidget {
+  const ChangePasswordScreen({super.key});
+  @override
+  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
+  final _oldPassword = TextEditingController();
+  final _newPassword = TextEditingController();
+  final _confirmPassword = TextEditingController();
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _oldPassword.dispose();
+    _newPassword.dispose();
+    _confirmPassword.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_oldPassword.text.isEmpty || _newPassword.text.isEmpty || _confirmPassword.text.isEmpty) {
+      showSnack(context, 'Please fill all fields');
+      return;
+    }
+    if (_newPassword.text != _confirmPassword.text) {
+      showSnack(context, 'New password and confirm password do not match');
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await ref.read(studentApiProvider).changePassword(
+        oldPassword: _oldPassword.text,
+        newPassword: _newPassword.text,
+        confirmPassword: _confirmPassword.text,
+      );
+      if (mounted) {
+        showSnack(context, 'Password changed successfully');
+        context.pop();
+      }
+    } on ApiFailure catch (e) {
+      if (mounted) showSnack(context, e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CommonAppBar(title: 'Change Password'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _oldPassword,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Old Password',
+                filled: true,
+                fillColor: theme.colorScheme.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _newPassword,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'New Password',
+                filled: true,
+                fillColor: theme.colorScheme.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _confirmPassword,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Confirm New Password',
+                filled: true,
+                fillColor: theme.colorScheme.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 32),
+            FilledButton(
+              onPressed: _busy ? null : _submit,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: _busy ? const CircularProgressIndicator(color: Colors.white) : const Text('Change Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class IdCardScreen extends ConsumerWidget {
   const IdCardScreen({super.key});

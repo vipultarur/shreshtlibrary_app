@@ -47,6 +47,21 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
   }
 
   @override
+  void didUpdateWidget(covariant ProfileEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.profile != oldWidget.profile) {
+      if (_firstName.text != widget.profile.firstName) _firstName.text = widget.profile.firstName;
+      if (_lastName.text != widget.profile.lastName) _lastName.text = widget.profile.lastName;
+      if (_email.text != widget.profile.email) _email.text = widget.profile.email;
+      if (_goal.text != widget.profile.goal) _goal.text = widget.profile.goal;
+      if (_dob.text != widget.profile.dob) _dob.text = widget.profile.dob ?? '';
+      if (_caste.text != widget.profile.caste) _caste.text = widget.profile.caste ?? '';
+      if (_address.text != widget.profile.address) _address.text = widget.profile.address ?? '';
+      if (_parentMobile.text != widget.profile.parentMobile) _parentMobile.text = widget.profile.parentMobile ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     for (final controller in [
       _firstName,

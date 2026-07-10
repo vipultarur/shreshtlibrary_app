@@ -46,7 +46,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   final plugin = FlutterLocalNotificationsPlugin();
   const androidSettings =
-      AndroidInitializationSettings('@drawable/ic_notification');
+      AndroidInitializationSettings('ic_notification');
   await plugin.initialize(
       settings: const InitializationSettings(android: androidSettings));
 
@@ -226,7 +226,7 @@ Future<void> _showRichNotification({
         visibility: NotificationVisibility.public,
         playSound: true,
         enableVibration: true,
-        icon: '@drawable/ic_notification',
+        icon: 'ic_notification',
         largeIcon: largeIconBitmap,
         styleInformation: styleInformation,
         actions: actions,
@@ -320,7 +320,7 @@ class NotificationService {
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
       const AndroidInitializationSettings androidSettings =
-          AndroidInitializationSettings('@drawable/ic_notification');
+          AndroidInitializationSettings('ic_notification');
 
       await flutterLocalNotificationsPlugin.initialize(
         settings: const InitializationSettings(android: androidSettings),
@@ -426,7 +426,7 @@ class NotificationService {
           visibility: NotificationVisibility.public,
           playSound: true,
           enableVibration: true,
-          icon: '@drawable/ic_notification',
+          icon: 'ic_notification',
           styleInformation: BigTextStyleInformation(body),
         ),
       ),
