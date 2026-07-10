@@ -712,7 +712,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       children: [
                         Container(
-                          width: 100, // Increased from 70
+                          width: 140, // Increased from 100
                           height: 100, // Increased from 70
                           decoration: BoxDecoration(
                             color: theme.colorScheme.surfaceContainerHighest,
@@ -730,14 +730,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: theme.textTheme.bodyLarge?.color,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                        SizedBox(
+                          width: 140,
+                          child: Text(
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: theme.textTheme.bodyLarge?.color,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -758,7 +762,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
                       highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
                       child: Container(
-                        width: 100,
+                        width: 140,
                         height: 100,
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
