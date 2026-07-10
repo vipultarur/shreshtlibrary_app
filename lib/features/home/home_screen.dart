@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -809,60 +810,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             context.push('/gallery');
           },
         ),
-        SizedBox(
-          height: 140,
-          child: galleryAsync.when(
-            data: (images) {
-              if (images.isEmpty) {
-                return Center(child: Text(l10n.library_no_gallery_images ?? 'No images found'));
-              }
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: images.length,
+        galleryAsync.when(
+          data: (images) {
+            if (images.isEmpty) {
+              return Center(child: Text(l10n.library_no_gallery_images ?? 'No images found'));
+            }
+            final displayImages = images.take(4).toList(); // Show max 4 images
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                itemCount: displayImages.length,
                 itemBuilder: (context, index) {
-                  final image = images[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
+                  final image = displayImages[index];
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.dividerColor, width: 1.5),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: CachedNetworkImage(
+                      imageUrl: image.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        height: 120,
                         color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: theme.dividerColor, width: 1.5),
-                        image: DecorationImage(
-                          image: CachedNetworkImageProvider(image.imageUrl),
-                          fit: BoxFit.cover,
-                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        height: 120,
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.broken_image),
                       ),
                     ),
                   );
                 },
-              );
-            },
-            loading: () => ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              ),
+            );
+          },
+          loading: () => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: MasonryGridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
               itemCount: 4,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Shimmer.fromColors(
-                  baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
-                  highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
-                  child: Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+              itemBuilder: (context, index) => Shimmer.fromColors(
+                baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                child: Container(
+                  height: index.isEven ? 160 : 120, // Staggered loading effect
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
               ),
             ),
-            error: (_, _) => const SizedBox.shrink(),
           ),
+          error: (_, _) => const SizedBox.shrink(),
         ),
         const SizedBox(height: 24),
       ],
