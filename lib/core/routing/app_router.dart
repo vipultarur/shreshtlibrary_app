@@ -28,7 +28,7 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ProtectedRoute extends ConsumerWidget {
   const ProtectedRoute({
