@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
+import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -63,9 +63,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final loadingText = l10n?.splash_loading ?? "Loading your experience...";
-
     return Scaffold(
       body: Stack(
         children: [
@@ -104,28 +101,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     child: child,
                   );
                 },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 6,
+                    width: 200,
+                    color: AppColors.lightPrimaryContainer,
+                    child: ShaderMask(
+                      shaderCallback: (bounds) {
+                        return const LinearGradient(
+                          colors: [AppColors.lightPrimary, AppColors.lightSecondary],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.srcATop,
+                      child: const LinearProgressIndicator(
+                        backgroundColor: Colors.transparent,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      loadingText,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

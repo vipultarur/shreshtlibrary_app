@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
@@ -52,49 +53,104 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
         widget.child,
         if (!_isConnected)
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.8),
-              child: Center(
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Card(
-                    margin: const EdgeInsets.all(24),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.wifi_off, size: 64, color: Colors.redAccent),
-                          const SizedBox(height: 16),
-                          Builder(
-                            builder: (ctx) {
-                              final l10n = AppLocalizations.of(ctx);
-                              return Text(
-                                l10n?.err_no_internet ?? 'No Internet Connection',
-                                style: Theme.of(ctx).textTheme.titleLarge,
-                                textAlign: TextAlign.center,
-                              );
-                            }
+            child: Builder(
+              builder: (context) {
+                return BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.4),
+                    child: Center(
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.all(32.0),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 24),
-                          Builder(
-                            builder: (ctx) {
-                              final l10n = AppLocalizations.of(ctx);
-                              return ElevatedButton.icon(
-                                onPressed: () {
-                                  _checkInitialConnection();
-                                },
-                                icon: const Icon(Icons.refresh),
-                                label: Text(l10n?.btn_retry ?? 'Retry'),
-                              );
-                            }
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.wifi_off_rounded,
+                                  size: 48,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Builder(
+                                builder: (ctx) {
+                                  final l10n = AppLocalizations.of(ctx);
+                                  return Text(
+                                    l10n?.err_no_internet ?? 'No Internet Connection',
+                                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  );
+                                }
+                              ),
+                              const SizedBox(height: 12),
+                              Builder(
+                                builder: (ctx) {
+                                  return Text(
+                                    'Please check your network settings and try again.',
+                                    style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  );
+                                }
+                              ),
+                              const SizedBox(height: 32),
+                              SizedBox(
+                                width: double.infinity,
+                                child: Builder(
+                                  builder: (ctx) {
+                                    final l10n = AppLocalizations.of(ctx);
+                                    return FilledButton(
+                                      onPressed: () {
+                                        _checkInitialConnection();
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        l10n?.btn_retry ?? 'Retry',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }
             ),
           ),
       ],

@@ -33,52 +33,71 @@ class FacilitiesScreen extends ConsumerWidget {
             separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final facility = facilities[index];
+              final isDark = theme.brightness == Brightness.dark;
               return Container(
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                        image: (facility.image != null && facility.image!.isNotEmpty)
-                            ? DecorationImage(
-                                image: CachedNetworkImageProvider(facility.image!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: (facility.image == null || facility.image!.isEmpty)
-                          ? Icon(Icons.check_circle_outline, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 30)
-                          : null,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
+                  ],
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.5),
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (facility.image != null && facility.image!.isNotEmpty)
+                      Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        width: double.infinity,
+                        child: CachedNetworkImage(
+                          imageUrl: facility.image!,
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => const SizedBox(
+                            height: 160,
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) => SizedBox(
+                            height: 160,
+                            child: Icon(Icons.broken_image, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 50),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        height: 160,
+                        width: double.infinity,
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: Icon(Icons.check_circle_outline, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 50),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             facility.name,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: theme.textTheme.bodyLarge?.color,
+                              color: theme.textTheme.titleLarge?.color,
                             ),
                           ),
                           if (facility.description != null && facility.description!.isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 8),
                             Text(
                               facility.description!,
                               style: TextStyle(
-                                fontSize: 13,
-                                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                                fontSize: 14,
+                                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                                height: 1.4,
                               ),
                             ),
                           ],

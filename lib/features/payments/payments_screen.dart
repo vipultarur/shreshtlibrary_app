@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
+import 'package:shreshtlibrary/core/config/app_config.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
@@ -35,28 +37,109 @@ class PaymentsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionCard(
-            title: 'Start Payment',
-            child: PaymentFormWidget(),
-          ),
-          const SizedBox(height: 16),
-          SectionCard(
-            title: 'Membership History',
-            child: AsyncPane(
-              value: ref.watch(membershipsProvider),
-              builder: (rows) => rows.isEmpty
-                  ? const Text('No memberships yet.')
-                  : Column(
-                      children: rows
-                          .map(
-                            (row) => InfoTile(
-                              label: '${row.startDate} to ${row.endDate}',
-                              value: '${row.planName} (${row.status})',
-                            ),
-                          )
-                          .toList(),
+          AsyncPane(
+            value: ref.watch(membershipsProvider),
+            builder: (memberships) {
+              final activeMemberships = memberships
+                  .where((m) => m.status.toLowerCase() == 'active')
+                  .toList();
+                  
+              if (activeMemberships.isNotEmpty) {
+                final active = activeMemberships.first;
+                return SectionCard(
+                  title: 'Current Active Plan',
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.tertiary,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-            ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Selected Plan',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Text(
+                                    active.planName.isNotEmpty ? active.planName : 'Active Plan',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle, color: Theme.of(context).colorScheme.onPrimary, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'ACTIVE',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_month, color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8), size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${active.startDate} to ${active.endDate}',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return const SectionCard(
+                  title: 'Available Plans',
+                  child: PaymentFormWidget(),
+                );
+              }
+            },
           ),
           const SizedBox(height: 16),
           SectionCard(
@@ -64,25 +147,122 @@ class PaymentsScreen extends ConsumerWidget {
             child: AsyncPane(
               value: ref.watch(paymentHistoryProvider),
               builder: (rows) => rows.isEmpty
-                  ? const Text('No payments yet.')
-                  : Column(
-                      children: rows
-                          .map(
-                            (row) => ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(
-                                Icons.receipt_long_outlined,
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('No payments yet.', textAlign: TextAlign.center),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: rows.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final row = rows[index];
+                        final isRefunded = row.status.toLowerCase() == 'refunded';
+                        final isSuccess = ['success', 'completed', 'paid', 'verified'].contains(row.status.toLowerCase());
+                        
+                        Color statusColor = Colors.orange;
+                        IconData statusIcon = Icons.pending;
+                        if (isSuccess) {
+                          statusColor = Colors.green;
+                          statusIcon = Icons.check_circle;
+                        } else if (isRefunded) {
+                          statusColor = Colors.red;
+                          statusIcon = Icons.replay_circle_filled;
+                        } else if (row.status.toLowerCase() == 'failed') {
+                          statusColor = Colors.red;
+                          statusIcon = Icons.cancel;
+                        }
+                        
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            child: Icon(Icons.receipt_long, color: Theme.of(context).colorScheme.primary),
+                          ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  row.planName,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              title: Text(
-                                '${row.planName} - Rs ${row.amount.toStringAsFixed(2)}',
+                              const SizedBox(width: 8),
+                              Text(
+                                '₹${row.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  decoration: isRefunded ? TextDecoration.lineThrough : null,
+                                  color: isRefunded ? Colors.grey : null,
+                                ),
                               ),
-                              subtitle: Text(
-                                '${row.paymentMode} / ${row.paymentDate}',
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${row.paymentMode} • ${row.paymentDate}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(statusIcon, size: 12, color: statusColor),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        row.status.toUpperCase(),
+                                        style: TextStyle(
+                                          color: statusColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              trailing: Text(row.status),
-                            ),
-                          )
-                          .toList(),
+                            ],
+                          ),
+                          trailing: (isSuccess || isRefunded)
+                              ? IconButton(
+                                  onPressed: () async {
+                                    final tokenStore = ref.read(tokenStoreProvider);
+                                    final tokens = await tokenStore.read();
+                                    final token = tokens?.access ?? '';
+
+                                    final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
+                                        ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
+                                        : AppConfig.apiBaseUrl;
+                                    final url = '$baseUrl/payments/${row.id}/receipt?token=$token';
+                                    if (await canLaunchUrlString(url)) {
+                                      await launchUrlString(url, mode: LaunchMode.externalApplication);
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Could not download receipt')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.download_rounded),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  tooltip: 'Download Receipt',
+                                )
+                              : null,
+                        );
+                      },
                     ),
             ),
           ),
@@ -91,3 +271,4 @@ class PaymentsScreen extends ConsumerWidget {
     );
   }
 }
+

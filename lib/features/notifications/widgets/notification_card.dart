@@ -20,10 +20,6 @@ class NotificationCard extends ConsumerWidget {
     try {
       await ref.read(studentApiProvider).markNotificationRead(item.id);
       ref.invalidate(notificationsProvider);
-      if (context.mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.noti_marked_read);
-      }
     } on ApiFailure catch (failure) {
       if (context.mounted) showSnack(context, failure.message);
     }
@@ -51,10 +47,12 @@ class NotificationCard extends ConsumerWidget {
   String _formatDate(String? dateString) {
     if (dateString == null || dateString.isEmpty) return '';
     try {
-      // Parse the ISO 8601 string (which will be in UTC if 'Z' is present)
-      // If the backend is still returning the old format, it will throw FormatException and fall back to returning the string directly.
       final dateTime = DateTime.parse(dateString).toLocal();
-      return DateFormat('MMM dd, yyyy h:mm a').format(dateTime);
+      final now = DateTime.now();
+      if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
+        return DateFormat('h:mm a').format(dateTime);
+      }
+      return DateFormat('MMM dd, h:mm a').format(dateTime);
     } catch (_) {
       return dateString;
     }
@@ -64,234 +62,123 @@ class NotificationCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isUnread = !item.isRead;
-    final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
 
-    Widget content;
-    switch (item.layout) {
-      case 'background_image':
-        content = _buildBackgroundImageLayout(context);
-        break;
-      case 'full_image':
-        content = _buildFullImageLayout(context);
-        break;
-      case 'half_image':
-        content = _buildHalfImageLayout(context);
-        break;
-      case 'text_only':
-      default:
-        content = _buildTextOnlyLayout(context);
-        break;
+    // Determine styles based on title/type
+    IconData icon = Icons.notifications_none_rounded;
+    Color iconColor = theme.colorScheme.primary;
+    Color bgColor = theme.colorScheme.primary.withValues(alpha: 0.1);
+
+    final titleLower = item.title.toLowerCase();
+    final typeLower = item.type.toLowerCase();
+    
+    if (typeLower.contains('fee') || typeLower.contains('payment') || titleLower.contains('fee') || titleLower.contains('payment') || titleLower.contains('purchase') || titleLower.contains('off ')) {
+      icon = Icons.local_activity_rounded;
+      iconColor = isDark ? Colors.redAccent.shade100 : Colors.red.shade500;
+      bgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50;
+    } else if (typeLower.contains('attendance') || titleLower.contains('attendance') || titleLower.contains('success')) {
+      icon = Icons.chair_alt_rounded;
+      iconColor = isDark ? Colors.green.shade300 : Colors.green.shade600;
+      bgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.green.shade50;
+    } else if (typeLower.contains('alert') || typeLower.contains('warning') || titleLower.contains('device') || titleLower.contains('alert') || titleLower.contains('absent') || titleLower.contains('warning')) {
+      icon = Icons.priority_high_rounded;
+      iconColor = isDark ? Colors.orange.shade300 : Colors.orange.shade600;
+      bgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
+    } else if (typeLower.contains('event') || typeLower.contains('holiday') || titleLower.contains('event') || titleLower.contains('holiday')) {
+      icon = Icons.celebration_rounded;
+      iconColor = isDark ? Colors.purple.shade300 : Colors.purple.shade600;
+      bgColor = isDark ? Colors.purple.shade900.withValues(alpha: 0.3) : Colors.purple.shade50;
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: isUnread ? 2 : 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: isUnread ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
-            width: isUnread ? 2 : 1,
-          ),
-        ),
-        color: isUnread ? theme.colorScheme.surface : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return InkWell(
+      onTap: () {
+        if (isUnread) _markRead(context, ref);
+        if (item.linkUrl != null && item.linkUrl!.isNotEmpty) {
+          _launchUrl(context, item.linkUrl!);
+        }
+      },
+      child: Container(
+        color: isUnread ? (isDark ? Colors.white10 : Colors.blue.shade50.withValues(alpha: 0.3)) : Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            content,
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Unread Dot
+            SizedBox(
+              width: 16,
+              child: isUnread 
+                ? Container(
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.only(top: 18),
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  )
+                : const SizedBox(height: 42),
+            ),
+            const SizedBox(width: 8),
+            // Squircle Icon
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(width: 16),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _formatDate(item.sentAt),
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    item.title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
                   ),
-                  if (item.displayMode != 'one_time')
-                    isUnread
-                        ? TextButton.icon(
-                            onPressed: () => _markRead(context, ref),
-                            icon: const Icon(Icons.check, size: 16),
-                            label: Text(l10n.noti_btn_mark_read),
-                            style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                          )
-                        : Icon(Icons.done_all, color: theme.colorScheme.primary, size: 18),
+                  if (item.body.isNotEmpty && item.body != item.title) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      item.body,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                  if (item.images.isNotEmpty || item.backgroundImage != null) ...[
+                     const SizedBox(height: 12),
+                     ClipRRect(
+                       borderRadius: BorderRadius.circular(12),
+                       child: Image.network(
+                         item.images.isNotEmpty ? item.images.first : item.backgroundImage!,
+                         height: item.layout == 'half_image' ? 120 : (item.layout == 'background_image' ? 240 : 180),
+                         width: double.infinity,
+                         fit: BoxFit.cover,
+                       ),
+                     ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDate(item.sentAt),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
-            )
+            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextOnlyLayout(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context),
-          const SizedBox(height: 8),
-          Text(item.body),
-          _buildRichDescription(context),
-          _buildLinkButton(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHalfImageLayout(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (item.images.isNotEmpty)
-          Image.network(
-            item.images.first,
-            height: 140,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-          ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 8),
-              Text(item.body),
-              _buildRichDescription(context),
-              _buildLinkButton(context),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFullImageLayout(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 8),
-              Text(item.body),
-              _buildRichDescription(context),
-            ],
-          ),
-        ),
-        if (item.images.isNotEmpty)
-          Image.network(
-            item.images.first,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-          ),
-        if (item.linkUrl != null && item.linkUrl!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildLinkButton(context),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildBackgroundImageLayout(BuildContext context) {
-    return Stack(
-      children: [
-        if (item.backgroundImage != null)
-          Positioned.fill(
-            child: Image.network(
-              item.backgroundImage!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
-          ),
-        Positioned.fill(
-          child: Container(
-            color: Colors.black.withValues(alpha: 0.6),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                if (item.subtitle != null && item.subtitle!.isNotEmpty)
-                  Text(
-                    item.subtitle!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
-                  ),
-                const SizedBox(height: 12),
-                Text(item.body, style: const TextStyle(color: Colors.white)),
-                if (item.description != null && item.description!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(item.description!, style: const TextStyle(color: Colors.white70)),
-                ],
-                _buildLinkButton(context),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          item.title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        if (item.subtitle != null && item.subtitle!.isNotEmpty)
-          Text(
-            item.subtitle!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.primary),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildRichDescription(BuildContext context) {
-    if (item.description == null || item.description!.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Text(
-        item.description!,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-      ),
-    );
-  }
-
-  Widget _buildLinkButton(BuildContext context) {
-    if (item.linkUrl == null || item.linkUrl!.isEmpty) return const SizedBox.shrink();
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: FilledButton.icon(
-        onPressed: () => _launchUrl(context, item.linkUrl!),
-        icon: const Icon(Icons.open_in_new, size: 16),
-        label: Text(item.linkButtonText?.isNotEmpty == true ? item.linkButtonText! : l10n.noti_btn_view_details),
-        style: FilledButton.styleFrom(
-          visualDensity: VisualDensity.compact,
-          backgroundColor: item.layout == 'background_image' ? Colors.white : Theme.of(context).colorScheme.primary,
-          foregroundColor: item.layout == 'background_image' ? Colors.black : Theme.of(context).colorScheme.onPrimary,
         ),
       ),
     );

@@ -72,7 +72,7 @@
         <!-- Firebase: monochrome icon for notification tray (required Android 5+) -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/nlogo" />
+            android:resource="@drawable/ic_notification" />
 
         <!-- Firebase: accent colour for notification -->
         <meta-data

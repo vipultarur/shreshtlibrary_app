@@ -428,7 +428,7 @@ class MembershipRecord {
 
   factory MembershipRecord.fromJson(JsonMap json) => MembershipRecord(
     id: integer(json['id']),
-    planName: text(json['plan_name']),
+    planName: text(json['plan_name'] ?? (json['plan'] is Map ? json['plan']['name'] : json['plan'])),
     startDate: text(json['start_date']),
     endDate: text(json['end_date']),
     status: text(json['status']),
@@ -531,6 +531,7 @@ class StudentNotification {
     this.backgroundImage,
     this.images = const [],
     this.displayMode,
+    required this.type,
   });
 
   final int id;
@@ -547,6 +548,7 @@ class StudentNotification {
   final String? backgroundImage;
   final List<String> images;
   final String? displayMode;
+  final String type;
 
   factory StudentNotification.fromJson(JsonMap json) => StudentNotification(
     id: integer(json['id']),
@@ -563,6 +565,7 @@ class StudentNotification {
     backgroundImage: resolveImageUrl(json['background_image']),
     images: (json['images'] as List<dynamic>?)?.map((e) => resolveImageUrl(e) ?? '').where((e) => e.isNotEmpty).toList() ?? [],
     displayMode: optionalText(json['display_mode']),
+    type: text(json['type']),
   );
 }
 

@@ -18,6 +18,7 @@ import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/common/widgets/section_header.dart';
 import 'package:shreshtlibrary/common/widgets/action_button_purple.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart'; // Add this for later
+import 'package:shreshtlibrary/features/notifications/notifications_screen.dart'; // for notificationsProvider
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -182,16 +183,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: IconButton(
-              icon: Icon(Icons.notifications_none, color: theme.textTheme.bodyLarge?.color),
-              onPressed: () {
-                final dash = ref.read(dashboardProvider).value;
-                if (dash != null && dash.restrictedFeatures.contains('notifications')) {
-                  showRestrictionDialog(context, dash);
-                } else {
-                  context.push('/notifications');
-                }
-              },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.textTheme.bodyLarge?.color),
+                  onPressed: () {
+                    final dash = ref.read(dashboardProvider).value;
+                    if (dash != null && dash.restrictedFeatures.contains('notifications')) {
+                      showRestrictionDialog(context, dash);
+                    } else {
+                      context.push('/notifications');
+                    }
+                  },
+                ),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final notificationsAsync = ref.watch(notificationsProvider);
+                    final unreadCount = notificationsAsync.value?.where((n) => !n.isRead).length ?? 0;
+                    
+                    if (unreadCount == 0) return const SizedBox.shrink();
+                    
+                    return Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade600,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: isDark ? AppColors.darkSurface : Colors.white, width: 1.5),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            unreadCount > 99 ? '99+' : unreadCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],

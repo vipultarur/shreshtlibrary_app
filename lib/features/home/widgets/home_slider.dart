@@ -78,7 +78,7 @@ class _SliderCard extends StatelessWidget {
           image: hasImage
               ? DecorationImage(
                   image: NetworkImage(slider.image!),
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 )
               : null,
         ),
@@ -96,28 +96,61 @@ class _SliderCard extends StatelessWidget {
           ),
           padding: const EdgeInsets.all(16),
           alignment: Alignment.bottomLeft,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                slider.title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      slider.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (slider.subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        slider.subtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-              if (slider.subtitle.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  slider.subtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white70,
+              if (slider.linkUrl.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'View',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.open_in_new, color: Colors.white, size: 14),
+                    ],
+                  ),
                 ),
               ],
             ],

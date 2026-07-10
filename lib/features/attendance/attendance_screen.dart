@@ -17,6 +17,10 @@ final attendanceLogsProvider =
   return ref.watch(studentApiProvider).attendanceLogs();
 });
 
+final holidaysProvider = FutureProvider.autoDispose<List<HolidayRecord>>((ref) {
+  return ref.watch(studentApiProvider).holidays();
+});
+
 
 class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({super.key});
@@ -58,64 +62,101 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isCheckedIn && !isCheckedOut)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        minimumSize: const Size(0, 36),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      ),
-                      onPressed: _isCheckingOut ? null : () async {
-                        setState(() { _isCheckingOut = true; });
-                        try {
-                          await ref.read(studentApiProvider).checkoutAttendance();
-                          ref.invalidate(attendanceLogsProvider);
-                          
-                          // Stop active study session if running
-                          final studyNotifier = ref.read(studySessionProvider.notifier);
-                          final studyState = ref.read(studySessionProvider);
-                          if (studyState.status == StudySessionStatus.active || studyState.status == StudySessionStatus.starting) {
-                            await studyNotifier.stopSession();
-                          }
-
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.attendance_checkout_success)),
-                            );
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(e.toString())),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() { _isCheckingOut = false; });
-                          }
-                        }
-                      },
-                      icon: _isCheckingOut 
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Icon(Icons.logout, size: 18),
-                      label: Text(_isCheckingOut ? l10n.attendance_wait : l10n.attendance_check_out, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                if (showScan)
+                if (dash?.isHoliday == true)
                   Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Colors.purple.shade400, Colors.purple.shade600],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purple.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: IconButton(
-                      icon: Icon(Icons.qr_code_scanner, color: theme.textTheme.bodyLarge?.color),
-                      onPressed: () => context.push('/attendance/scan'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.celebration, color: Colors.white, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          dash?.holidayTitle ?? 'Holiday',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  )
+                else ...[
+                  if (isCheckedIn && !isCheckedOut)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          minimumSize: const Size(0, 36),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        onPressed: _isCheckingOut ? null : () async {
+                          setState(() { _isCheckingOut = true; });
+                          try {
+                            await ref.read(studentApiProvider).checkoutAttendance();
+                            ref.invalidate(attendanceLogsProvider);
+                            
+                            // Stop active study session if running
+                            final studyNotifier = ref.read(studySessionProvider.notifier);
+                            final studyState = ref.read(studySessionProvider);
+                            if (studyState.status == StudySessionStatus.active || studyState.status == StudySessionStatus.starting) {
+                              await studyNotifier.stopSession();
+                            }
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l10n.attendance_checkout_success)),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() { _isCheckingOut = false; });
+                            }
+                          }
+                        },
+                        icon: _isCheckingOut 
+                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.logout, size: 18),
+                        label: Text(_isCheckingOut ? l10n.attendance_wait : l10n.attendance_check_out, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  if (showScan)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.qr_code_scanner, color: theme.textTheme.bodyLarge?.color),
+                        onPressed: () => context.push('/attendance/scan'),
+                      ),
+                    ),
+                ],
               ],
             );
           },
@@ -132,6 +173,9 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               child: AsyncPane(
                 value: ref.watch(attendanceLogsProvider),
                 builder: (logs) {
+                  final holidaysAsync = ref.watch(holidaysProvider);
+                  final holidays = holidaysAsync.value ?? [];
+                  
                   final currentMonthLogs = logs.where((r) {
                     try {
                       final date = DateTime.parse(r.date);
@@ -169,14 +213,19 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   final dailyStudyH = dailyStudyMinutes ~/ 60;
                   final dailyStudyM = dailyStudyMinutes % 60;
 
-                  // Build a map for quick lookup
+                  // Build maps for quick lookup
                   final logMap = <String, AttendanceRecord>{};
                   for (final log in logs) {
                     logMap[log.date] = log;
                   }
+                  final holidayMap = <String, HolidayRecord>{};
+                  for (final h in holidays) {
+                    holidayMap[h.date] = h;
+                  }
 
                   final selectedDateString = DateFormat('yyyy-MM-dd').format(_selectedDay ?? DateTime.now());
                   final selectedLog = logMap[selectedDateString];
+                  final selectedHoliday = holidayMap[selectedDateString];
 
                   return SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -197,7 +246,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: _buildCalendar(logMap),
+                                child: _buildCalendar(logMap, holidayMap),
                               ),
                               const SizedBox(height: 16),
                             ],
@@ -206,15 +255,17 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildSelectedDayInfo(selectedLog, dailyStudyH, dailyStudyM),
+                          child: _buildSelectedDayInfo(selectedLog, selectedHoliday, dailyStudyH, dailyStudyM),
                         ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _buildMonthlyStudyCard(monthlyStudyH, monthlyStudyM),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildStatsGrid(daysPresent, daysAbsent, totalLateMarks),
+                        if (selectedHoliday == null) ...[
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _buildMonthlyStudyCard(monthlyStudyH, monthlyStudyM),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildStatsGrid(daysPresent, daysAbsent, totalLateMarks),
+                        ],
                       ],
                     ),
                   );
@@ -227,7 +278,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     );
   }
 
-  Widget _buildCalendar(Map<String, AttendanceRecord> logMap) {
+  Widget _buildCalendar(Map<String, AttendanceRecord> logMap, Map<String, HolidayRecord> holidayMap) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = theme.textTheme.bodyLarge?.color;
@@ -266,9 +317,9 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           ),
         ),
         calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) => _buildCell(day, logMap, isSelected: false),
-          selectedBuilder: (context, day, focusedDay) => _buildCell(day, logMap, isSelected: true),
-          todayBuilder: (context, day, focusedDay) => _buildCell(day, logMap, isSelected: isSameDay(day, _selectedDay), isToday: true),
+          defaultBuilder: (context, day, focusedDay) => _buildCell(day, logMap, holidayMap, isSelected: false),
+          selectedBuilder: (context, day, focusedDay) => _buildCell(day, logMap, holidayMap, isSelected: true),
+          todayBuilder: (context, day, focusedDay) => _buildCell(day, logMap, holidayMap, isSelected: isSameDay(day, _selectedDay), isToday: true),
           outsideBuilder: (context, day, focusedDay) => const SizedBox(),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
@@ -279,9 +330,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     );
   }
 
-  Widget _buildCell(DateTime day, Map<String, AttendanceRecord> logMap, {bool isSelected = false, bool isToday = false}) {
+  Widget _buildCell(DateTime day, Map<String, AttendanceRecord> logMap, Map<String, HolidayRecord> holidayMap, {bool isSelected = false, bool isToday = false}) {
     final dateString = DateFormat('yyyy-MM-dd').format(day);
     final log = logMap[dateString];
+    final holiday = holidayMap[dateString];
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -289,7 +341,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     Color? textColor = theme.textTheme.bodyLarge?.color;
     Border? border;
 
-    if (log != null) {
+    if (holiday != null) {
+      bgColor = isDark ? Colors.purple.shade900.withValues(alpha: 0.3) : Colors.purple.shade50;
+      textColor = isDark ? Colors.purple.shade200 : Colors.purple.shade800;
+    } else if (log != null) {
       if (log.isPresent) {
         if (log.lateMark) {
           bgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
@@ -431,7 +486,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     );
   }
 
-  Widget _buildSelectedDayInfo(AttendanceRecord? log, int studyH, int studyM) {
+  Widget _buildSelectedDayInfo(AttendanceRecord? log, HolidayRecord? holiday, int studyH, int studyM) {
     String checkIn = '--:--';
     String checkOut = '--:--';
 
@@ -467,6 +522,56 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
     }
 
     final theme = Theme.of(context);
+
+    if (holiday != null) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: theme.brightness == Brightness.dark 
+                ? [Colors.purple.shade900.withValues(alpha: 0.5), Colors.purple.shade800.withValues(alpha: 0.5)]
+                : [Colors.purple.shade50, Colors.purple.shade100],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.purple.withValues(alpha: 0.3), width: 1.5),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.celebration, 
+              color: theme.brightness == Brightness.dark ? Colors.purple.shade200 : Colors.purple, 
+              size: 56
+            ),
+            const SizedBox(height: 16),
+            Text(
+              holiday.title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: theme.brightness == Brightness.dark ? Colors.purple.shade100 : Colors.purple.shade900,
+              ),
+            ),
+            if (holiday.description != null && holiday.description!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                holiday.description!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.brightness == Brightness.dark ? Colors.purple.shade200 : Colors.purple.shade800,
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
