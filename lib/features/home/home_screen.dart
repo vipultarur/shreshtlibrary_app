@@ -830,7 +830,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.dividerColor, width: 1.5),
                     ),
                     clipBehavior: Clip.hardEdge,
                     child: CachedNetworkImage(
