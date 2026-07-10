@@ -24,74 +24,79 @@ class AchieversScreen extends ConsumerWidget {
           if (achievers.isEmpty) {
             return Center(child: Text(l10n.lib_no_achievers));
           }
-          return ListView.separated(
+          return GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.72,
+            ),
             itemCount: achievers.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final achiever = achievers[index];
+              final isDark = theme.brightness == Brightness.dark;
+              final cardColor = isDark 
+                  ? theme.colorScheme.surfaceContainerHighest 
+                  : theme.colorScheme.primary.withValues(alpha: 0.08);
+
               return Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                        image: (achiever.photo != null && achiever.photo!.isNotEmpty)
-                            ? DecorationImage(
-                                image: CachedNetworkImageProvider(achiever.photo!),
-                                fit: BoxFit.cover,
-                              )
+                    Text(
+                      achiever.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.black26 : Colors.white60,
+                          borderRadius: BorderRadius.circular(12),
+                          image: (achiever.photo != null && achiever.photo!.isNotEmpty)
+                              ? DecorationImage(
+                                  image: CachedNetworkImageProvider(achiever.photo!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: (achiever.photo == null || achiever.photo!.isEmpty)
+                            ? Icon(Icons.emoji_events, color: theme.colorScheme.primary.withValues(alpha: 0.5), size: 40)
                             : null,
                       ),
-                      child: (achiever.photo == null || achiever.photo!.isEmpty)
-                          ? const Icon(Icons.person, color: Colors.white, size: 40)
-                          : null,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            achiever.name,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: theme.textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${achiever.achievement} (${achiever.year})',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: theme.textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                          if (achiever.goal != null && achiever.goal!.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              achiever.goal!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                              ),
-                            ),
-                          ],
-                        ],
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${achiever.achievement} (${achiever.year})',
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ),
                   ],
