@@ -50,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ref.invalidate(homeSlidersProvider);
                 ref.invalidate(facilitiesProvider);
                 ref.invalidate(achieversProvider);
+                ref.invalidate(galleryImagesProvider);
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -77,6 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 16),
                     _buildAchievers(),
                     _buildFacilities(),
+                    _buildGallery(),
                   ],
                 ),
               ),
@@ -784,6 +786,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+            error: (_, _) => const SizedBox.shrink(),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+  Widget _buildGallery() {
+    final galleryAsync = ref.watch(galleryImagesProvider);
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Column(
+      children: [
+        SectionHeader(
+          title: l10n.library_gallery ?? 'Gallery',
+          onViewAll: () {
+            context.push('/gallery');
+          },
+        ),
+        SizedBox(
+          height: 140,
+          child: galleryAsync.when(
+            data: (images) {
+              if (images.isEmpty) {
+                return Center(child: Text(l10n.library_no_gallery_images ?? 'No images found'));
+              }
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: images.length,
+                itemBuilder: (context, index) {
+                  final image = images[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: theme.dividerColor, width: 1.5),
+                        image: DecorationImage(
+                          image: CachedNetworkImageProvider(image.imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            loading: () => ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 4,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Shimmer.fromColors(
+                  baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
+                  highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                  child: Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -18,6 +18,7 @@ import 'package:shreshtlibrary/features/home/home_screen.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart';
 import 'package:shreshtlibrary/features/library/achievers_screen.dart';
 import 'package:shreshtlibrary/features/library/facilities_screen.dart';
+import 'package:shreshtlibrary/features/library/gallery_screen.dart';
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart';
 import 'package:shreshtlibrary/features/payments/payments_screen.dart';
 import 'package:shreshtlibrary/features/profile/profile_screen.dart';
@@ -283,6 +284,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/facilities',
         builder: (context, state) => const FacilitiesScreen(),
+      ),
+      GoRoute(
+        path: '/gallery',
+        builder: (context, state) => const GalleryScreen(),
       ),
       GoRoute(
         path: '/dashboard',
