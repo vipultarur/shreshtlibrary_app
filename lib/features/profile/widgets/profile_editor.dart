@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +10,7 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
-import 'package:shreshtlibrary/features/profile/profile_screen.dart'; // To access profileProvider
+import 'package:shreshtlibrary/features/profile/profile_screen.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ProfileEditor extends ConsumerStatefulWidget {
@@ -29,41 +31,55 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
   late final TextEditingController _caste;
   late final TextEditingController _address;
   late final TextEditingController _parentMobile;
-  bool _busy = false;
+
+  bool _saveBusy = false;
+  bool _photoBusy = false;
   Map<String, dynamic> _fieldErrors = {};
+
+  /// Local file picked by the user – shown immediately before upload.
+  File? _localPhoto;
+
+  /// Cache-busted photo URL after a successful upload.
+  String? _updatedPhotoUrl;
 
   @override
   void initState() {
     super.initState();
-    final profile = widget.profile;
-    _firstName = TextEditingController(text: profile.firstName);
-    _lastName = TextEditingController(text: profile.lastName);
-    _email = TextEditingController(text: profile.email);
-    _goal = TextEditingController(text: profile.goal);
-    _dob = TextEditingController(text: profile.dob);
-    _caste = TextEditingController(text: profile.caste);
-    _address = TextEditingController(text: profile.address);
-    _parentMobile = TextEditingController(text: profile.parentMobile);
+    final p = widget.profile;
+    _firstName = TextEditingController(text: p.firstName);
+    _lastName = TextEditingController(text: p.lastName);
+    _email = TextEditingController(text: p.email);
+    _goal = TextEditingController(text: p.goal);
+    _dob = TextEditingController(text: p.dob ?? '');
+    _caste = TextEditingController(text: p.caste ?? '');
+    _address = TextEditingController(text: p.address ?? '');
+    _parentMobile = TextEditingController(text: p.parentMobile ?? '');
   }
 
   @override
   void didUpdateWidget(covariant ProfileEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.profile != oldWidget.profile) {
-      if (_firstName.text != widget.profile.firstName) _firstName.text = widget.profile.firstName;
-      if (_lastName.text != widget.profile.lastName) _lastName.text = widget.profile.lastName;
-      if (_email.text != widget.profile.email) _email.text = widget.profile.email;
-      if (_goal.text != widget.profile.goal) _goal.text = widget.profile.goal;
-      if (_dob.text != widget.profile.dob) _dob.text = widget.profile.dob ?? '';
-      if (_caste.text != widget.profile.caste) _caste.text = widget.profile.caste ?? '';
-      if (_address.text != widget.profile.address) _address.text = widget.profile.address ?? '';
-      if (_parentMobile.text != widget.profile.parentMobile) _parentMobile.text = widget.profile.parentMobile ?? '';
+      final p = widget.profile;
+      if (_firstName.text != p.firstName) _firstName.text = p.firstName;
+      if (_lastName.text != p.lastName) _lastName.text = p.lastName;
+      if (_email.text != p.email) _email.text = p.email;
+      if (_goal.text != p.goal) _goal.text = p.goal;
+      if (_dob.text != (p.dob ?? '')) _dob.text = p.dob ?? '';
+      if (_caste.text != (p.caste ?? '')) _caste.text = p.caste ?? '';
+      if (_address.text != (p.address ?? '')) _address.text = p.address ?? '';
+      if (_parentMobile.text != (p.parentMobile ?? '')) {
+        _parentMobile.text = p.parentMobile ?? '';
+      }
+      // Clear local photo preview so the server-fresh URL is used.
+      _localPhoto = null;
+      _updatedPhotoUrl = null;
     }
   }
 
   @override
   void dispose() {
-    for (final controller in [
+    for (final c in [
       _firstName,
       _lastName,
       _email,
@@ -73,34 +89,38 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       _address,
       _parentMobile,
     ]) {
-      controller.dispose();
+      c.dispose();
     }
     super.dispose();
   }
 
+  // ──────────────────────────────── Actions ────────────────────────────────
+
   Future<void> _save() async {
     setState(() {
-      _busy = true;
+      _saveBusy = true;
       _fieldErrors = {};
     });
     try {
-      await ref
-          .read(studentApiProvider)
-          .updateProfile(
-            StudentProfile(
-              username: widget.profile.username,
-              firstName: _firstName.text.trim(),
-              lastName: _lastName.text.trim(),
-              email: _email.text.trim(),
-              mobile: widget.profile.mobile,
-              goal: _goal.text.trim(),
-              dob: _dob.text.trim(),
-              caste: _caste.text.trim(),
-              address: _address.text.trim(),
-              profilePhoto: widget.profile.profilePhoto,
-              parentMobile: _parentMobile.text.trim(),
-            ),
-          );
+      final updated = await ref.read(studentApiProvider).updateProfile(
+        StudentProfile(
+          username: widget.profile.username,
+          firstName: _firstName.text.trim(),
+          lastName: _lastName.text.trim(),
+          email: _email.text.trim(),
+          mobile: widget.profile.mobile,
+          goal: _goal.text.trim(),
+          dob: _dob.text.trim(),
+          caste: _caste.text.trim(),
+          address: _address.text.trim(),
+          profilePhoto: _updatedPhotoUrl ?? widget.profile.profilePhoto,
+          parentMobile: _parentMobile.text.trim(),
+        ),
+      );
+      // Update displayed photo URL from the server response if available.
+      if (updated.profilePhoto != null && updated.profilePhoto!.isNotEmpty) {
+        _updatedPhotoUrl = _cacheBust(updated.profilePhoto!);
+      }
       ref.invalidate(profileProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -116,37 +136,93 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         showSnack(context, failure.message);
       }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _saveBusy = false);
     }
   }
 
   Future<void> _uploadPhoto() async {
-    final image = await ImagePicker().pickImage(
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80,
+      imageQuality: 85,
+      maxWidth: 1024,
+      maxHeight: 1024,
     );
     if (image == null) return;
-    setState(() => _busy = true);
+
+    // Show local preview immediately.
+    setState(() {
+      _localPhoto = File(image.path);
+      _photoBusy = true;
+    });
+
     try {
-      await ref.read(studentApiProvider).uploadProfilePhoto(image.path);
-      ref.invalidate(profileProvider);
+      final photoUrl = await ref
+          .read(studentApiProvider)
+          .uploadProfilePhoto(image.path);
+
       if (mounted) {
+        setState(() {
+          // Cache-bust the new URL so CachedNetworkImage re-downloads it.
+          _updatedPhotoUrl = photoUrl != null ? _cacheBust(photoUrl) : null;
+          _localPhoto = null; // clear local preview; use the network URL now
+        });
+        ref.invalidate(profileProvider);
         final l10n = AppLocalizations.of(context)!;
         showSnack(context, l10n.profile_photo_updated);
       }
     } on ApiFailure catch (failure) {
-      if (mounted) showSnack(context, failure.message);
+      if (mounted) {
+        setState(() => _localPhoto = null); // rollback local preview on error
+        showSnack(context, failure.message);
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _photoBusy = false);
     }
   }
 
-  InputDecoration _buildInputDecoration(BuildContext context, String label, String? errorText) {
+  void _pickDob() async {
+    // Parse existing value
+    DateTime initial = DateTime.now().subtract(const Duration(days: 365 * 18));
+    if (_dob.text.isNotEmpty) {
+      try {
+        initial = DateTime.parse(_dob.text);
+      } catch (_) {}
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      final formatted =
+          '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      setState(() => _dob.text = formatted);
+    }
+  }
+
+  // ──────────────────────────────── Helpers ────────────────────────────────
+
+  /// Appends a timestamp query param to force cache invalidation.
+  String _cacheBust(String url) {
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    final sep = url.contains('?') ? '&' : '?';
+    return '$url${sep}t=$ts';
+  }
+
+  String? _fieldError(String key) {
+    final val = _fieldErrors[key];
+    if (val is List && val.isNotEmpty) return val[0].toString();
+    return val?.toString();
+  }
+
+  InputDecoration _dec(BuildContext context, String label, String key) {
     final theme = Theme.of(context);
-    
     return InputDecoration(
       labelText: label,
-      errorText: errorText,
+      errorText: _fieldError(key),
       filled: true,
       fillColor: theme.colorScheme.primaryContainer,
       border: OutlineInputBorder(
@@ -170,59 +246,30 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     );
   }
 
+  // ──────────────────────────────── Build ──────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final photo = widget.profile.profilePhoto;
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final textColor = theme.textTheme.bodyLarge?.color;
-    
+
+    // Priority: local file picked → updated URL from server → original URL
+    final currentPhotoUrl =
+        _updatedPhotoUrl ?? widget.profile.profilePhoto;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // ── Avatar ──────────────────────────────────────────────────────
         Center(
           child: Stack(
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey.shade100, width: 4),
-                  image: photo != null && photo.isNotEmpty
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(photo),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: photo == null || photo.isEmpty
-                    ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                    : null,
-              ),
+              _buildAvatar(currentPhotoUrl, theme),
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: GestureDetector(
-                  onTap: _busy ? null : _uploadPhoto,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(Icons.camera_alt, size: 20, color: theme.colorScheme.onPrimary),
-                  ),
-                ),
+                child: _buildCameraButton(theme),
               ),
             ],
           ),
@@ -241,18 +288,23 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         Center(
           child: Text(
             widget.profile.email,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ),
         const SizedBox(height: 32),
+
+        // ── Form ─────────────────────────────────────────────────────────
         Text(
           l10n.profile_personal_info,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
         const SizedBox(height: 16),
+
+        // First + Last Name
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -260,11 +312,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
               child: TextField(
                 controller: _firstName,
                 style: TextStyle(color: textColor),
-                decoration: _buildInputDecoration(
-                  context,
-                  l10n.profile_first_name,
-                  _fieldErrors['first_name'] is List ? _fieldErrors['first_name'][0] : _fieldErrors['first_name']?.toString(),
-                ),
+                decoration: _dec(context, l10n.profile_first_name, 'first_name'),
               ),
             ),
             const SizedBox(width: 16),
@@ -272,47 +320,43 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
               child: TextField(
                 controller: _lastName,
                 style: TextStyle(color: textColor),
-                decoration: _buildInputDecoration(
-                  context,
-                  l10n.profile_last_name,
-                  _fieldErrors['last_name'] is List ? _fieldErrors['last_name'][0] : _fieldErrors['last_name']?.toString(),
-                ),
+                decoration: _dec(context, l10n.profile_last_name, 'last_name'),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
+
         TextField(
           controller: _email,
           keyboardType: TextInputType.emailAddress,
           style: TextStyle(color: textColor),
-          decoration: _buildInputDecoration(
-            context,
-            l10n.profile_email,
-            _fieldErrors['email'] is List ? _fieldErrors['email'][0] : _fieldErrors['email']?.toString(),
-          ),
+          decoration: _dec(context, l10n.profile_email, 'email'),
         ),
         const SizedBox(height: 16),
+
         TextField(
           controller: _goal,
           style: TextStyle(color: textColor),
-          decoration: _buildInputDecoration(
-            context,
-            l10n.profile_goal,
-            _fieldErrors['goal'] is List ? _fieldErrors['goal'][0] : _fieldErrors['goal']?.toString(),
+          decoration: _dec(context, l10n.profile_goal, 'goal'),
+        ),
+        const SizedBox(height: 16),
+
+        // DOB with date-picker
+        GestureDetector(
+          onTap: _pickDob,
+          child: AbsorbPointer(
+            child: TextField(
+              controller: _dob,
+              style: TextStyle(color: textColor),
+              decoration: _dec(context, l10n.profile_dob, 'dob').copyWith(
+                suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        TextField(
-          controller: _dob,
-          style: TextStyle(color: textColor),
-          decoration: _buildInputDecoration(
-            context,
-            l10n.profile_dob,
-            _fieldErrors['dob'] is List ? _fieldErrors['dob'][0] : _fieldErrors['dob']?.toString(),
-          ),
-        ),
-        const SizedBox(height: 16),
+
         TextField(
           controller: _parentMobile,
           keyboardType: TextInputType.phone,
@@ -321,38 +365,34 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(10),
           ],
-          decoration: _buildInputDecoration(
+          decoration: _dec(
             context,
             l10n.profile_parent_mobile,
-            _fieldErrors['parent_mobile'] is List ? _fieldErrors['parent_mobile'][0] : _fieldErrors['parent_mobile']?.toString(),
+            'parent_mobile',
           ),
         ),
         const SizedBox(height: 16),
+
         TextField(
           controller: _caste,
           style: TextStyle(color: textColor),
-          decoration: _buildInputDecoration(
-            context,
-            l10n.profile_caste,
-            _fieldErrors['caste'] is List ? _fieldErrors['caste'][0] : _fieldErrors['caste']?.toString(),
-          ),
+          decoration: _dec(context, l10n.profile_caste, 'caste'),
         ),
         const SizedBox(height: 16),
+
         TextField(
           controller: _address,
           maxLines: 3,
           style: TextStyle(color: textColor),
-          decoration: _buildInputDecoration(
-            context,
-            l10n.profile_address,
-            _fieldErrors['address'] is List ? _fieldErrors['address'][0] : _fieldErrors['address']?.toString(),
-          ),
+          decoration: _dec(context, l10n.profile_address, 'address'),
         ),
         const SizedBox(height: 32),
+
+        // ── Save button ───────────────────────────────────────────────────
         SizedBox(
           height: 56,
           child: FilledButton(
-            onPressed: _busy ? null : _save,
+            onPressed: (_saveBusy || _photoBusy) ? null : _save,
             style: FilledButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: theme.colorScheme.onPrimary,
@@ -360,19 +400,123 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: _busy
+            child: _saveBusy
                 ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: theme.colorScheme.onPrimary,
+                      strokeWidth: 2,
+                    ),
                   )
                 : Text(
                     l10n.profile_save_changes,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: theme.colorScheme.onPrimary),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: theme.colorScheme.onPrimary,
+                    ),
                   ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAvatar(String? photoUrl, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    const size = 120.0;
+
+    Widget avatar;
+    if (_localPhoto != null) {
+      // Immediately show the locally-picked file before upload finishes.
+      avatar = ClipOval(
+        child: Image.file(
+          _localPhoto!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (photoUrl != null && photoUrl.isNotEmpty) {
+      avatar = CachedNetworkImage(
+        imageUrl: photoUrl,
+        imageBuilder: (ctx, imageProvider) => Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          ),
+        ),
+        placeholder: (ctx, url) => Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          ),
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        errorWidget: (ctx, url, err) => _defaultAvatarContainer(isDark, size),
+        // Force re-download by using the cache-busted URL as key.
+        cacheKey: photoUrl,
+      );
+    } else {
+      avatar = _defaultAvatarContainer(isDark, size);
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
+          width: 4,
+        ),
+      ),
+      child: ClipOval(child: SizedBox(width: size, height: size, child: avatar)),
+    );
+  }
+
+  Widget _defaultAvatarContainer(bool isDark, double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+      child: const Icon(Icons.person, size: 60, color: Colors.grey),
+    );
+  }
+
+  Widget _buildCameraButton(ThemeData theme) {
+    return GestureDetector(
+      onTap: (_photoBusy || _saveBusy) ? null : _uploadPhoto,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: _photoBusy ? Colors.grey : theme.colorScheme.primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: _photoBusy
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: theme.colorScheme.onPrimary,
+                  strokeWidth: 2,
+                ),
+              )
+            : Icon(Icons.camera_alt, size: 20, color: theme.colorScheme.onPrimary),
+      ),
     );
   }
 }

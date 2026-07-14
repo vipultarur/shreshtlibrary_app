@@ -186,8 +186,14 @@ class AsyncPane<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return value.when(
+      // Keep showing previous data while refreshing (e.g., after save/photo upload)
+      // instead of flashing a shimmer skeleton.
+      skipLoadingOnRefresh: true,
+      skipError: false,
       data: builder,
       loading: () => ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         itemCount: 6,
         itemBuilder: (context, index) => Padding(

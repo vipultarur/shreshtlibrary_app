@@ -669,37 +669,22 @@ class AccountInfoScreen extends ConsumerWidget {
       appBar: CommonAppBar(
         title: l10n.profile_tile_info,
         rightIcon: IconButton(
-          icon: const Icon(Icons.password),
+          icon: const Icon(Icons.lock_reset),
+          tooltip: 'Change Password',
           onPressed: () => context.push('/profile/change-password'),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AsyncPane(
-              value: ref.watch(profileProvider),
-              builder: (profile) => ProfileEditor(profile: profile),
-            ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () => context.push('/profile/change-password'),
-              icon: const Icon(Icons.lock_reset),
-              label: Text('Change Password'), // TODO localization
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ],
+        child: AsyncPane(
+          value: ref.watch(profileProvider),
+          builder: (profile) => ProfileEditor(profile: profile),
         ),
       ),
     );
   }
 }
+
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
