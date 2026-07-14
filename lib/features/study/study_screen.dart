@@ -601,6 +601,13 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
+    final dash = ref.watch(dashboardProvider).value;
+    final isExpired = dash?.membershipStatus == 'EXPIRED';
+
+    if (isExpired) {
+      return const PremiumBuyContainer();
+    }
+    
     final logsAsync = ref.watch(attendanceLogsProvider);
     if (logsAsync.isLoading) {
       return Container(

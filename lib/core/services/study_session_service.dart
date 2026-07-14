@@ -166,7 +166,7 @@ void onStart(ServiceInstance service) async {
                 android: AndroidNotificationDetails(
                   StudySessionService._channelId,
                   StudySessionService._channelName,
-                  icon: 'ic_notification',
+                  icon: 'ic_stat_nlogo_v4',
                   ongoing: true,
                   playSound: false,
                   enableVibration: false,
@@ -194,7 +194,7 @@ void onStart(ServiceInstance service) async {
                 android: AndroidNotificationDetails(
                   StudySessionService._channelId,
                   StudySessionService._channelName,
-                  icon: 'ic_notification',
+                  icon: 'ic_stat_nlogo_v4',
                   ongoing: true,
                   playSound: false,
                   enableVibration: false,

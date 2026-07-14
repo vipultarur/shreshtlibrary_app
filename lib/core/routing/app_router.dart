@@ -47,7 +47,7 @@ class ProtectedRoute extends ConsumerWidget {
     
     return dashboardAsync.when(
       data: (dashboard) {
-        if (dashboard.restrictedFeatures.contains(feature)) {
+        if (dashboard.membershipStatus != 'EXPIRED' && dashboard.restrictedFeatures.contains(feature)) {
           return RestrictedFeatureScreen(dashboard: dashboard, feature: feature);
         }
         return child;
@@ -99,11 +99,18 @@ class ProtectedRoute extends ConsumerWidget {
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authControllerProvider);
+  final notifier = ValueNotifier<Object?>(null);
+  
+  ref.listen(authControllerProvider, (_, next) {
+    notifier.value = next;
+  });
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: notifier,
     redirect: (context, state) {
+      final auth = ref.read(authControllerProvider);
       final path = state.uri.path;
       final cacheService = ref.read(localCacheServiceProvider);
       final hasSelectedLang = cacheService.hasSelectedLanguage();

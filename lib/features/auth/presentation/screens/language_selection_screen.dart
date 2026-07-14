@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/locale_provider.dart';
+import '../widgets/auth_layout.dart';
 
 class LanguageSelectionScreen extends ConsumerStatefulWidget {
   const LanguageSelectionScreen({super.key});
@@ -47,120 +48,55 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     // We display dual language titles/subtitles on this screen to ensure it is clear to all speakers before selection.
-    final title = l10n?.lang_select_title ?? "Choose Language / भाषा चुनें";
-    final subtitle = l10n?.lang_select_subtitle ?? "Select your preferred language to continue / आगे बढ़ने के लिए अपनी पसंदीदा भाषा चुनें";
+    final title = l10n?.lang_select_title ?? "Choose Language\nभाषा चुनें";
+    final subtitle = l10n?.lang_select_subtitle ?? "Select your preferred language to continue\nआगे बढ़ने के लिए अपनी पसंदीदा भाषा चुनें";
     final btnText = l10n?.btn_continue ?? "Continue";
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-      body: Column(
+    return AuthLayout(
+      title: title,
+      subtitle: subtitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            color: theme.colorScheme.primary.withValues(alpha: 0.2),
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 20,
-              bottom: 24,
-              left: 30,
-              right: 30,
-            ),
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: theme.textTheme.headlineLarge?.color,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white70 : Colors.black54,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+          _buildLanguageCard(
+            label: 'English',
+            nativeLabel: 'English',
+            code: 'en',
+            flag: '🇺🇸',
           ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
-                ),
+          const SizedBox(height: 16),
+          _buildLanguageCard(
+            label: 'Hindi',
+            nativeLabel: 'हिन्दी',
+            code: 'hi',
+            flag: '🇮🇳',
+          ),
+          const SizedBox(height: 16),
+          _buildLanguageCard(
+            label: 'Gujarati',
+            nativeLabel: 'ગુજરાતી',
+            code: 'gu',
+            flag: '🇮🇳',
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: _onContinuePressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            _buildLanguageCard(
-                              label: 'English',
-                              nativeLabel: 'English',
-                              code: 'en',
-                              flag: '🇺🇸',
-                            ),
-                            const SizedBox(height: 16),
-                            _buildLanguageCard(
-                              label: 'Hindi',
-                              nativeLabel: 'हिन्दी',
-                              code: 'hi',
-                              flag: '🇮🇳',
-                            ),
-                            const SizedBox(height: 16),
-                            _buildLanguageCard(
-                              label: 'Gujarati',
-                              nativeLabel: 'ગુજરાતી',
-                              code: 'gu',
-                              flag: '🇮🇳',
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Continue Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _onContinuePressed,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 2,
-                          ),
-                          child: Text(
-                            btnText,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              elevation: 0,
+            ),
+            child: Text(
+              btnText,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ),
@@ -178,28 +114,24 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isSelected = _selectedLangCode == code;
+    
     return InkWell(
       onTap: () => _onLanguageSelected(code),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected 
+              ? theme.colorScheme.primary.withValues(alpha: 0.1)
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+            color: isSelected 
+                ? theme.colorScheme.primary 
+                : (isDark ? theme.dividerColor : Colors.grey.shade300),
             width: 2,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected 
-                  ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                  : Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Row(
           children: [
@@ -207,8 +139,11 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? theme.dividerColor : Colors.grey.shade200,
+                ),
               ),
               child: Text(
                 flag,
@@ -226,7 +161,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isSelected ? theme.textTheme.bodyLarge?.color : (isDark ? Colors.white70 : Colors.black87),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -235,7 +170,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: isSelected ? theme.colorScheme.primary : (isDark ? Colors.white54 : Colors.grey.shade600),
+                      color: isDark ? Colors.white54 : Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -249,9 +184,9 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(4),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: theme.colorScheme.onPrimary,
                   size: 16,
                 ),
               )
@@ -262,7 +197,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: theme.dividerColor,
+                    color: isDark ? theme.dividerColor : Colors.grey.shade300,
                     width: 2,
                   ),
                 ),

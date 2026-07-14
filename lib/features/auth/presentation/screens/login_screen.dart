@@ -6,7 +6,7 @@ import '../auth_controller.dart';
 import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -21,6 +21,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = true;
   final Map<String, String> _clientErrors = {};
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    try {
+      final email = await _storage.read(key: 'remembered_email');
+      final password = await _storage.read(key: 'remembered_password');
+      if (email != null && password != null && mounted) {
+        setState(() {
+          _email.text = email;
+          _password.text = password;
+          _rememberMe = true;
+        });
+      }
+    } catch (e) {
+      // Ignore secure storage read errors
+    }
+  }
 
   @override
   void dispose() {
@@ -32,14 +55,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleError(AuthState auth, String defaultMsg) {
     final errors = auth.fieldErrors ?? {};
     final nonField = errors['non_field_errors'] ?? errors['detail'];
-    if (nonField != null) {
-      final msg = nonField is List ? nonField.first.toString() : nonField.toString();
-      showSnack(context, msg);
-    } else if (errors.isEmpty) {
-      showSnack(context, auth.error ?? defaultMsg);
-    } else {
-      // Don't show snack for field errors, as they are shown below the text fields
-    }
+    
+    setState(() {
+      if (nonField != null) {
+        final msg = nonField is List ? nonField.first.toString() : nonField.toString();
+        _clientErrors['email'] = msg;
+        _clientErrors['password'] = msg;
+      } else if (errors.isEmpty) {
+        _clientErrors['email'] = auth.error ?? defaultMsg;
+        _clientErrors['password'] = auth.error ?? defaultMsg;
+      }
+    });
   }
 
   Future<void> _login() async {
@@ -90,6 +116,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
+      if (_rememberMe) {
+        await _storage.write(key: 'remembered_email', value: input);
+        await _storage.write(key: 'remembered_password', value: password);
+      } else {
+        await _storage.delete(key: 'remembered_email');
+        await _storage.delete(key: 'remembered_password');
+      }
+
       showSnack(context, l10n.login_success);
       final state = GoRouterState.of(context);
       final redirectTo = state.uri.queryParameters['redirect_to'];

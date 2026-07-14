@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
+import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 final idCardProvider = FutureProvider.autoDispose<StudentIdCard?>((ref) async {
   final api = ref.watch(studentApiProvider);
@@ -31,6 +32,12 @@ class DigitalIdCardWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final idCardAsync = ref.watch(idCardProvider);
+    final dash = ref.watch(dashboardProvider).value;
+    final isExpired = dash?.membershipStatus == 'EXPIRED';
+
+    if (isExpired) {
+      return const PremiumBuyContainer();
+    }
 
     return idCardAsync.when(
       data: (idCard) {

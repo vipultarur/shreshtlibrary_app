@@ -10,6 +10,7 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
+import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/core/theme/theme_provider.dart';
@@ -295,7 +296,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         rightIcon: Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: InkWell(
-            onTap: () {}, // Action for more
+            onTap: () => ref.read(authControllerProvider.notifier).logout(),
             child: Container(
               width: 45,
               height: 45,
@@ -303,7 +304,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(Icons.more_horiz, color: textColor, size: 20),
+              child: const Icon(Icons.logout, color: Colors.redAccent, size: 20),
             ),
           ),
         ),
@@ -341,25 +342,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
 
               SectionTitle(l10n.profile_section_subscription),
-              SectionCard(
-                children: [
-                  SettingsTile(
-                    icon: Icons.payment_outlined,
-                    title: l10n.profile_tile_payments,
-                    onTap: () => context.push('/payments'),
-                  ),
-                  SettingsTile(
-                    icon: Icons.notifications_none,
-                    title: l10n.profile_tile_notifications,
-                    trailing: Switch(
-                      value: _notificationsEnabled,
-                      onChanged: (val) => setState(() => _notificationsEnabled = val),
-                      activeThumbColor: theme.colorScheme.primary,
-                    ),
-                    onTap: () => setState(() => _notificationsEnabled = !_notificationsEnabled),
-                    showDivider: false,
-                  ),
-                ],
+              Consumer(
+                builder: (context, ref, _) {
+                  final dash = ref.watch(dashboardProvider).value;
+                  final isPaymentsRestricted = dash?.restrictedFeatures.contains('payments') ?? false;
+
+                  final isNotificationsRestricted = dash?.restrictedFeatures.contains('notifications') ?? false;
+
+                  return SectionCard(
+                    children: [
+                      SettingsTile(
+                        icon: Icons.payment_outlined,
+                        title: l10n.profile_tile_payments,
+                        onTap: () {
+                          if (isPaymentsRestricted && dash != null) {
+                            showRestrictionDialog(context, dash);
+                          } else {
+                            context.push('/payments');
+                          }
+                        },
+                      ),
+                      SettingsTile(
+                        icon: Icons.notifications_none,
+                        title: l10n.profile_tile_notifications,
+                        trailing: Switch(
+                          value: _notificationsEnabled,
+                          onChanged: (val) {
+                            if (isNotificationsRestricted && dash != null) {
+                              showRestrictionDialog(context, dash);
+                            } else {
+                              setState(() => _notificationsEnabled = val);
+                            }
+                          },
+                          activeThumbColor: theme.colorScheme.primary,
+                        ),
+                        onTap: () {
+                          if (isNotificationsRestricted && dash != null) {
+                            showRestrictionDialog(context, dash);
+                          } else {
+                            setState(() => _notificationsEnabled = !_notificationsEnabled);
+                          }
+                        },
+                        showDivider: false,
+                      ),
+                    ],
+                  );
+                },
               ),
 
               SectionTitle(l10n.profile_settings),

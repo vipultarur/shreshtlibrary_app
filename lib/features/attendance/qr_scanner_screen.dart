@@ -242,19 +242,6 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
           return Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
-                color: Theme.of(context).colorScheme.primaryContainer,
-                width: double.infinity,
-                child: Text(
-                  _busy ? "Marking Attendance" : "Ready to Scan",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 color: Theme.of(context).colorScheme.surface,
                 width: double.infinity,
@@ -300,9 +287,37 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                         );
                       },
                     ),
-                    CustomPaint(
-                      painter: ScannerOverlayPainter(
-                        borderColor: Theme.of(context).colorScheme.primary,
+                    AnimatedScannerOverlay(
+                      borderColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    Positioned(
+                      bottom: 48,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ValueListenableBuilder(
+                          valueListenable: _scannerController,
+                          builder: (context, state, child) {
+                            final isOn = state.torchState == TorchState.on;
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isOn ? Colors.white : Colors.black54,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white24,
+                                  width: 2,
+                                ),
+                              ),
+                              child: IconButton(
+                                padding: const EdgeInsets.all(16),
+                                iconSize: 28,
+                                color: isOn ? Colors.black : Colors.white,
+                                icon: Icon(isOn ? Icons.flash_on : Icons.flash_off),
+                                onPressed: () => _scannerController.toggleTorch(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     if (_busy) 
