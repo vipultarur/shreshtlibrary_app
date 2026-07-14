@@ -19,6 +19,7 @@ import 'package:shreshtlibrary/common/widgets/section_header.dart';
 import 'package:shreshtlibrary/common/widgets/action_button_purple.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart'; // Add this for later
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart'; // for notificationsProvider
+import 'package:shreshtlibrary/core/services/app_review_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +30,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentSliderIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppReviewService.checkAndShowReviewDialog(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
