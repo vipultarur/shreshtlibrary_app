@@ -8,8 +8,8 @@ import 'package:shreshtlibrary/features/notifications/widgets/notification_card.
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 final notificationsProvider =
-    FutureProvider.autoDispose<List<StudentNotification>>((ref) {
-      return ref.watch(studentApiProvider).notifications();
+    StreamProvider.autoDispose<List<StudentNotification>>((ref) {
+      return ref.watch(studentApiProvider).notificationsStream();
     });
 
 class NotificationsScreen extends ConsumerWidget {

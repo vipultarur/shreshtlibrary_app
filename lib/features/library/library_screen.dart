@@ -8,26 +8,26 @@ import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/widgets/achiever_carousel.dart';
 import 'package:shreshtlibrary/features/library/widgets/review_form.dart';
 
-final libraryInfoProvider = FutureProvider.autoDispose<LibraryInfo>(
-  (ref) => ref.watch(studentApiProvider).libraryInfo(),
+final libraryInfoProvider = StreamProvider.autoDispose<LibraryInfo>(
+  (ref) => ref.watch(studentApiProvider).libraryInfoStream(),
 );
-final facilitiesProvider = FutureProvider.autoDispose<List<Facility>>(
-  (ref) => ref.watch(studentApiProvider).facilities(),
+final facilitiesProvider = StreamProvider.autoDispose<List<Facility>>(
+  (ref) => ref.watch(studentApiProvider).facilitiesStream(),
 );
-final achieversProvider = FutureProvider.autoDispose<List<Achiever>>(
-  (ref) => ref.watch(studentApiProvider).achievers(),
+final achieversProvider = StreamProvider.autoDispose<List<Achiever>>(
+  (ref) => ref.watch(studentApiProvider).achieversStream(),
 );
-final featuredAchieversProvider = FutureProvider.autoDispose<List<Achiever>>(
-  (ref) => ref.watch(studentApiProvider).achievers(featured: true),
+final featuredAchieversProvider = StreamProvider.autoDispose<List<Achiever>>(
+  (ref) => ref.watch(studentApiProvider).achieversStream(featured: true),
 );
-final reviewsProvider = FutureProvider.autoDispose<List<ReviewRecord>>(
-  (ref) => ref.watch(studentApiProvider).reviews(),
+final reviewsProvider = StreamProvider.autoDispose<List<ReviewRecord>>(
+  (ref) => ref.watch(studentApiProvider).reviewsStream(),
 );
-final reviewSummaryProvider = FutureProvider.autoDispose<ReviewSummary>(
-  (ref) => ref.watch(studentApiProvider).reviewSummary(),
+final reviewSummaryProvider = StreamProvider.autoDispose<ReviewSummary>(
+  (ref) => ref.watch(studentApiProvider).reviewSummaryStream(),
 );
-final galleryImagesProvider = FutureProvider.autoDispose<List<GalleryImage>>(
-  (ref) => ref.watch(studentApiProvider).galleryImages(),
+final galleryImagesProvider = StreamProvider.autoDispose<List<GalleryImage>>(
+  (ref) => ref.watch(studentApiProvider).galleryImagesStream(),
 );
 
 class LibraryScreen extends ConsumerWidget {

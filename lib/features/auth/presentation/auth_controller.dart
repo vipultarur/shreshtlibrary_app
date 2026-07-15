@@ -93,19 +93,9 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> _bootstrap() async {
-    try {
-      final info = await _api.libraryInfo();
-      if (info.maintenanceMode) {
-        state = const AuthState.maintenance();
-        _startPolling(); // Keep polling to recover from maintenance
-        return;
-      }
-    } catch (_) {
-      // Ignore network errors and continue to cache-based auth
-    }
-
     final tokens = await ref.read(tokenStoreProvider).read();
     final isSignedIn = tokens?.isComplete ?? false;
+
     state = isSignedIn
         ? const AuthState.signedIn()
         : const AuthState.signedOut();
@@ -120,6 +110,8 @@ class AuthController extends Notifier<AuthState> {
     }
 
     _startPolling();
+    // Do an immediate poll in the background to check maintenance
+    _pollStatus();
   }
 
   void _registerFcmToken() async {

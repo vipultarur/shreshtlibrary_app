@@ -8,8 +8,13 @@ String text(Object? value, [String fallback = '']) =>
 String? optionalText(Object? value) => value?.toString();
 
 String? resolveImageUrl(Object? value) {
-  final path = value?.toString();
+  String? path = value?.toString();
   if (path == null || path.isEmpty) return null;
+  
+  if (path.startsWith('/media/http')) {
+    path = path.substring(7);
+  }
+  
   if (path.startsWith('http')) return path;
   final uri = Uri.parse(AppConfig.apiBaseUrl);
   final origin = '${uri.scheme}://${uri.host}${uri.port == 80 || uri.port == 443 ? '' : ':${uri.port}'}';
@@ -550,23 +555,50 @@ class StudentNotification {
   final String? displayMode;
   final String type;
 
-  factory StudentNotification.fromJson(JsonMap json) => StudentNotification(
-    id: integer(json['id']),
-    title: text(json['title']),
-    body: text(json['body']),
-    isRead: boolean(json['is_read']),
-    sentAt: optionalText(json['sent_at']),
-    subtitle: optionalText(json['subtitle']),
-    description: optionalText(json['description']),
-    linkUrl: optionalText(json['link_url']),
-    linkButtonText: optionalText(json['link_button_text']),
-    eventDate: optionalText(json['event_date']),
-    layout: text(json['layout'], 'text_only'),
-    backgroundImage: resolveImageUrl(json['background_image']),
-    images: (json['images'] as List<dynamic>?)?.map((e) => resolveImageUrl(e) ?? '').where((e) => e.isNotEmpty).toList() ?? [],
-    displayMode: optionalText(json['display_mode']),
-    type: text(json['type']),
-  );
+  factory StudentNotification.fromJson(JsonMap json) {
+    String rawBody = text(json['body']);
+    List<String> extractedImages = [];
+    final imgRegex = RegExp(r'''<img[^>]+src=["']([^"']+)["']''', caseSensitive: false);
+    for (final match in imgRegex.allMatches(rawBody)) {
+      final src = match.group(1);
+      if (src != null) {
+        final resolved = resolveImageUrl(src);
+        if (resolved != null) {
+          extractedImages.add(resolved);
+        }
+      }
+    }
+
+    String cleanBody = rawBody
+        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n\n')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .trim();
+
+    final jsonImages = (json['images'] as List<dynamic>?)
+        ?.map((e) => resolveImageUrl(e) ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList() ?? [];
+
+    return StudentNotification(
+      id: integer(json['id']),
+      title: text(json['title']),
+      body: cleanBody,
+      isRead: boolean(json['is_read']),
+      sentAt: optionalText(json['sent_at']),
+      subtitle: optionalText(json['subtitle']),
+      description: optionalText(json['description']),
+      linkUrl: optionalText(json['link_url']),
+      linkButtonText: optionalText(json['link_button_text']),
+      eventDate: optionalText(json['event_date']),
+      layout: text(json['layout'], 'text_only'),
+      backgroundImage: resolveImageUrl(json['background_image']),
+      images: [...jsonImages, ...extractedImages],
+      displayMode: optionalText(json['display_mode']),
+      type: text(json['type']),
+    );
+  }
 }
 
 
@@ -766,6 +798,7 @@ class ReviewRecord {
     required this.rating,
     required this.comment,
     this.createdAt,
+    this.isApproved,
   });
 
   final int id;
@@ -773,6 +806,7 @@ class ReviewRecord {
   final int rating;
   final String comment;
   final String? createdAt;
+  final bool? isApproved;
 
   factory ReviewRecord.fromJson(JsonMap json) => ReviewRecord(
     id: integer(json['id']),
@@ -780,6 +814,7 @@ class ReviewRecord {
     rating: integer(json['rating']),
     comment: text(json['comment'] ?? json['text']),
     createdAt: optionalText(json['created_at']),
+    isApproved: json['is_approved'] as bool?,
   );
 }
 

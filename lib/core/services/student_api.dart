@@ -10,6 +10,50 @@ class StudentApi {
   final ApiClient _client;
   final LocalCacheService _cache;
 
+  Stream<T> _streamItem<T>(
+    String path,
+    String cacheKey,
+    T Function(JsonMap) parser, {
+    Map<String, dynamic>? query,
+  }) async* {
+    final cached = _cache.getCache(cacheKey);
+    if (cached != null) {
+      try { yield parser(cached as JsonMap); } catch (_) {}
+    }
+    try {
+      final response = await _client.get<dynamic>(path, query: query);
+      yield _client.unwrap<T>(response, (data) {
+        final json = data as JsonMap? ?? const {};
+        _cache.saveCache(cacheKey, json);
+        return parser(json);
+      });
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
+  }
+
+  Stream<List<T>> _streamList<T>(
+    String path,
+    String cacheKey,
+    T Function(JsonMap) parser, {
+    Map<String, dynamic>? query,
+  }) async* {
+    final cached = _cache.getCache(cacheKey);
+    if (cached != null && cached is List) {
+      try { yield cached.whereType<JsonMap>().map(parser).toList(); } catch (_) {}
+    }
+    try {
+      final response = await _client.get<dynamic>(path, query: query);
+      yield _client.unwrap<List<T>>(response, (data) {
+        final rows = data is List ? data : const <Object?>[];
+        _cache.saveCache(cacheKey, rows);
+        return rows.whereType<JsonMap>().map(parser).toList();
+      });
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
+  }
+
   Future<LoginResult> register(Map<String, dynamic> payload) async {
     final response = await _client.post<dynamic>(
       '/auth/register',
@@ -135,7 +179,11 @@ class StudentApi {
     final response = await _client.get<dynamic>('/student/dashboard');
     return _client.unwrap(
       response,
-      (data) => StudentDashboard.fromJson(data as JsonMap? ?? const {}),
+      (data) {
+        final json = data as JsonMap? ?? const {};
+        _cache.saveCache('dashboard', json);
+        return StudentDashboard.fromJson(json);
+      },
     );
   }
 
@@ -324,6 +372,37 @@ class StudentApi {
     return _client.unwrapList(response, LeaderboardEntry.fromJson);
   }
 
+  Stream<List<StudentNotification>> notificationsStream() async* {
+    final cached = _cache.getNotifications();
+    if (cached.isNotEmpty) {
+      try {
+        yield cached
+            .whereType<Map<String, dynamic>>()
+            .map(StudentNotification.fromJson)
+            .toList();
+      } catch (_) {}
+    }
+
+    try {
+      final response = await _client.get<dynamic>('/notifications/list');
+      yield _client.unwrap(response, (data) {
+        List<dynamic> rows = [];
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          rows = data['data'] as List<dynamic>? ?? <dynamic>[];
+        } else if (data is List) {
+          rows = data;
+        }
+        _cache.saveNotifications(rows);
+        return rows
+            .whereType<Map<String, dynamic>>()
+            .map(StudentNotification.fromJson)
+            .toList();
+      });
+    } catch (_) {
+      if (cached.isEmpty) rethrow;
+    }
+  }
+
   Future<List<StudentNotification>> notifications() async {
     try {
       final response = await _client.get<dynamic>('/notifications/list');
@@ -386,13 +465,45 @@ class StudentApi {
     final response = await _client.get<dynamic>('/library/info');
     return _client.unwrap(
       response,
-      (data) => LibraryInfo.fromJson(data as JsonMap? ?? const {}),
+      (data) {
+        final json = data as JsonMap? ?? const {};
+        _cache.saveCache('library_info', json);
+        return LibraryInfo.fromJson(json);
+      },
     );
+  }
+
+  Stream<LibraryInfo> libraryInfoStream() async* {
+    final cached = _cache.getCache('library_info');
+    if (cached != null) {
+      try { yield LibraryInfo.fromJson(cached); } catch (_) {}
+    }
+    try {
+      yield await libraryInfo();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
   }
 
   Future<List<Facility>> facilities() async {
     final response = await _client.get<dynamic>('/library/facilities');
-    return _client.unwrapList(response, Facility.fromJson);
+    return _client.unwrap<List<Facility>>(response, (data) {
+      final rows = data is List ? data : const <Object?>[];
+      _cache.saveCache('facilities', rows);
+      return rows.whereType<JsonMap>().map(Facility.fromJson).toList();
+    });
+  }
+
+  Stream<List<Facility>> facilitiesStream() async* {
+    final cached = _cache.getCache('facilities');
+    if (cached != null && cached is List) {
+      try { yield cached.whereType<JsonMap>().map(Facility.fromJson).toList(); } catch (_) {}
+    }
+    try {
+      yield await facilities();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
   }
 
   Future<List<Achiever>> achievers({bool featured = false}) async {
@@ -400,7 +511,24 @@ class StudentApi {
       '/library/achievers',
       query: featured ? {'featured': 'true'} : null,
     );
-    return _client.unwrapList(response, Achiever.fromJson);
+    return _client.unwrap<List<Achiever>>(response, (data) {
+      final rows = data is List ? data : const <Object?>[];
+      _cache.saveCache(featured ? 'achievers_featured' : 'achievers', rows);
+      return rows.whereType<JsonMap>().map(Achiever.fromJson).toList();
+    });
+  }
+
+  Stream<List<Achiever>> achieversStream({bool featured = false}) async* {
+    final cacheKey = featured ? 'achievers_featured' : 'achievers';
+    final cached = _cache.getCache(cacheKey);
+    if (cached != null && cached is List) {
+      try { yield cached.whereType<JsonMap>().map(Achiever.fromJson).toList(); } catch (_) {}
+    }
+    try {
+      yield await achievers(featured: featured);
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
   }
 
   Future<List<ReviewRecord>> reviews() async {
@@ -412,13 +540,45 @@ class StudentApi {
     final response = await _client.get<dynamic>('/library/reviews/summary');
     return _client.unwrap(
       response,
-      (data) => ReviewSummary.fromJson(data as JsonMap? ?? const {}),
+      (data) {
+        final json = data as JsonMap? ?? const {};
+        _cache.saveCache('review_summary', json);
+        return ReviewSummary.fromJson(json);
+      },
     );
+  }
+
+  Stream<ReviewSummary> reviewSummaryStream() async* {
+    final cached = _cache.getCache('review_summary');
+    if (cached != null) {
+      try { yield ReviewSummary.fromJson(cached); } catch (_) {}
+    }
+    try {
+      yield await reviewSummary();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
   }
 
   Future<List<GalleryImage>> galleryImages() async {
     final response = await _client.get<dynamic>('/library/gallery');
-    return _client.unwrapList(response, GalleryImage.fromJson);
+    return _client.unwrap<List<GalleryImage>>(response, (data) {
+      final rows = data is List ? data : const <Object?>[];
+      _cache.saveCache('gallery_images', rows);
+      return rows.whereType<JsonMap>().map(GalleryImage.fromJson).toList();
+    });
+  }
+
+  Stream<List<GalleryImage>> galleryImagesStream() async* {
+    final cached = _cache.getCache('gallery_images');
+    if (cached != null && cached is List) {
+      try { yield cached.whereType<JsonMap>().map(GalleryImage.fromJson).toList(); } catch (_) {}
+    }
+    try {
+      yield await galleryImages();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
   }
 
   Future<ReviewRecord> submitReview({
@@ -434,8 +594,91 @@ class StudentApi {
       (data) => ReviewRecord.fromJson(data as JsonMap? ?? const {}),
     );
   }
+  Future<ReviewRecord?> myReview() async {
+    final response = await _client.get<dynamic>('/library/reviews/my');
+    return _client.unwrap(response, (data) {
+      if (data == null || (data is Map && data.isEmpty)) return null;
+      final json = data as JsonMap;
+      _cache.saveCache('my_review', json);
+      return ReviewRecord.fromJson(json);
+    });
+  }
+
+  Stream<ReviewRecord?> myReviewStream() async* {
+    final cached = _cache.getCache('my_review');
+    if (cached != null) {
+      try { yield ReviewRecord.fromJson(cached); } catch (_) {}
+    }
+    try {
+      yield await myReview();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
+  }
+
   Future<List<HomeSlider>> sliders() async {
     final response = await _client.get<dynamic>('/sliders');
-    return _client.unwrapList(response, HomeSlider.fromJson);
+    return _client.unwrap<List<HomeSlider>>(response, (data) {
+      final rows = data is List ? data : const <Object?>[];
+      _cache.saveCache('home_sliders', rows);
+      return rows.whereType<JsonMap>().map(HomeSlider.fromJson).toList();
+    });
   }
+
+  Stream<List<HomeSlider>> slidersStream() async* {
+    final cached = _cache.getCache('home_sliders');
+    if (cached != null && cached is List) {
+      try { yield cached.whereType<JsonMap>().map(HomeSlider.fromJson).toList(); } catch (_) {}
+    }
+    try {
+      yield await sliders();
+    } catch (_) {
+      if (cached == null) rethrow;
+    }
+  }
+
+  Stream<StudentProfile> profileStream() =>
+      _streamItem('/student/profile', 'profile', (json) => StudentProfile.fromJson(json));
+      
+  Stream<StudentIdCard> idCardStream() =>
+      _streamItem('/student/id-card', 'idCard', (json) => StudentIdCard.fromJson(json));
+      
+  Stream<ReferralCode> referralCodeStream() =>
+      _streamItem('/student/referral', 'referral', (json) => ReferralCode.fromJson(json));
+
+  Stream<List<ReferralHistory>> referralHistoryStream() =>
+      _streamList('/student/referral/history', 'referralHistory', ReferralHistory.fromJson);
+
+  Stream<QRCodeRecord> todayQrStream() =>
+      _streamItem('/qr/today', 'todayQr', (json) => QRCodeRecord.fromJson(json));
+
+  Stream<List<AttendanceRecord>> attendanceLogsStream() =>
+      _streamList('/attendance/logs', 'attendanceLogs', AttendanceRecord.fromJson);
+
+  Stream<List<HolidayRecord>> holidaysStream() =>
+      _streamList('/holidays', 'holidays', HolidayRecord.fromJson);
+
+  Stream<List<MembershipPlan>> plansStream() =>
+      _streamList('/memberships/plans', 'plans', MembershipPlan.fromJson);
+
+  Stream<List<MembershipRecord>> membershipsStream() =>
+      _streamList('/memberships/history', 'memberships', MembershipRecord.fromJson);
+
+  Stream<List<PaymentRecord>> paymentHistoryStream() =>
+      _streamList('/payments/history', 'paymentHistory', PaymentRecord.fromJson);
+
+  Stream<List<Seat>> seatsStream() =>
+      _streamList('/seats/layout', 'seats', Seat.fromJson);
+
+  Stream<List<SeatAssignment>> seatHistoryStream() =>
+      _streamList('/seats/history', 'seatHistory', SeatAssignment.fromJson);
+
+  Stream<List<StudySession>> studySessionHistoryStream() =>
+      _streamList('/study/session/history', 'studySessionHistory', StudySession.fromJson, query: {'page_size': 1000});
+
+  Stream<List<LeaderboardEntry>> leaderboardStream({String duration = 'month'}) =>
+      _streamList('/study/leaderboard', 'leaderboard_$duration', LeaderboardEntry.fromJson, query: {'duration': duration});
+
+  Stream<List<ReviewRecord>> reviewsStream() =>
+      _streamList('/library/reviews', 'reviews', ReviewRecord.fromJson);
 }

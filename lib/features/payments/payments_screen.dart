@@ -7,22 +7,22 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
-final plansProvider = FutureProvider.autoDispose<List<MembershipPlan>>((ref) {
-  return ref.watch(studentApiProvider).plans();
+final plansProvider = StreamProvider.autoDispose<List<MembershipPlan>>((ref) {
+  return ref.watch(studentApiProvider).plansStream();
 });
-final membershipsProvider = FutureProvider.autoDispose<List<MembershipRecord>>((
+final membershipsProvider = StreamProvider.autoDispose<List<MembershipRecord>>((
   ref,
 ) {
-  return ref.watch(studentApiProvider).memberships();
+  return ref.watch(studentApiProvider).membershipsStream();
 });
-final paymentHistoryProvider = FutureProvider.autoDispose<List<PaymentRecord>>((
+final paymentHistoryProvider = StreamProvider.autoDispose<List<PaymentRecord>>((
   ref,
 ) {
-  return ref.watch(studentApiProvider).paymentHistory();
+  return ref.watch(studentApiProvider).paymentHistoryStream();
 });
 
-final libraryInfoProvider = FutureProvider.autoDispose<LibraryInfo>((ref) {
-  return ref.watch(studentApiProvider).libraryInfo();
+final libraryInfoProvider = StreamProvider.autoDispose<LibraryInfo>((ref) {
+  return ref.watch(studentApiProvider).libraryInfoStream();
 });
 
 class AvailablePlansWidget extends ConsumerWidget {

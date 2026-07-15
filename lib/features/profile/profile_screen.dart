@@ -16,18 +16,18 @@ import 'package:shreshtlibrary/common/widgets/status_badge.dart';
 import 'package:shreshtlibrary/core/theme/theme_provider.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
-final profileProvider = FutureProvider.autoDispose<StudentProfile>(
-  (ref) => ref.watch(studentApiProvider).profile(),
+final profileProvider = StreamProvider.autoDispose<StudentProfile>(
+  (ref) => ref.watch(studentApiProvider).profileStream(),
 );
-final idCardProvider = FutureProvider.autoDispose<StudentIdCard>(
-  (ref) => ref.watch(studentApiProvider).idCard(),
+final idCardProvider = StreamProvider.autoDispose<StudentIdCard>(
+  (ref) => ref.watch(studentApiProvider).idCardStream(),
 );
-final referralProvider = FutureProvider.autoDispose<ReferralCode>(
-  (ref) => ref.watch(studentApiProvider).referralCode(),
+final referralProvider = StreamProvider.autoDispose<ReferralCode>(
+  (ref) => ref.watch(studentApiProvider).referralCodeStream(),
 );
 final referralHistoryProvider =
-    FutureProvider.autoDispose<List<ReferralHistory>>(
-      (ref) => ref.watch(studentApiProvider).referralHistory(),
+    StreamProvider.autoDispose<List<ReferralHistory>>(
+      (ref) => ref.watch(studentApiProvider).referralHistoryStream(),
     );
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -389,6 +389,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   );
                 },
               ),
+
+              const SectionTitle('App Experience'),
+              const ReviewSectionWidget(),
 
               SectionTitle(l10n.profile_settings),
               SectionCard(
@@ -990,6 +993,178 @@ class ReferralsScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ReviewSectionWidget extends ConsumerStatefulWidget {
+  const ReviewSectionWidget({super.key});
+
+  @override
+  ConsumerState<ReviewSectionWidget> createState() => _ReviewSectionWidgetState();
+}
+
+class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
+  Future<void> _showReviewDialog() async {
+    int selectedRating = 5;
+    final commentController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final theme = Theme.of(context);
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('Write a Review', textAlign: TextAlign.center),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('How would you rate your experience?'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < selectedRating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            selectedRating = index + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: commentController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Share your thoughts (optional)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == true && mounted) {
+      try {
+        await ref.read(studentApiProvider).submitReview(
+              rating: selectedRating,
+              comment: commentController.text.trim(),
+            );
+        ref.invalidate(myReviewProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Review submitted successfully!')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to submit review')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final myReviewAsync = ref.watch(myReviewProvider);
+
+    return SectionCard(
+      children: [
+        myReviewAsync.when(
+          data: (review) {
+            if (review != null) {
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Your Review',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        Row(
+                          children: List.generate(5, (index) {
+                            return Icon(
+                              index < review.rating ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                              size: 20,
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                    if (review.comment.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        review.comment,
+                        style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(
+                      review.isApproved ?? false ? 'Status: Approved' : 'Status: Pending Approval',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: review.isApproved ?? false ? Colors.green : Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                ),
+              );
+            }
+            return SettingsTile(
+              icon: Icons.star_rate_rounded,
+              title: 'Write a Review',
+              onTap: _showReviewDialog,
+              showDivider: false,
+              iconColor: Colors.amber,
+            );
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (err, stack) => Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('Error loading review', style: TextStyle(color: theme.colorScheme.error)),
+          ),
+        ),
+      ],
     );
   }
 }

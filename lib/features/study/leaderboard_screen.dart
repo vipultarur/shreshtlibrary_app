@@ -7,8 +7,8 @@ import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-final leaderboardProvider = FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) {
-  return ref.watch(studentApiProvider).leaderboard();
+final leaderboardProvider = StreamProvider.autoDispose<List<LeaderboardEntry>>((ref) {
+  return ref.watch(studentApiProvider).leaderboardStream();
 });
 
 class LeaderboardScreen extends ConsumerWidget {

@@ -8,22 +8,8 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
-final idCardProvider = FutureProvider.autoDispose<StudentIdCard?>((ref) async {
-  final api = ref.watch(studentApiProvider);
-  final cache = ref.watch(localCacheServiceProvider);
-  
-  try {
-    final idCard = await api.idCard();
-    await cache.saveIdCard(idCard);
-    return idCard;
-  } catch (e) {
-    // If network fails, return cached version
-    final cachedCard = cache.getIdCard();
-    if (cachedCard != null) {
-      return cachedCard;
-    }
-    rethrow;
-  }
+final idCardProvider = StreamProvider.autoDispose<StudentIdCard?>((ref) {
+  return ref.watch(studentApiProvider).idCardStream();
 });
 
 class DigitalIdCardWidget extends ConsumerWidget {

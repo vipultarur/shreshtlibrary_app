@@ -62,6 +62,20 @@ class LocalCacheService {
     }
   }
 
+  Future<void> saveCache(String key, dynamic data) async {
+    await _prefs.setString('cache_$key', jsonEncode(data));
+  }
+
+  dynamic getCache(String key) {
+    final jsonStr = _prefs.getString('cache_$key');
+    if (jsonStr == null) return null;
+    try {
+      return jsonDecode(jsonStr);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> saveNotifications(List<dynamic> data) async {
     await _prefs.setString(_notificationsKey, jsonEncode(data));
   }

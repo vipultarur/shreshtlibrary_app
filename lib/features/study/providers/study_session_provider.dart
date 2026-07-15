@@ -224,7 +224,7 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
 
 final studySessionProvider = NotifierProvider<StudySessionNotifier, StudySessionState>(StudySessionNotifier.new);
 
-final studyHistoryProvider = FutureProvider<List<StudySession>>((ref) async {
+final studyHistoryProvider = StreamProvider<List<StudySession>>((ref) {
   final api = ref.watch(studentApiProvider);
-  return api.studySessionHistory();
+  return api.studySessionHistoryStream();
 });

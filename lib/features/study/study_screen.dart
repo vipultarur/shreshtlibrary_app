@@ -9,6 +9,8 @@ import 'package:shreshtlibrary/features/study/providers/study_session_provider.d
 import 'package:shreshtlibrary/features/attendance/attendance_screen.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/common/widgets/premium_buy_container.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});

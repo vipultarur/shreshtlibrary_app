@@ -26,7 +26,7 @@ class HomeNotificationBanner extends ConsumerWidget {
             (n) =>
                 !n.isRead &&
                 (n.layout == 'full_image' || n.layout == 'half_image' || n.layout == 'background_image'),
-            orElse: () => const StudentNotification(id: -1, title: '', body: '', isRead: true, layout: ''),
+            orElse: () => const StudentNotification(id: -1, title: '', body: '', isRead: true, layout: '', type: ''),
           );
 
           if (promo.id != -1) {

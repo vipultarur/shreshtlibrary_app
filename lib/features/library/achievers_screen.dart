@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
@@ -42,22 +43,29 @@ class AchieversScreen extends ConsumerWidget {
                   ? theme.colorScheme.surfaceContainerHighest 
                   : theme.colorScheme.primary.withValues(alpha: 0.08);
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+              return InkWell(
+                onTap: () {
+                  context.push('/achievers/${achiever.id}', extra: achiever);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Hero(
+                  tag: 'achiever_photo_${achiever.id}',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(

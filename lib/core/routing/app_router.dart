@@ -17,9 +17,12 @@ import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/features/home/home_screen.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart';
 import 'package:shreshtlibrary/features/library/achievers_screen.dart';
+import 'package:shreshtlibrary/features/library/achiever_details_screen.dart';
+import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/features/library/facilities_screen.dart';
 import 'package:shreshtlibrary/features/library/gallery_screen.dart';
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart';
+import 'package:shreshtlibrary/features/notifications/notification_details_screen.dart';
 import 'package:shreshtlibrary/features/payments/payments_screen.dart';
 import 'package:shreshtlibrary/features/profile/profile_screen.dart';
 import 'package:shreshtlibrary/features/study/leaderboard_screen.dart';
@@ -289,6 +292,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AchieversScreen(),
       ),
       GoRoute(
+        path: '/achievers/:id',
+        builder: (context, state) {
+          final achiever = state.extra as Achiever?;
+          return AchieverDetailsScreen(
+            id: state.pathParameters['id'],
+            achiever: achiever,
+          );
+        },
+      ),
+      GoRoute(
         path: '/facilities',
         builder: (context, state) => const FacilitiesScreen(),
       ),
@@ -337,10 +350,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/notifications/:id',
-        builder: (context, state) => ProtectedRoute(
-          feature: 'notifications',
-          child: PlaceholderScreen(title: 'Notification Details', id: state.pathParameters['id']),
-        ),
+        builder: (context, state) {
+          final notification = state.extra as StudentNotification?;
+          return ProtectedRoute(
+            feature: 'notifications',
+            child: NotificationDetailsScreen(
+              id: state.pathParameters['id'],
+              notification: notification,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/payments/:id',

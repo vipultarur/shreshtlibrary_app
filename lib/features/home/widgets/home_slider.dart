@@ -189,7 +189,7 @@ class _SliderSkeleton extends StatelessWidget {
   }
 }
 
-final homeSlidersProvider = FutureProvider.autoDispose<List<HomeSlider>>((ref) async {
+final homeSlidersProvider = StreamProvider.autoDispose<List<HomeSlider>>((ref) {
   final api = ref.watch(studentApiProvider);
-  return api.sliders();
+  return api.slidersStream();
 });

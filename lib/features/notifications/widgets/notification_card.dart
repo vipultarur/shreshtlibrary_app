@@ -93,9 +93,7 @@ class NotificationCard extends ConsumerWidget {
     return InkWell(
       onTap: () {
         if (isUnread) _markRead(context, ref);
-        if (item.linkUrl != null && item.linkUrl!.isNotEmpty) {
-          _launchUrl(context, item.linkUrl!);
-        }
+        context.push('/notifications/${item.id}', extra: item);
       },
       child: Container(
         color: isUnread ? (isDark ? Colors.white10 : Colors.blue.shade50.withValues(alpha: 0.3)) : Colors.transparent,

@@ -13,12 +13,12 @@ import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 final attendanceLogsProvider =
-    FutureProvider.autoDispose<List<AttendanceRecord>>((ref) {
-  return ref.watch(studentApiProvider).attendanceLogs();
+    StreamProvider.autoDispose<List<AttendanceRecord>>((ref) {
+  return ref.watch(studentApiProvider).attendanceLogsStream();
 });
 
-final holidaysProvider = FutureProvider.autoDispose<List<HolidayRecord>>((ref) {
-  return ref.watch(studentApiProvider).holidays();
+final holidaysProvider = StreamProvider.autoDispose<List<HolidayRecord>>((ref) {
+  return ref.watch(studentApiProvider).holidaysStream();
 });
 
 

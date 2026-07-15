@@ -40,6 +40,14 @@ final foregroundMessageStreamProvider = StreamProvider((ref) {
 class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   @override
   AsyncValue<StudentDashboard> build() {
+    final cache = ref.read(localCacheServiceProvider);
+    final cachedData = cache.getCache('dashboard');
+    
+    if (cachedData != null && cachedData is Map<String, dynamic>) {
+      Future.microtask(_fetch);
+      return AsyncData(StudentDashboard.fromJson(cachedData));
+    }
+    
     _fetch();
     return const AsyncLoading();
   }
@@ -49,7 +57,9 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
       final dashboard = await ref.watch(studentApiProvider).dashboard();
       state = AsyncData(dashboard);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (!state.hasValue) {
+        state = AsyncError(e, st);
+      }
     }
   }
 
@@ -59,3 +69,7 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
 }
 
 final dashboardProvider = NotifierProvider<DashboardNotifier, AsyncValue<StudentDashboard>>(DashboardNotifier.new);
+
+final myReviewProvider = StreamProvider.autoDispose<ReviewRecord?>((ref) {
+  return ref.watch(studentApiProvider).myReviewStream();
+});
