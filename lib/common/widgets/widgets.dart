@@ -8,6 +8,7 @@ import 'common_app_bar.dart';
 export 'common_app_bar.dart';
 export 'connectivity_wrapper.dart';
 export 'premium_buy_container.dart';
+export 'gallery_image_dialog.dart';
 
 class PageScaffold extends ConsumerWidget {
   const PageScaffold({

@@ -28,7 +28,7 @@ class DigitalIdCardWidget extends ConsumerWidget {
     return idCardAsync.when(
       data: (idCard) {
         if (idCard == null) return const SizedBox.shrink();
-        return _buildCard(context, idCard);
+        return _buildCard(context, idCard, dash);
       },
       loading: () => _buildSkeleton(context),
       error: (err, stack) => Card(
@@ -52,7 +52,7 @@ class DigitalIdCardWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildCard(BuildContext context, StudentIdCard idCard) {
+  Widget _buildCard(BuildContext context, StudentIdCard idCard, StudentDashboard? dash) {
     final theme = Theme.of(context);
     
     return Container(
@@ -123,19 +123,55 @@ class DigitalIdCardWidget extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          idCard.goal.toUpperCase(),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              idCard.goal.toUpperCase(),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (dash != null && !dash.restrictedFeatures.contains('study')) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: dash.assignedSeat.isNotEmpty
+                                    ? Colors.green.withValues(alpha: 0.8)
+                                    : Colors.orange.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    dash.assignedSeat.isNotEmpty ? Icons.event_seat : Icons.event_seat_outlined,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    dash.assignedSeat.isNotEmpty
+                                        ? (dash.assignedSeatFloor.isNotEmpty ? '${dash.assignedSeat} (${dash.assignedSeatFloor})' : dash.assignedSeat)
+                                        : 'Seat Not Assigned',
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),

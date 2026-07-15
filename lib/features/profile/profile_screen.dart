@@ -503,7 +503,10 @@ class ProfileSummaryCard extends ConsumerWidget {
                   shape: BoxShape.circle,
                   image: profile.profilePhoto != null && profile.profilePhoto!.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(profile.profilePhoto!),
+                          image: CachedNetworkImageProvider(
+                            profile.profilePhoto!,
+                            errorListener: (err) => debugPrint('Image error: $err'),
+                          ),
                           fit: BoxFit.cover,
                         )
                       : null,
@@ -1006,7 +1009,7 @@ class ReviewSectionWidget extends ConsumerStatefulWidget {
 
 class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
   Future<void> _showReviewDialog() async {
-    int selectedRating = 5;
+    int selectedRating = 0;
     final commentController = TextEditingController();
 
     final result = await showDialog<bool>(
@@ -1015,57 +1018,131 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final theme = Theme.of(context);
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text('Write a Review', textAlign: TextAlign.center),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('How would you rate your experience?'),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        icon: Icon(
-                          index < selectedRating ? Icons.star : Icons.star_border,
-                          color: Colors.amber,
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          setDialogState(() {
-                            selectedRating = index + 1;
-                          });
-                        },
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: commentController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: 'Share your thoughts (optional)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: theme.colorScheme.surfaceContainerHighest,
+            final isDark = theme.brightness == Brightness.dark;
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      blurRadius: 48,
+                      spreadRadius: -8,
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit_note_rounded, size: 40, color: Colors.amber),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Write a Review',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'How would you rate your experience?',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.5,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                selectedRating = index + 1;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
+                                color: index < selectedRating ? Colors.amber : Colors.grey.withValues(alpha: 0.4),
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: commentController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Share your thoughts (optional)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: selectedRating > 0 ? () => Navigator.pop(context, true) : null,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Submit'),
-                ),
-              ],
             );
           },
         );
@@ -1103,7 +1180,7 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
       children: [
         myReviewAsync.when(
           data: (review) {
-            if (review != null) {
+            if (review != null && review.id > 0) {
               return Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

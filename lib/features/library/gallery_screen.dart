@@ -36,22 +36,25 @@ class GalleryScreen extends ConsumerWidget {
             itemCount: images.length,
             itemBuilder: (context, index) {
               final image = images[index];
-              return Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                clipBehavior: Clip.hardEdge,
-                child: CachedNetworkImage(
-                  imageUrl: image.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    height: 150, // default placeholder height
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              return GestureDetector(
+                onTap: () => showGalleryImageDialog(context, image),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 150,
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: const Icon(Icons.broken_image),
+                  clipBehavior: Clip.hardEdge,
+                  child: CachedNetworkImage(
+                    imageUrl: image.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 150, // default placeholder height
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 150,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: const Icon(Icons.broken_image),
+                    ),
                   ),
                 ),
               );

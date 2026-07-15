@@ -597,7 +597,10 @@ class StudentApi {
   Future<ReviewRecord?> myReview() async {
     final response = await _client.get<dynamic>('/library/reviews/my');
     return _client.unwrap(response, (data) {
-      if (data == null || (data is Map && data.isEmpty)) return null;
+      if (data == null || (data is Map && data.isEmpty)) {
+        _cache.saveCache('my_review', null);
+        return null;
+      }
       final json = data as JsonMap;
       _cache.saveCache('my_review', json);
       return ReviewRecord.fromJson(json);

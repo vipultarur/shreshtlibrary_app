@@ -73,7 +73,10 @@ class LibraryScreen extends ConsumerWidget {
                           children: [
                             CircleAvatar(
                               radius: 24,
-                              backgroundImage: CachedNetworkImageProvider(info.logoSquare!),
+                              backgroundImage: CachedNetworkImageProvider(
+                                info.logoSquare!,
+                                errorListener: (err) => debugPrint('Image error: $err'),
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(

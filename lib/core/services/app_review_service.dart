@@ -60,76 +60,129 @@ class AppReviewService {
         int selectedRating = 0;
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Column(
-                children: [
-                  Icon(Icons.stars_rounded, size: 48, color: Colors.amber),
-                  SizedBox(height: 12),
-                  Text(
-                    'Enjoying the App?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Please take a moment to rate your experience. Your feedback helps us improve!',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        icon: Icon(
-                          index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
-                          color: Colors.amber,
-                          size: 36,
+            final theme = Theme.of(context);
+            final isDark = theme.brightness == Brightness.dark;
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      blurRadius: 48,
+                      spreadRadius: -8,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.stars_rounded, size: 48, color: Colors.amber),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Enjoying the App?',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Please take a moment to rate your experience. Your feedback helps us improve!',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.5,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedRating = index + 1;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
+                                color: index < selectedRating ? Colors.amber : Colors.grey.withValues(alpha: 0.4),
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text('Not Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            selectedRating = index + 1;
-                          });
-                        },
-                      );
-                    }),
-                  ),
-                ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: selectedRating > 0
+                                ? () async {
+                                    await prefs.setBool(_keyHasReviewed, true);
+                                    if (context.mounted) {
+                                      Navigator.of(context).pop();
+                                    }
+                                    try {
+                                      await launchUrlString(_storeUrl, mode: LaunchMode.externalApplication);
+                                    } catch (e) {
+                                      debugPrint('Could not launch store url: $e');
+                                    }
+                                  }
+                                : null,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              actionsAlignment: MainAxisAlignment.center,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
-                ),
-                ElevatedButton(
-                  onPressed: selectedRating > 0
-                      ? () async {
-                          // Mark as reviewed so we don't ask again
-                          await prefs.setBool(_keyHasReviewed, true);
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                          }
-                          // Redirect to store
-                          try {
-                            await launchUrlString(_storeUrl, mode: LaunchMode.externalApplication);
-                          } catch (e) {
-                            debugPrint('Could not launch store url: $e');
-                          }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Submit Review'),
-                ),
-              ],
             );
           }
         );

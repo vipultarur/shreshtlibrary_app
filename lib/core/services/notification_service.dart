@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -133,6 +134,16 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       break;
   }
 
+  final notificationMap = {
+    'id': id,
+    'title': title,
+    'body': displayBody,
+    'is_read': false,
+    'type': type,
+    if (imageUrl.isNotEmpty) 'images': [imageUrl],
+    ...message.data,
+  };
+
   await _showRichNotification(
     plugin: plugin,
     id: id,
@@ -144,6 +155,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     channelId: channelId,
     channelName: channelName,
     channelDesc: channelDesc,
+    payload: 'notification_json:${jsonEncode(notificationMap)}',
   );
 }
 
@@ -159,6 +171,7 @@ Future<void> _showRichNotification({
   String channelId = 'admin_notifications',
   String channelName = 'Admin Notifications',
   String channelDesc = 'Notifications from the admin',
+  String? payload,
 }) async {
   StyleInformation? styleInformation;
   AndroidBitmap<Object>? largeIconBitmap;
@@ -232,6 +245,7 @@ Future<void> _showRichNotification({
         actions: actions,
       ),
     ),
+    payload: payload,
   );
 }
 
@@ -397,12 +411,25 @@ class NotificationService {
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    final String linkUrl = message.data['link_url'] ?? '';
-    if (linkUrl.isNotEmpty) {
-      _actionStreamController.add('open_link:$linkUrl');
-    } else {
-      _actionStreamController.add('payload:notifications');
-    }
+    String title = message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
+    final String body = message.notification?.body ?? message.data['body'] ?? '';
+    final String type = message.data['type'] ?? 'GENERAL';
+    title = _addIconToTitle(title, body, type);
+    
+    final String imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
+    
+    final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    final notificationMap = {
+      'id': id,
+      'title': title,
+      'body': body,
+      'is_read': true,
+      'type': type,
+      if (imageUrl.isNotEmpty) 'images': [imageUrl],
+      ...message.data,
+    };
+    
+    _actionStreamController.add('payload:notification_json:${jsonEncode(notificationMap)}');
   }
 
   Future<void> showNotification({
@@ -465,10 +492,22 @@ class NotificationService {
         break;
     }
 
+    final String imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
+
+    final notificationMap = {
+      'id': DateTime.now().millisecondsSinceEpoch.remainder(100000),
+      'title': title,
+      'body': body,
+      'is_read': false,
+      'type': type,
+      if (imageUrl.isNotEmpty) 'images': [imageUrl],
+      ...message.data,
+    };
+
     await showNotification(
       title: title,
       body: body,
-      payload: payload,
+      payload: 'notification_json:${jsonEncode(notificationMap)}',
       channelId: channelId,
       channelName: channelName,
     );

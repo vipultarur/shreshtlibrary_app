@@ -72,7 +72,10 @@ class AchieversScreen extends ConsumerWidget {
                           color: isDark ? Colors.black26 : Colors.white60,
                           image: (achiever.photo != null && achiever.photo!.isNotEmpty)
                               ? DecorationImage(
-                                  image: CachedNetworkImageProvider(achiever.photo!),
+                                  image: CachedNetworkImageProvider(
+                                    achiever.photo!,
+                                    errorListener: (err) => debugPrint('Image error: $err'),
+                                  ),
                                   fit: BoxFit.contain,
                                 )
                               : null,
@@ -121,8 +124,10 @@ class AchieversScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
-                ),
-              );
+                ), // closes Column
+              ), // closes Container
+            ), // closes Hero
+          ); // closes InkWell
             },
           );
         },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
+import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 class AchieverDetailsScreen extends StatelessWidget {
   const AchieverDetailsScreen({
@@ -15,9 +16,9 @@ class AchieverDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (achiever == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Achiever Details')),
-        body: const Center(child: Text('Achiever not found')),
+      return const Scaffold(
+        appBar: CommonAppBar(title: 'Achiever Details'),
+        body: Center(child: Text('Achiever not found')),
       );
     }
 
@@ -25,12 +26,9 @@ class AchieverDetailsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(
-          color: (achiever!.photo != null && achiever!.photo!.isNotEmpty) ? Colors.white : theme.iconTheme.color,
-        ),
+      appBar: const CommonAppBar(
+        title: '',
+        transparent: true,
       ),
       extendBodyBehindAppBar: true,
       body: SingleChildScrollView(
@@ -46,7 +44,10 @@ class AchieverDetailsScreen extends StatelessWidget {
                   color: isDark ? Colors.black : Colors.grey.shade200,
                   image: achiever!.photo != null && achiever!.photo!.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(achiever!.photo!),
+                          image: CachedNetworkImageProvider(
+                            achiever!.photo!,
+                            errorListener: (err) => debugPrint('Image error: $err'),
+                          ),
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
                         )

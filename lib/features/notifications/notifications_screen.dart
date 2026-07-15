@@ -12,35 +12,42 @@ final notificationsProvider =
       return ref.watch(studentApiProvider).notificationsStream();
     });
 
-class NotificationsScreen extends ConsumerWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
-  Future<void> _markAllRead(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+  final Set<int> _dismissedIds = {};
+
+  Future<void> _markAllRead(BuildContext context) async {
     try {
       await ref.read(studentApiProvider).markAllNotificationsRead();
       ref.invalidate(notificationsProvider);
-      if (context.mounted) {
+      if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         showSnack(context, l10n.noti_all_marked_read);
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         showSnack(context, l10n.noti_failed_mark);
       }
     }
   }
 
-  Future<void> _clearAll(BuildContext context, WidgetRef ref) async {
+  Future<void> _clearAll(BuildContext context) async {
     try {
       await ref.read(studentApiProvider).deleteAllNotifications();
       ref.invalidate(notificationsProvider);
-      if (context.mounted) {
+      if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         showSnack(context, l10n.noti_all_cleared);
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         showSnack(context, l10n.noti_failed_clear);
       }
@@ -48,7 +55,7 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // Listen for incoming foreground messages and refresh the list
     ref.listen(
       foregroundMessageStreamProvider,
@@ -67,8 +74,8 @@ class NotificationsScreen extends ConsumerWidget {
       actions: [
         PopupMenuButton<String>(
           onSelected: (value) {
-            if (value == 'read_all') _markAllRead(context, ref);
-            if (value == 'clear_all') _clearAll(context, ref);
+            if (value == 'read_all') _markAllRead(context);
+            if (value == 'clear_all') _clearAll(context);
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -87,35 +94,47 @@ class NotificationsScreen extends ConsumerWidget {
         children: [
           AsyncPane(
             value: ref.watch(notificationsProvider),
-            builder: (rows) => rows.isEmpty
-                ? SectionCard(child: Text(l10n.noti_empty))
-                : Column(
-                    children: rows.map((item) {
-                      return Dismissible(
-                        key: ValueKey(item.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                          padding: const EdgeInsets.only(right: 24),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(16),
+            builder: (rows) {
+              final visibleRows = rows.where((item) => !_dismissedIds.contains(item.id)).toList();
+              
+              return visibleRows.isEmpty
+                  ? SectionCard(child: Text(l10n.noti_empty))
+                  : Column(
+                      children: visibleRows.map((item) {
+                        return Dismissible(
+                          key: ValueKey(item.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                            padding: const EdgeInsets.only(right: 24),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
                           ),
-                          child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                        ),
-                        onDismissed: (_) async {
-                          try {
-                            await ref.read(studentApiProvider).deleteNotification(item.id);
-                            ref.invalidate(notificationsProvider);
-                          } catch (_) {
-                            if (context.mounted) showSnack(context, l10n.noti_failed_delete);
-                          }
-                        },
-                        child: NotificationCard(item),
-                      );
-                    }).toList(),
-                  ),
+                          onDismissed: (_) async {
+                            setState(() {
+                              _dismissedIds.add(item.id);
+                            });
+                            try {
+                              await ref.read(studentApiProvider).deleteNotification(item.id);
+                              ref.invalidate(notificationsProvider);
+                            } catch (_) {
+                              if (mounted) {
+                                setState(() {
+                                  _dismissedIds.remove(item.id);
+                                });
+                                showSnack(context, l10n.noti_failed_delete);
+                              }
+                            }
+                          },
+                          child: NotificationCard(item),
+                        );
+                      }).toList(),
+                    );
+            },
           ),
         ],
       ),

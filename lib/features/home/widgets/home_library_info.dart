@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/library_screen.dart';
@@ -103,10 +104,14 @@ class HomeLibraryInfoWidget extends ConsumerWidget {
                                 : CircleAvatar(
                                     backgroundImage: CachedNetworkImageProvider(
                                       achiever.photo!,
+                                      errorListener: (err) => debugPrint('Image error: $err'),
                                     ),
                                   ),
                             title: Text(achiever.name),
                             subtitle: Text('${achiever.achievement} (${achiever.year})'),
+                            onTap: () {
+                              context.push('/achievers/${achiever.id}', extra: achiever);
+                            },
                           ),
                         )
                         .toList(),

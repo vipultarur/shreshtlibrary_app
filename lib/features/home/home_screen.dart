@@ -20,6 +20,7 @@ import 'package:shreshtlibrary/common/widgets/action_button_purple.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart'; // Add this for later
 import 'package:shreshtlibrary/features/notifications/notifications_screen.dart'; // for notificationsProvider
 import 'package:shreshtlibrary/core/services/app_review_service.dart';
+import 'package:shreshtlibrary/common/widgets/gallery_image_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -111,16 +112,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () {
                   showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(dash?.holidayTitle ?? l10n.home_holiday),
-                      content: Text(dash?.holidayDescription ?? l10n.home_holiday_desc),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.home_ok),
+                    builder: (context) {
+                      final theme = Theme.of(context);
+                      final isDark = theme.brightness == Brightness.dark;
+                      return Dialog(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 24,
+                                offset: const Offset(0, 12),
+                              ),
+                              BoxShadow(
+                                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                blurRadius: 48,
+                                spreadRadius: -8,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.purple.shade900.withValues(alpha: 0.3) : Colors.purple.shade50,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.celebration_rounded, color: isDark ? Colors.purple.shade300 : Colors.purple.shade600, size: 36),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                dash?.holidayTitle ?? l10n.home_holiday,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                dash?.holidayDescription ?? l10n.home_holiday_desc,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  height: 1.5,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    l10n.home_ok,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               );
@@ -658,11 +724,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemBuilder: (context, index) {
                   final name = achievers[index].name;
                   final photo = achievers[index].photo;
-                  final achievement = achievers[index].achievement;
+                  final achiever = achievers[index];
+                  final achievement = achiever.achievement;
 
-                  return Container(
-                    width: 120, // Adjusted width
-                    margin: const EdgeInsets.only(right: 12),
+                  return GestureDetector(
+                    onTap: () {
+                      context.push('/achievers/${achiever.id}', extra: achiever);
+                    },
+                    child: Container(
+                      width: 120, // Adjusted width
+                      margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(28),
@@ -739,6 +810,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   );
@@ -919,22 +991,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemCount: displayImages.length,
                 itemBuilder: (context, index) {
                   final image = displayImages[index];
-                  return Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: CachedNetworkImage(
-                      imageUrl: image.imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        height: 120,
-                        color: theme.colorScheme.surfaceContainerHighest,
+                  return GestureDetector(
+                    onTap: () => showGalleryImageDialog(context, image),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        height: 120,
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.broken_image),
+                      clipBehavior: Clip.hardEdge,
+                      child: CachedNetworkImage(
+                        imageUrl: image.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          height: 120,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          height: 120,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.broken_image),
+                        ),
                       ),
                     ),
                   );

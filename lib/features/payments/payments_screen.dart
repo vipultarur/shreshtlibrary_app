@@ -59,17 +59,94 @@ class AvailablePlansWidget extends ConsumerWidget {
                 if (context.mounted) {
                   showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: const Text('Activate Plan', style: TextStyle(fontWeight: FontWeight.bold)),
-                      content: Text('To activate the ${plan.name} plan, please contact us at:\n\n$phone', style: const TextStyle(fontSize: 16)),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Close'),
+                    builder: (context) {
+                      final dialogTheme = Theme.of(context);
+                      final isDialogDark = dialogTheme.brightness == Brightness.dark;
+                      return Dialog(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                        child: Container(
+                          padding: const EdgeInsets.all(28),
+                          decoration: BoxDecoration(
+                            color: dialogTheme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 24,
+                                offset: const Offset(0, 12),
+                              ),
+                              BoxShadow(
+                                color: dialogTheme.colorScheme.primary.withValues(alpha: 0.15),
+                                blurRadius: 48,
+                                spreadRadius: -8,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isDialogDark ? Colors.blue.shade900.withValues(alpha: 0.3) : Colors.blue.shade50,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.support_agent_rounded, size: 48, color: isDialogDark ? Colors.blue.shade300 : Colors.blue.shade600),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'Activate Plan',
+                                textAlign: TextAlign.center,
+                                style: dialogTheme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'To activate the ${plan.name} plan, please contact us at:',
+                                textAlign: TextAlign.center,
+                                style: dialogTheme.textTheme.bodyMedium?.copyWith(
+                                  height: 1.5,
+                                  color: dialogTheme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: dialogTheme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: SelectableText(
+                                  phone,
+                                  style: dialogTheme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: dialogTheme.colorScheme.primary,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: const Text('Got it', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 }
               },

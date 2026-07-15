@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
-
+import 'dart:convert';
+import 'package:shreshtlibrary/core/models/models.dart';
 
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -89,6 +90,28 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
             ref.read(routerProvider).go(payload);
           } else {
             ref.read(routerProvider).push(payload);
+          }
+        } else if (payload.startsWith('notification_json:')) {
+          final jsonStr = payload.substring('notification_json:'.length);
+          try {
+            final data = jsonDecode(jsonStr);
+            final notification = StudentNotification.fromJson(data);
+            
+            final typeLower = notification.type.toLowerCase();
+            final titleLower = notification.title.toLowerCase();
+            final linkUrl = notification.linkUrl ?? '';
+            
+            if (typeLower.contains('study') || 
+                titleLower.contains('study session') || 
+                titleLower.contains('study area') || 
+                linkUrl.startsWith('/study')) {
+              ref.read(routerProvider).go('/study');
+            } else {
+              ref.read(routerProvider).push('/notifications/${notification.id}', extra: notification);
+            }
+          } catch (e) {
+            debugPrint('[FCM] Error parsing notification JSON: $e');
+            ref.read(routerProvider).push('/notifications');
           }
         }
       } else if (action.startsWith('/')) {

@@ -7,6 +7,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leftIcon; // Optional custom left icon widget (replaces default back button)
   final Widget? rightIcon; // Optional action icon/widget
   final bool showBackButton;
+  final bool transparent;
 
   const CommonAppBar({
     super.key,
@@ -14,6 +15,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.leftIcon,
     this.rightIcon,
     this.showBackButton = true,
+    this.transparent = false,
   });
 
   @override
@@ -28,7 +30,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2),
+      color: transparent 
+          ? Colors.transparent 
+          : (isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2)),
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
