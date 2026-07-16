@@ -578,6 +578,13 @@ class StudentApi {
     });
   }
 
+  Future<Map<String, dynamic>> publicPaymentSettings() async {
+    final response = await _client.get<dynamic>('/licensing/public-payment-settings');
+    return _client.unwrap(response, (data) {
+      return data as JsonMap? ?? const {};
+    });
+  }
+
   Stream<ReviewSummary> reviewSummaryStream() async* {
     final cached = _cache.getCache(
       'review_summary',

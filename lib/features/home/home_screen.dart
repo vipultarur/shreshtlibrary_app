@@ -30,6 +30,9 @@ import 'package:shreshtlibrary/features/home/widgets/home_carousel.dart';
 import 'package:shreshtlibrary/features/home/widgets/home_floating_action.dart';
 import 'package:shreshtlibrary/core/services/app_review_service.dart';
 
+import 'package:shreshtlibrary/common/widgets/subscription_expired_screen.dart';
+import 'package:shreshtlibrary/core/errors/api_failure.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -50,6 +53,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    final dashboardAsync = ref.watch(dashboardProvider);
+    if (dashboardAsync.hasError) {
+      final error = dashboardAsync.error;
+      if (error is ApiFailure && error.code == 'LIBRARY_SUBSCRIPTION_EXPIRED') {
+        return const SubscriptionExpiredScreen();
+      }
+    }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -115,3 +126,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+

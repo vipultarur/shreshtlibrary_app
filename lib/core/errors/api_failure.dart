@@ -1,16 +1,18 @@
 import 'package:dio/dio.dart';
 
 class ApiFailure implements Exception {
-  ApiFailure(this.message, {this.statusCode, this.errors});
+  ApiFailure(this.message, {this.statusCode, this.errors, this.code});
 
   final String message;
   final int? statusCode;
   final Object? errors;
+  final String? code;
 
   factory ApiFailure.fromDio(DioException error) {
     final payload = error.response?.data;
     if (payload is Map<String, dynamic>) {
       final message = payload['message']?.toString();
+      final code = payload['code']?.toString();
       final errors = payload.containsKey('errors')
           ? payload['errors']
           : payload;
@@ -20,6 +22,7 @@ class ApiFailure implements Exception {
             : message,
         statusCode: error.response?.statusCode,
         errors: errors,
+        code: code,
       );
     }
 

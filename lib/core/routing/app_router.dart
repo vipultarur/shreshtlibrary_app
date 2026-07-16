@@ -31,6 +31,8 @@ import 'package:shreshtlibrary/common/widgets/app_shell.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
+import 'package:shreshtlibrary/common/widgets/subscription_expired_screen.dart';
+import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
@@ -58,6 +60,10 @@ class ProtectedRoute extends ConsumerWidget {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) {
+        if (error is ApiFailure && error.code == 'LIBRARY_SUBSCRIPTION_EXPIRED') {
+          return const SubscriptionExpiredScreen();
+        }
+        
         final l10n = AppLocalizations.of(context);
         return Scaffold(
           body: Center(
