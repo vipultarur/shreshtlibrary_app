@@ -19,7 +19,8 @@ class StudyScreen extends ConsumerStatefulWidget {
   ConsumerState<StudyScreen> createState() => _StudyScreenState();
 }
 
-class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProviderStateMixin {
+class _StudyScreenState extends ConsumerState<StudyScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   DateTime _selectedHistoryDate = DateTime.now();
   String _chartViewMode = 'Week'; // 'Week' or 'Month'
@@ -30,8 +31,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
   }
-
-
 
   @override
   void dispose() {
@@ -46,7 +45,12 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
-  Widget _buildTabButton(String mode, String label, bool isDark, ThemeData theme) {
+  Widget _buildTabButton(
+    String mode,
+    String label,
+    bool isDark,
+    ThemeData theme,
+  ) {
     final isSelected = _chartViewMode == mode;
     return GestureDetector(
       onTap: () {
@@ -109,7 +113,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 ),
               ),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(30),
@@ -126,7 +133,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey.shade600,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                   dividerColor: Colors.transparent,
                   tabs: [
                     Tab(text: l10n.study_tracker),
@@ -192,7 +201,6 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     );
   }
 
-
   Widget _buildStudyChart() {
     final historyAsync = ref.watch(studyHistoryProvider);
     final l10n = AppLocalizations.of(context)!;
@@ -226,8 +234,18 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildTabButton('Week', l10n.study_analytics_week, isDark, theme),
-                    _buildTabButton('Month', l10n.study_analytics_month, isDark, theme),
+                    _buildTabButton(
+                      'Week',
+                      l10n.study_analytics_week,
+                      isDark,
+                      theme,
+                    ),
+                    _buildTabButton(
+                      'Month',
+                      l10n.study_analytics_month,
+                      isDark,
+                      theme,
+                    ),
                   ],
                 ),
               ),
@@ -237,11 +255,16 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
           historyAsync.when(
             data: (history) {
               return SizedBox(
-                height: 425, // Adjusted height to fit chart + summary cards and prevent overflow
+                height:
+                    425, // Adjusted height to fit chart + summary cards and prevent overflow
                 child: PageView.builder(
                   controller: _pageController,
                   itemBuilder: (context, index) {
-                    return _buildAnalyticsPage(history, index - 10000, _chartViewMode);
+                    return _buildAnalyticsPage(
+                      history,
+                      index - 10000,
+                      _chartViewMode,
+                    );
                   },
                 ),
               );
@@ -251,56 +274,100 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
               padding: const EdgeInsets.all(20),
               margin: const EdgeInsets.only(bottom: 16),
               child: Shimmer.fromColors(
-                baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
-                highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+                baseColor: theme.brightness == Brightness.dark
+                    ? Colors.white10
+                    : Colors.black12,
+                highlightColor: theme.brightness == Brightness.dark
+                    ? Colors.white24
+                    : Colors.white24,
                 child: Column(
                   children: [
-                    Container(height: 160, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32))),
+                    Container(
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24)))),
+                        Expanded(
+                          child: Container(
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                        ),
                         const SizedBox(width: 12),
-                        Expanded(child: Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24)))),
+                        Expanded(
+                          child: Container(
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Container(height: 80, decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(24))),
+                    Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-            error: (_, __) => SizedBox(height: 425, child: Center(child: Text(l10n.study_failed_chart))),
+            error: (_, __) => SizedBox(
+              height: 425,
+              child: Center(child: Text(l10n.study_failed_chart)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAnalyticsPage(List<StudySession> history, int offset, String mode) {
+  Widget _buildAnalyticsPage(
+    List<StudySession> history,
+    int offset,
+    String mode,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
-    
+
     List<double> totals;
     DateTime startOfRange;
     int numBars;
     String dateRangeLabel;
-    
+
     if (mode == 'Week') {
-      final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+      final monday = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
       startOfRange = monday.add(Duration(days: offset * 7));
       final endOfWeek = startOfRange.add(const Duration(days: 6));
-      dateRangeLabel = '${DateFormat('d MMM').format(startOfRange)} – ${DateFormat('d MMM yyyy').format(endOfWeek)}';
-      
+      dateRangeLabel =
+          '${DateFormat('d MMM').format(startOfRange)} – ${DateFormat('d MMM yyyy').format(endOfWeek)}';
+
       numBars = 7;
       totals = List.filled(numBars, 0.0);
-      
+
       for (final session in history) {
         try {
           final start = DateTime.parse(session.startTime).toLocal();
           final sessionDate = DateTime(start.year, start.month, start.day);
           final diff = sessionDate.difference(startOfRange).inDays;
-          
+
           if (diff >= 0 && diff < numBars) {
             totals[diff] += session.durationMinutes.toDouble();
           }
@@ -310,16 +377,17 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       final targetMonth = DateTime(now.year, now.month + offset, 1);
       final nextMonth = DateTime(now.year, now.month + offset + 1, 1);
       dateRangeLabel = DateFormat('MMMM yyyy').format(targetMonth);
-      
+
       final daysInMonth = nextMonth.difference(targetMonth).inDays;
       numBars = (daysInMonth / 7.0).ceil();
       startOfRange = targetMonth;
       totals = List.filled(numBars, 0.0);
-      
+
       for (final session in history) {
         try {
           final start = DateTime.parse(session.startTime).toLocal();
-          if (start.year == targetMonth.year && start.month == targetMonth.month) {
+          if (start.year == targetMonth.year &&
+              start.month == targetMonth.month) {
             int weekIndex = (start.day - 1) ~/ 7;
             if (weekIndex >= 0 && weekIndex < numBars) {
               totals[weekIndex] += session.durationMinutes.toDouble();
@@ -331,14 +399,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
 
     double totalMinutes = totals.fold(0.0, (sum, val) => sum + val);
     double avgMinutes = numBars > 0 ? totalMinutes / numBars : 0.0;
-    
-    double maxDuration = totals.isEmpty ? 0 : totals.reduce((a, b) => a > b ? a : b);
+
+    double maxDuration = totals.isEmpty
+        ? 0
+        : totals.reduce((a, b) => a > b ? a : b);
     int mostProductiveIndex = totals.indexOf(maxDuration);
     String mostProductiveLabel = '--';
-    
+
     if (maxDuration > 0) {
       if (mode == 'Week') {
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const days = [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ];
         if (mostProductiveIndex >= 0 && mostProductiveIndex < days.length) {
           mostProductiveLabel = days[mostProductiveIndex];
         }
@@ -346,12 +424,12 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         mostProductiveLabel = 'Week ${mostProductiveIndex + 1}';
       }
     }
-    
+
     if (maxDuration < 60) maxDuration = 60; // minimum 1 hr scale
 
     final totalH = totalMinutes ~/ 60;
     final totalM = (totalMinutes % 60).toInt();
-    
+
     final avgH = avgMinutes ~/ 60;
     final avgM = (avgMinutes % 60).toInt();
 
@@ -368,7 +446,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.black26
+                    : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -379,7 +459,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
               Center(
                 child: Text(
                   dateRangeLabel,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -389,7 +472,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                   child: Center(
                     child: Text(
                       l10n.study_no_data,
-                      style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ),
                 )
@@ -403,18 +489,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => theme.colorScheme.surfaceContainerHighest,
+                          getTooltipColor: (_) =>
+                              theme.colorScheme.surfaceContainerHighest,
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             String label;
                             if (mode == 'Week') {
-                              final date = startOfRange.add(Duration(days: group.x));
+                              final date = startOfRange.add(
+                                Duration(days: group.x),
+                              );
                               label = DateFormat('MMM dd').format(date);
                             } else {
                               label = 'Week ${group.x + 1}';
                             }
                             return BarTooltipItem(
                               '$label\n${rod.toY.toInt()} min',
-                              TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
+                              TextStyle(
+                                color: theme.textTheme.bodyLarge?.color,
+                                fontWeight: FontWeight.bold,
+                              ),
                             );
                           },
                         ),
@@ -426,22 +518,41 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
                               final idx = value.toInt();
-                              if (idx < 0 || idx >= numBars) return const SizedBox.shrink();
-                              
+                              if (idx < 0 || idx >= numBars)
+                                return const SizedBox.shrink();
+
                               String label = '';
                               bool isCurrent = false;
-                              
+
                               if (mode == 'Week') {
-                                const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                                const days = [
+                                  'M',
+                                  'T',
+                                  'W',
+                                  'T',
+                                  'F',
+                                  'S',
+                                  'S',
+                                ];
                                 label = days[idx];
-                                final date = startOfRange.add(Duration(days: idx));
-                                isCurrent = date.year == now.year && date.month == now.month && date.day == now.day;
+                                final date = startOfRange.add(
+                                  Duration(days: idx),
+                                );
+                                isCurrent =
+                                    date.year == now.year &&
+                                    date.month == now.month &&
+                                    date.day == now.day;
                               } else {
                                 label = 'W${idx + 1}';
-                                final targetMonth = DateTime(now.year, now.month + offset, 1);
-                                if (targetMonth.year == now.year && targetMonth.month == now.month) {
-                                   int currentWeekIndex = (now.day - 1) ~/ 7;
-                                   isCurrent = idx == currentWeekIndex;
+                                final targetMonth = DateTime(
+                                  now.year,
+                                  now.month + offset,
+                                  1,
+                                );
+                                if (targetMonth.year == now.year &&
+                                    targetMonth.month == now.month) {
+                                  int currentWeekIndex = (now.day - 1) ~/ 7;
+                                  isCurrent = idx == currentWeekIndex;
                                 }
                               }
 
@@ -451,17 +562,27 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                                   label,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isCurrent ? theme.colorScheme.primary : Colors.grey,
-                                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                                    color: isCurrent
+                                        ? theme.colorScheme.primary
+                                        : Colors.grey,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               );
                             },
                           ),
                         ),
-                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                       ),
                       borderData: FlBorderData(show: false),
                       gridData: FlGridData(
@@ -469,30 +590,42 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                         drawVerticalLine: false,
                         horizontalInterval: maxDuration / 4,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.withValues(alpha: 0.2), 
-                          strokeWidth: 1, 
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          strokeWidth: 1,
                           dashArray: [5, 5],
                         ),
                       ),
                       barGroups: List.generate(numBars, (index) {
-                         bool isCurrent = false;
-                         if (mode == 'Week') {
-                             final date = startOfRange.add(Duration(days: index));
-                             isCurrent = date.year == now.year && date.month == now.month && date.day == now.day;
-                         } else {
-                             final targetMonth = DateTime(now.year, now.month + offset, 1);
-                             if (targetMonth.year == now.year && targetMonth.month == now.month) {
-                                 int currentWeekIndex = (now.day - 1) ~/ 7;
-                                 isCurrent = index == currentWeekIndex;
-                             }
-                         }
-                        
+                        bool isCurrent = false;
+                        if (mode == 'Week') {
+                          final date = startOfRange.add(Duration(days: index));
+                          isCurrent =
+                              date.year == now.year &&
+                              date.month == now.month &&
+                              date.day == now.day;
+                        } else {
+                          final targetMonth = DateTime(
+                            now.year,
+                            now.month + offset,
+                            1,
+                          );
+                          if (targetMonth.year == now.year &&
+                              targetMonth.month == now.month) {
+                            int currentWeekIndex = (now.day - 1) ~/ 7;
+                            isCurrent = index == currentWeekIndex;
+                          }
+                        }
+
                         return BarChartGroupData(
                           x: index,
                           barRods: [
                             BarChartRodData(
                               toY: totals[index],
-                              color: isCurrent ? theme.colorScheme.primary : theme.colorScheme.primary.withValues(alpha: 0.2),
+                              color: isCurrent
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
                               width: mode == 'Month' ? 24 : 16,
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -519,7 +652,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
             const SizedBox(width: 12),
             Expanded(
               child: _buildSummaryCard(
-                title: mode == 'Week' ? l10n.study_avg_daily : l10n.study_avg_weekly,
+                title: mode == 'Week'
+                    ? l10n.study_avg_daily
+                    : l10n.study_avg_weekly,
                 value: '${avgH}h ${avgM}m',
                 icon: Icons.show_chart,
                 color: Colors.orange,
@@ -538,10 +673,15 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildSummaryCard({required String title, required String value, required IconData icon, required Color color}) {
+  Widget _buildSummaryCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -549,7 +689,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
+            color: isDark
+                ? Colors.black26
+                : Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -595,47 +737,63 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     );
   }
 
-
   Widget _buildActiveSessionView() {
     final state = ref.watch(studySessionProvider);
     final notifier = ref.read(studySessionProvider.notifier);
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     final dash = ref.watch(dashboardProvider).value;
     final isExpired = dash?.membershipStatus == 'EXPIRED';
 
     if (isExpired) {
       return const PremiumBuyContainer();
     }
-    
+
     final logsAsync = ref.watch(attendanceLogsProvider);
     if (logsAsync.isLoading) {
       return Container(
         height: 300,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         child: Shimmer.fromColors(
-          baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
-          highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+          baseColor: theme.brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          highlightColor: theme.brightness == Brightness.dark
+              ? Colors.white24
+              : Colors.white24,
           child: Container(
-            decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32)),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(32),
+            ),
           ),
         ),
       );
     }
-    
+
     final logsOpt = logsAsync.value;
     final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final todayLog = logsOpt?.firstWhere(
-        (l) => l.date == todayStr,
-        orElse: () => AttendanceRecord(id: 0, studentName: '', date: '', isPresent: false, isManual: false));
-        
-    final isCheckedIn = todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
+      (l) => l.date == todayStr,
+      orElse: () => AttendanceRecord(
+        id: 0,
+        studentName: '',
+        date: '',
+        isPresent: false,
+        isManual: false,
+      ),
+    );
+
+    final isCheckedIn =
+        todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
     final isCheckedOut = todayLog != null && todayLog.timeOut != null;
     final canStartSession = isCheckedIn && !isCheckedOut;
 
-    if (!canStartSession && state.status != StudySessionStatus.active && state.status != StudySessionStatus.starting) {
+    if (!canStartSession &&
+        state.status != StudySessionStatus.active &&
+        state.status != StudySessionStatus.starting) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(20),
@@ -644,7 +802,9 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.black26
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -658,7 +818,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 color: theme.colorScheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.location_off, size: 48, color: Colors.grey),
+              child: const Icon(
+                Icons.location_off,
+                size: 48,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -685,16 +849,24 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         height: 300,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         child: Shimmer.fromColors(
-          baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
-          highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+          baseColor: theme.brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          highlightColor: theme.brightness == Brightness.dark
+              ? Colors.white24
+              : Colors.white24,
           child: Container(
-            decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(32)),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(32),
+            ),
           ),
         ),
       );
     }
 
-    if (state.status == StudySessionStatus.idle || state.status == StudySessionStatus.error) {
+    if (state.status == StudySessionStatus.idle ||
+        state.status == StudySessionStatus.error) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(20),
@@ -717,7 +889,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 color: theme.colorScheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.timer, size: 48, color: theme.colorScheme.primary),
+              child: Icon(
+                Icons.timer,
+                size: 48,
+                color: theme.colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -753,11 +929,19 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                   }
                 },
                 icon: const Icon(Icons.play_arrow, color: Colors.white),
-                label: Text(l10n.study_start_btn, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                label: Text(
+                  l10n.study_start_btn,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),
@@ -779,7 +963,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
       centerText = _formatTime(state.elapsed.inSeconds);
     } else {
       progressValue = state.verificationRemaining / 60.0;
-      progressColor = Colors.orange; 
+      progressColor = Colors.orange;
       centerText = _formatTime(state.verificationRemaining);
     }
 
@@ -829,7 +1013,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                       if (isPaused) ...[
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: progressColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
@@ -855,11 +1042,18 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.pause_circle_outline, color: Colors.grey, size: 16),
+              const Icon(
+                Icons.pause_circle_outline,
+                color: Colors.grey,
+                size: 16,
+              ),
               const SizedBox(width: 8),
               Text(
                 l10n.study_total_paused(_formatTime(state.pausedSeconds)),
-                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -888,7 +1082,12 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildControlButton({required IconData icon, required String label, required Color color, VoidCallback? onTap}) {
+  Widget _buildControlButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -904,7 +1103,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
@@ -934,7 +1136,11 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 monthPickerType: MonthPickerType.switcher,
                 dateFormatter: const DateFormatter.fullDateDayAsStrMY(),
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                monthStyle: TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold, fontSize: 16),
+                monthStyle: TextStyle(
+                  color: theme.textTheme.bodyLarge?.color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               dayProps: EasyDayProps(
                 height: 70,
@@ -945,8 +1151,16 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                     borderRadius: const BorderRadius.all(Radius.circular(30)),
                     color: theme.colorScheme.primary,
                   ),
-                  dayNumStyle: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  dayStrStyle: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                  dayNumStyle: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  dayStrStyle: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 inactiveDayStyle: DayStyle(
                   decoration: BoxDecoration(
@@ -954,17 +1168,36 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                     color: theme.colorScheme.surface,
                     border: Border.all(color: theme.dividerColor),
                   ),
-                  dayNumStyle: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold),
-                  dayStrStyle: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold),
+                  dayNumStyle: TextStyle(
+                    color: theme.textTheme.bodyLarge?.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  dayStrStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 todayStyle: DayStyle(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(30)),
                     color: theme.colorScheme.surface,
-                    border: Border.all(color: theme.colorScheme.primary, width: 1.5),
+                    border: Border.all(
+                      color: theme.colorScheme.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  dayNumStyle: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold),
-                  dayStrStyle: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 11, fontWeight: FontWeight.bold),
+                  dayNumStyle: TextStyle(
+                    color: theme.textTheme.bodyLarge?.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  dayStrStyle: TextStyle(
+                    color: theme.textTheme.bodyLarge?.color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -977,8 +1210,8 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 try {
                   final start = DateTime.parse(session.startTime).toLocal();
                   return start.year == _selectedHistoryDate.year &&
-                         start.month == _selectedHistoryDate.month &&
-                         start.day == _selectedHistoryDate.day;
+                      start.month == _selectedHistoryDate.month &&
+                      start.day == _selectedHistoryDate.day;
                 } catch (_) {
                   return false;
                 }
@@ -990,10 +1223,21 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Center(child: Text(l10n.study_history_sessions(history.length), style: const TextStyle(color: Colors.grey, fontSize: 12))),
+                      child: Center(
+                        child: Text(
+                          l10n.study_history_sessions(history.length),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 50),
-                    _buildEmptyState(l10n.study_history_empty, Icons.history_toggle_off),
+                    _buildEmptyState(
+                      l10n.study_history_empty,
+                      Icons.history_toggle_off,
+                    ),
                   ],
                 );
               }
@@ -1001,7 +1245,15 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                    child: Center(child: Text(l10n.study_history_sessions(history.length), style: const TextStyle(color: Colors.grey, fontSize: 12))),
+                    child: Center(
+                      child: Text(
+                        l10n.study_history_sessions(history.length),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: ListView.separated(
@@ -1009,14 +1261,18 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: filteredHistory.length,
                       separatorBuilder: (c, i) => const SizedBox(height: 12),
-                      itemBuilder: (c, i) => _buildHistoryCard(filteredHistory[i]),
+                      itemBuilder: (c, i) =>
+                          _buildHistoryCard(filteredHistory[i]),
                     ),
                   ),
                 ],
               );
             },
-            loading: () => ListView(children: const [_SkeletonBox(height: 100)]),
-            error: (e, s) => ListView(children: [Center(child: Text(l10n.study_failed_history))]),
+            loading: () =>
+                ListView(children: const [_SkeletonBox(height: 100)]),
+            error: (e, s) => ListView(
+              children: [Center(child: Text(l10n.study_failed_history))],
+            ),
           ),
         ),
       ],
@@ -1027,13 +1283,19 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     DateTime? startTime;
-    try { startTime = DateTime.parse(session.startTime).toLocal(); } catch (_) {}
-    
-    final dateStr = startTime != null ? DateFormat('MMM dd, yyyy').format(startTime) : l10n.study_unknown_date;
-    final timeStr = startTime != null ? DateFormat('hh:mm a').format(startTime) : '--:--';
-    
+    try {
+      startTime = DateTime.parse(session.startTime).toLocal();
+    } catch (_) {}
+
+    final dateStr = startTime != null
+        ? DateFormat('MMM dd, yyyy').format(startTime)
+        : l10n.study_unknown_date;
+    final timeStr = startTime != null
+        ? DateFormat('hh:mm a').format(startTime)
+        : '--:--';
+
     final h = session.durationMinutes ~/ 60;
     final m = session.durationMinutes % 60;
     final durationStr = '${h > 0 ? '${h}h ' : ''}${m}m';
@@ -1048,7 +1310,10 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Icon(Icons.check_circle, color: Colors.green),
           ),
           const SizedBox(width: 16),
@@ -1056,17 +1321,37 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(dateStr, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.textTheme.bodyLarge?.color)),
+                Text(
+                  dateStr,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(l10n.study_history_started_at(timeStr), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  l10n.study_history_started_at(timeStr),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(durationStr, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: theme.textTheme.bodyLarge?.color)),
-              Text(l10n.study_history_studied, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              Text(
+                durationStr,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: theme.textTheme.bodyLarge?.color,
+                ),
+              ),
+              Text(
+                l10n.study_history_studied,
+                style: const TextStyle(color: Colors.grey, fontSize: 11),
+              ),
             ],
           ),
         ],
@@ -1096,13 +1381,20 @@ class _StudyScreenState extends ConsumerState<StudyScreen> with SingleTickerProv
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black54),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.black54,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             l10n.study_history_empty_desc,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: isDark ? Colors.white38 : Colors.black38),
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
           ),
         ],
       ),

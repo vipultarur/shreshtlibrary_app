@@ -15,11 +15,21 @@ class StudentApi {
     String cacheKey,
     T Function(JsonMap) parser, {
     Map<String, dynamic>? query,
+    Duration? maxAge,
   }) async* {
-    final cached = _cache.getCache(cacheKey);
+    final cached = _cache.getCache(cacheKey, maxAge: maxAge);
+    bool hasValidCache = false;
     if (cached != null) {
-      try { yield parser(cached as JsonMap); } catch (_) {}
+      try {
+        yield parser(cached as JsonMap);
+        hasValidCache = true;
+      } catch (_) {}
     }
+
+    if (hasValidCache && maxAge != null) {
+      return; // Skip network call if valid cache exists and maxAge is enforced
+    }
+
     try {
       final response = await _client.get<dynamic>(path, query: query);
       yield _client.unwrap<T>(response, (data) {
@@ -37,11 +47,21 @@ class StudentApi {
     String cacheKey,
     T Function(JsonMap) parser, {
     Map<String, dynamic>? query,
+    Duration? maxAge,
   }) async* {
-    final cached = _cache.getCache(cacheKey);
+    final cached = _cache.getCache(cacheKey, maxAge: maxAge);
+    bool hasValidCache = false;
     if (cached != null && cached is List) {
-      try { yield cached.whereType<JsonMap>().map(parser).toList(); } catch (_) {}
+      try {
+        yield cached.whereType<JsonMap>().map(parser).toList();
+        hasValidCache = true;
+      } catch (_) {}
     }
+
+    if (hasValidCache && maxAge != null) {
+      return; // Skip network call if valid cache exists and maxAge is enforced
+    }
+
     try {
       final response = await _client.get<dynamic>(path, query: query);
       yield _client.unwrap<List<T>>(response, (data) {
@@ -89,29 +109,29 @@ class StudentApi {
     return _client.unwrap(response, LoginResult.fromJson);
   }
 
-    Future<void> sendOtp(String mobile) async {
-      final response = await _client.post<dynamic>(
-        '/auth/send-otp',
-        data: {'mobile': mobile},
-      );
-      _client.unwrap(response, (_) => null);
-    }
+  Future<void> sendOtp(String mobile) async {
+    final response = await _client.post<dynamic>(
+      '/auth/send-otp',
+      data: {'mobile': mobile},
+    );
+    _client.unwrap(response, (_) => null);
+  }
 
-    Future<void> sendRegisterOtp(String mobile) async {
-      final response = await _client.post<dynamic>(
-        '/auth/send-register-otp',
-        data: {'mobile': mobile},
-      );
-      _client.unwrap(response, (_) => null);
-    }
+  Future<void> sendRegisterOtp(String mobile) async {
+    final response = await _client.post<dynamic>(
+      '/auth/send-register-otp',
+      data: {'mobile': mobile},
+    );
+    _client.unwrap(response, (_) => null);
+  }
 
-    Future<void> verifyRegisterOtp(String mobile, String otp) async {
-      final response = await _client.post<dynamic>(
-        '/auth/verify-register-otp',
-        data: {'mobile': mobile, 'otp': otp},
-      );
-      _client.unwrap(response, (_) => null);
-    }
+  Future<void> verifyRegisterOtp(String mobile, String otp) async {
+    final response = await _client.post<dynamic>(
+      '/auth/verify-register-otp',
+      data: {'mobile': mobile, 'otp': otp},
+    );
+    _client.unwrap(response, (_) => null);
+  }
 
   Future<LoginResult> verifyOtp(String mobile, String otp) async {
     final response = await _client.post<dynamic>(
@@ -137,7 +157,11 @@ class StudentApi {
     _client.unwrap(response, (_) => null);
   }
 
-  Future<void> resetPassword(String identifier, String token, String password) async {
+  Future<void> resetPassword(
+    String identifier,
+    String token,
+    String password,
+  ) async {
     final response = await _client.post<dynamic>(
       '/auth/reset-password',
       data: {
@@ -177,14 +201,11 @@ class StudentApi {
 
   Future<StudentDashboard> dashboard() async {
     final response = await _client.get<dynamic>('/student/dashboard');
-    return _client.unwrap(
-      response,
-      (data) {
-        final json = data as JsonMap? ?? const {};
-        _cache.saveCache('dashboard', json);
-        return StudentDashboard.fromJson(json);
-      },
-    );
+    return _client.unwrap(response, (data) {
+      final json = data as JsonMap? ?? const {};
+      _cache.saveCache('dashboard', json);
+      return StudentDashboard.fromJson(json);
+    });
   }
 
   Future<StudentProfile> profile() async {
@@ -327,8 +348,6 @@ class StudentApi {
     return _client.unwrapList(response, SeatAssignment.fromJson);
   }
 
-
-
   Future<StudySession> startStudySession() async {
     final response = await _client.post<dynamic>('/study/session/start');
     return _client.unwrap(
@@ -337,7 +356,10 @@ class StudentApi {
     );
   }
 
-  Future<void> stopStudySession(int durationMinutes, {int pausedMinutes = 0}) async {
+  Future<void> stopStudySession(
+    int durationMinutes, {
+    int pausedMinutes = 0,
+  }) async {
     final response = await _client.post<dynamic>(
       '/study/session/end',
       data: {
@@ -364,7 +386,9 @@ class StudentApi {
     return _client.unwrapList(response, StudySession.fromJson);
   }
 
-  Future<List<LeaderboardEntry>> leaderboard({String duration = 'month'}) async {
+  Future<List<LeaderboardEntry>> leaderboard({
+    String duration = 'month',
+  }) async {
     final response = await _client.get<dynamic>(
       '/study/leaderboard',
       query: {'duration': duration},
@@ -463,26 +487,20 @@ class StudentApi {
 
   Future<LibraryInfo> libraryInfo() async {
     final response = await _client.get<dynamic>('/library/info');
-    return _client.unwrap(
-      response,
-      (data) {
-        final json = data as JsonMap? ?? const {};
-        _cache.saveCache('library_info', json);
-        return LibraryInfo.fromJson(json);
-      },
-    );
+    return _client.unwrap(response, (data) {
+      final json = data as JsonMap? ?? const {};
+      _cache.saveCache('library_info', json);
+      return LibraryInfo.fromJson(json);
+    });
   }
 
-  Stream<LibraryInfo> libraryInfoStream() async* {
-    final cached = _cache.getCache('library_info');
-    if (cached != null) {
-      try { yield LibraryInfo.fromJson(cached); } catch (_) {}
-    }
-    try {
-      yield await libraryInfo();
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
+  Stream<LibraryInfo> libraryInfoStream() {
+    return _streamItem<LibraryInfo>(
+      '/library/info',
+      'library_info',
+      (json) => LibraryInfo.fromJson(json),
+      maxAge: const Duration(days: 365),
+    );
   }
 
   Future<List<Facility>> facilities() async {
@@ -495,10 +513,19 @@ class StudentApi {
   }
 
   Stream<List<Facility>> facilitiesStream() async* {
-    final cached = _cache.getCache('facilities');
+    final cached = _cache.getCache(
+      'facilities',
+      maxAge: const Duration(hours: 4),
+    );
+    bool hasValidCache = false;
     if (cached != null && cached is List) {
-      try { yield cached.whereType<JsonMap>().map(Facility.fromJson).toList(); } catch (_) {}
+      try {
+        yield cached.whereType<JsonMap>().map(Facility.fromJson).toList();
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await facilities();
     } catch (_) {
@@ -520,10 +547,16 @@ class StudentApi {
 
   Stream<List<Achiever>> achieversStream({bool featured = false}) async* {
     final cacheKey = featured ? 'achievers_featured' : 'achievers';
-    final cached = _cache.getCache(cacheKey);
+    final cached = _cache.getCache(cacheKey, maxAge: const Duration(hours: 4));
+    bool hasValidCache = false;
     if (cached != null && cached is List) {
-      try { yield cached.whereType<JsonMap>().map(Achiever.fromJson).toList(); } catch (_) {}
+      try {
+        yield cached.whereType<JsonMap>().map(Achiever.fromJson).toList();
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await achievers(featured: featured);
     } catch (_) {
@@ -538,21 +571,27 @@ class StudentApi {
 
   Future<ReviewSummary> reviewSummary() async {
     final response = await _client.get<dynamic>('/library/reviews/summary');
-    return _client.unwrap(
-      response,
-      (data) {
-        final json = data as JsonMap? ?? const {};
-        _cache.saveCache('review_summary', json);
-        return ReviewSummary.fromJson(json);
-      },
-    );
+    return _client.unwrap(response, (data) {
+      final json = data as JsonMap? ?? const {};
+      _cache.saveCache('review_summary', json);
+      return ReviewSummary.fromJson(json);
+    });
   }
 
   Stream<ReviewSummary> reviewSummaryStream() async* {
-    final cached = _cache.getCache('review_summary');
+    final cached = _cache.getCache(
+      'review_summary',
+      maxAge: const Duration(hours: 1),
+    );
+    bool hasValidCache = false;
     if (cached != null) {
-      try { yield ReviewSummary.fromJson(cached); } catch (_) {}
+      try {
+        yield ReviewSummary.fromJson(cached);
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await reviewSummary();
     } catch (_) {
@@ -570,10 +609,19 @@ class StudentApi {
   }
 
   Stream<List<GalleryImage>> galleryImagesStream() async* {
-    final cached = _cache.getCache('gallery_images');
+    final cached = _cache.getCache(
+      'gallery_images',
+      maxAge: const Duration(hours: 4),
+    );
+    bool hasValidCache = false;
     if (cached != null && cached is List) {
-      try { yield cached.whereType<JsonMap>().map(GalleryImage.fromJson).toList(); } catch (_) {}
+      try {
+        yield cached.whereType<JsonMap>().map(GalleryImage.fromJson).toList();
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await galleryImages();
     } catch (_) {
@@ -594,6 +642,7 @@ class StudentApi {
       (data) => ReviewRecord.fromJson(data as JsonMap? ?? const {}),
     );
   }
+
   Future<ReviewRecord?> myReview() async {
     final response = await _client.get<dynamic>('/library/reviews/my');
     return _client.unwrap(response, (data) {
@@ -608,10 +657,19 @@ class StudentApi {
   }
 
   Stream<ReviewRecord?> myReviewStream() async* {
-    final cached = _cache.getCache('my_review');
+    final cached = _cache.getCache(
+      'my_review',
+      maxAge: const Duration(minutes: 15),
+    );
+    bool hasValidCache = false;
     if (cached != null) {
-      try { yield ReviewRecord.fromJson(cached); } catch (_) {}
+      try {
+        yield ReviewRecord.fromJson(cached);
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await myReview();
     } catch (_) {
@@ -629,10 +687,19 @@ class StudentApi {
   }
 
   Stream<List<HomeSlider>> slidersStream() async* {
-    final cached = _cache.getCache('home_sliders');
+    final cached = _cache.getCache(
+      'home_sliders',
+      maxAge: const Duration(hours: 2),
+    );
+    bool hasValidCache = false;
     if (cached != null && cached is List) {
-      try { yield cached.whereType<JsonMap>().map(HomeSlider.fromJson).toList(); } catch (_) {}
+      try {
+        yield cached.whereType<JsonMap>().map(HomeSlider.fromJson).toList();
+        hasValidCache = true;
+      } catch (_) {}
     }
+    if (hasValidCache) return;
+
     try {
       yield await sliders();
     } catch (_) {
@@ -640,48 +707,96 @@ class StudentApi {
     }
   }
 
-  Stream<StudentProfile> profileStream() =>
-      _streamItem('/student/profile', 'profile', (json) => StudentProfile.fromJson(json));
-      
-  Stream<StudentIdCard> idCardStream() =>
-      _streamItem('/student/id-card', 'idCard', (json) => StudentIdCard.fromJson(json));
-      
-  Stream<ReferralCode> referralCodeStream() =>
-      _streamItem('/student/referral', 'referral', (json) => ReferralCode.fromJson(json));
+  Stream<StudentProfile> profileStream() => _streamItem(
+    '/student/profile',
+    'profile',
+    (json) => StudentProfile.fromJson(json),
+  );
 
-  Stream<List<ReferralHistory>> referralHistoryStream() =>
-      _streamList('/student/referral/history', 'referralHistory', ReferralHistory.fromJson);
+  Stream<StudentIdCard> idCardStream() => _streamItem(
+    '/student/id-card',
+    'idCard',
+    (json) => StudentIdCard.fromJson(json),
+  );
 
-  Stream<QRCodeRecord> todayQrStream() =>
-      _streamItem('/qr/today', 'todayQr', (json) => QRCodeRecord.fromJson(json));
+  Stream<ReferralCode> referralCodeStream() => _streamItem(
+    '/student/referral',
+    'referral',
+    (json) => ReferralCode.fromJson(json),
+    maxAge: const Duration(hours: 24),
+  );
 
-  Stream<List<AttendanceRecord>> attendanceLogsStream() =>
-      _streamList('/attendance/logs', 'attendanceLogs', AttendanceRecord.fromJson);
+  Stream<List<ReferralHistory>> referralHistoryStream() => _streamList(
+    '/student/referral/history',
+    'referralHistory',
+    ReferralHistory.fromJson,
+    maxAge: const Duration(hours: 1),
+  );
 
-  Stream<List<HolidayRecord>> holidaysStream() =>
-      _streamList('/holidays', 'holidays', HolidayRecord.fromJson);
+  Stream<QRCodeRecord> todayQrStream() async* {
+    yield await todayQr();
+  }
 
-  Stream<List<MembershipPlan>> plansStream() =>
-      _streamList('/memberships/plans', 'plans', MembershipPlan.fromJson);
+  Stream<List<AttendanceRecord>> attendanceLogsStream() async* {
+    yield await attendanceLogs();
+  }
 
-  Stream<List<MembershipRecord>> membershipsStream() =>
-      _streamList('/memberships/history', 'memberships', MembershipRecord.fromJson);
+  Stream<List<HolidayRecord>> holidaysStream() => _streamList(
+    '/holidays',
+    'holidays',
+    HolidayRecord.fromJson,
+    maxAge: const Duration(hours: 24),
+  );
 
-  Stream<List<PaymentRecord>> paymentHistoryStream() =>
-      _streamList('/payments/history', 'paymentHistory', PaymentRecord.fromJson);
+  Stream<List<MembershipPlan>> plansStream() => _streamList(
+    '/memberships/plans',
+    'plans',
+    MembershipPlan.fromJson,
+    maxAge: const Duration(hours: 24),
+  );
 
-  Stream<List<Seat>> seatsStream() =>
-      _streamList('/seats/layout', 'seats', Seat.fromJson);
+  Stream<List<MembershipRecord>> membershipsStream() => _streamList(
+    '/memberships/history',
+    'memberships',
+    MembershipRecord.fromJson,
+  );
 
-  Stream<List<SeatAssignment>> seatHistoryStream() =>
-      _streamList('/seats/history', 'seatHistory', SeatAssignment.fromJson);
+  Stream<List<PaymentRecord>> paymentHistoryStream() => _streamList(
+    '/payments/history',
+    'paymentHistory',
+    PaymentRecord.fromJson,
+  );
 
-  Stream<List<StudySession>> studySessionHistoryStream() =>
-      _streamList('/study/session/history', 'studySessionHistory', StudySession.fromJson, query: {'page_size': 1000});
+  Stream<List<Seat>> seatsStream() async* {
+    yield await seats();
+  }
 
-  Stream<List<LeaderboardEntry>> leaderboardStream({String duration = 'month'}) =>
-      _streamList('/study/leaderboard', 'leaderboard_$duration', LeaderboardEntry.fromJson, query: {'duration': duration});
+  Stream<List<SeatAssignment>> seatHistoryStream() async* {
+    yield await seatHistory();
+  }
 
-  Stream<List<ReviewRecord>> reviewsStream() =>
-      _streamList('/library/reviews', 'reviews', ReviewRecord.fromJson);
+  Stream<List<StudySession>> studySessionHistoryStream() => _streamList(
+    '/study/session/history',
+    'studySessionHistory',
+    StudySession.fromJson,
+    query: {'page_size': 1000},
+    maxAge: const Duration(minutes: 10),
+  );
+
+  Stream<List<LeaderboardEntry>> leaderboardStream({
+    String duration = 'month',
+  }) => _streamList(
+    '/study/leaderboard',
+    'leaderboard_$duration',
+    LeaderboardEntry.fromJson,
+    query: {'duration': duration},
+    maxAge: const Duration(minutes: 15),
+  );
+
+  Stream<List<ReviewRecord>> reviewsStream() => _streamList(
+    '/library/reviews',
+    'reviews',
+    ReviewRecord.fromJson,
+    maxAge: const Duration(hours: 2),
+  );
 }

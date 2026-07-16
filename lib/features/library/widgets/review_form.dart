@@ -68,7 +68,9 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
           onChanged: (value) => setState(() => _rating = value ?? 5),
           decoration: InputDecoration(
             labelText: l10n.review_label_rating,
-            errorText: _fieldErrors['rating'] is List ? _fieldErrors['rating'][0] : _fieldErrors['rating']?.toString(),
+            errorText: _fieldErrors['rating'] is List
+                ? _fieldErrors['rating'][0]
+                : _fieldErrors['rating']?.toString(),
           ),
         ),
         const SizedBox(height: 10),
@@ -76,7 +78,9 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
           controller: _comment,
           decoration: InputDecoration(
             labelText: l10n.review_label_review,
-            errorText: _fieldErrors['comment'] is List ? _fieldErrors['comment'][0] : _fieldErrors['comment']?.toString(),
+            errorText: _fieldErrors['comment'] is List
+                ? _fieldErrors['comment'][0]
+                : _fieldErrors['comment']?.toString(),
           ),
           maxLines: 3,
         ),

@@ -31,11 +31,13 @@ class _InteractiveSeatMapState extends State<InteractiveSeatMap> {
     }
 
     final floors = widget.seats.map((e) => e.floor).toSet().toList()..sort();
-    
+
     // Fallback if not set
     _selectedFloor ??= floors.first;
 
-    final floorSeats = widget.seats.where((s) => s.floor == _selectedFloor).toList();
+    final floorSeats = widget.seats
+        .where((s) => s.floor == _selectedFloor)
+        .toList();
 
     // Group by row
     final Map<String, List<Seat>> rows = {};
@@ -72,7 +74,7 @@ class _InteractiveSeatMapState extends State<InteractiveSeatMap> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Seat Map legend
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +109,8 @@ class _InteractiveSeatMapState extends State<InteractiveSeatMap> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: rowKeys.map((rowKey) {
-                    final rowSeats = rows[rowKey]!..sort((a, b) => a.seatNumber.compareTo(b.seatNumber));
+                    final rowSeats = rows[rowKey]!
+                      ..sort((a, b) => a.seatNumber.compareTo(b.seatNumber));
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: Row(
@@ -129,7 +132,9 @@ class _InteractiveSeatMapState extends State<InteractiveSeatMap> {
                           const SizedBox(width: 16),
                           ...rowSeats.map((seat) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6.0,
+                              ),
                               child: _InteractiveSeatWidget(seat: seat),
                             );
                           }),

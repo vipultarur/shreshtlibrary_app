@@ -20,7 +20,9 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
   void initState() {
     super.initState();
     _checkInitialConnection();
-    _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    _subscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
       _updateConnectionStatus(results);
     });
   }
@@ -82,7 +84,9 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.5),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.errorContainer.withOpacity(0.5),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -96,25 +100,28 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                                 builder: (ctx) {
                                   final l10n = AppLocalizations.of(ctx);
                                   return Text(
-                                    l10n?.err_no_internet ?? 'No Internet Connection',
-                                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    l10n?.err_no_internet ??
+                                        'No Internet Connection',
+                                    style: Theme.of(ctx).textTheme.titleLarge
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   );
-                                }
+                                },
                               ),
                               const SizedBox(height: 12),
                               Builder(
                                 builder: (ctx) {
                                   return Text(
                                     'Please check your network settings and try again.',
-                                    style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                                    ),
+                                    style: Theme.of(ctx).textTheme.bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            ctx,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                     textAlign: TextAlign.center,
                                   );
-                                }
+                                },
                               ),
                               const SizedBox(height: 32),
                               SizedBox(
@@ -127,9 +134,13 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                                         _checkInitialConnection();
                                       },
                                       style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                       ),
                                       child: Text(
@@ -140,7 +151,7 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                                         ),
                                       ),
                                     );
-                                  }
+                                  },
                                 ),
                               ),
                             ],
@@ -150,7 +161,7 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
                     ),
                   ),
                 );
-              }
+              },
             ),
           ),
       ],

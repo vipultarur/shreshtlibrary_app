@@ -56,7 +56,7 @@ class GlobalOverlayService {
 
     _activeIds.add(data.id);
     _queue.add(data);
-    
+
     if (_currentEntry == null) {
       _showNext();
     }
@@ -79,10 +79,8 @@ class GlobalOverlayService {
     }
 
     _currentEntry = OverlayEntry(
-      builder: (context) => _OverlayWidget(
-        data: data,
-        onDismiss: _dismissCurrent,
-      ),
+      builder: (context) =>
+          _OverlayWidget(data: data, onDismiss: _dismissCurrent),
     );
 
     overlayState.insert(_currentEntry!);
@@ -97,12 +95,12 @@ class GlobalOverlayService {
   void _dismissCurrent() {
     _dismissTimer?.cancel();
     _dismissTimer = null;
-    
+
     if (_currentData != null) {
       _activeIds.remove(_currentData!.id);
       _currentData?.onDismissed?.call();
     }
-    
+
     if (_currentEntry != null) {
       _currentEntry?.remove();
       _currentEntry = null;
@@ -125,7 +123,8 @@ class _OverlayWidget extends StatefulWidget {
   State<_OverlayWidget> createState() => _OverlayWidgetState();
 }
 
-class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProviderStateMixin {
+class _OverlayWidgetState extends State<_OverlayWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   late Animation<Offset> _slideAnimation;
@@ -138,7 +137,10 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
       duration: const Duration(milliseconds: 400),
     );
 
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
@@ -161,7 +163,9 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   void _handleTap() async {
     final link = widget.data.linkUrl;
     if (link != null && link.isNotEmpty) {
-      if (link.startsWith('/') && !link.contains('.pdf') && !link.startsWith('/media/')) {
+      if (link.startsWith('/') &&
+          !link.contains('.pdf') &&
+          !link.startsWith('/media/')) {
         // App deep link
         final ctx = rootNavigatorKey.currentContext;
         if (ctx != null) {
@@ -170,10 +174,13 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
       } else {
         String finalUrl = link;
         if (link.startsWith('/')) {
-           final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
-               ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
-               : AppConfig.apiBaseUrl;
-           finalUrl = '$baseUrl$link';
+          final baseUrl = AppConfig.apiBaseUrl.endsWith('/')
+              ? AppConfig.apiBaseUrl.substring(
+                  0,
+                  AppConfig.apiBaseUrl.length - 1,
+                )
+              : AppConfig.apiBaseUrl;
+          finalUrl = '$baseUrl$link';
         }
         if (await canLaunchUrlString(finalUrl)) {
           await launchUrlString(finalUrl, mode: LaunchMode.externalApplication);
@@ -187,7 +194,7 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   Widget build(BuildContext context) {
     // Determine priority layout
     final priority = widget.data.priority?.toLowerCase() ?? 'medium';
-    
+
     Widget content;
     if (priority == 'low') {
       content = _buildLowPriorityBanner(context);
@@ -227,8 +234,8 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   Widget _buildDismissible(Widget child) {
     return Dismissible(
       key: UniqueKey(),
-      direction: widget.data.priority == 'low' 
-          ? DismissDirection.up 
+      direction: widget.data.priority == 'low'
+          ? DismissDirection.up
           : DismissDirection.horizontal,
       onDismissed: (_) => widget.onDismiss(),
       child: child,
@@ -243,7 +250,11 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Material(
@@ -262,7 +273,10 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
                     color: theme.colorScheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.notifications, color: theme.colorScheme.primary),
+                  child: Icon(
+                    Icons.notifications,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -272,14 +286,20 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
                     children: [
                       Text(
                         widget.data.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (widget.data.body.isNotEmpty)
                         Text(
                           widget.data.body,
-                          style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 12),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -308,12 +328,20 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.warning_amber_rounded, size: 80, color: Colors.white),
+          const Icon(
+            Icons.warning_amber_rounded,
+            size: 80,
+            color: Colors.white,
+          ),
           const SizedBox(height: 24),
           Text(
             widget.data.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -329,7 +357,11 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
               foregroundColor: Colors.red.shade900,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
             ),
-            child: Text(widget.data.linkButtonText?.isNotEmpty == true ? widget.data.linkButtonText! : 'Acknowledge'),
+            child: Text(
+              widget.data.linkButtonText?.isNotEmpty == true
+                  ? widget.data.linkButtonText!
+                  : 'Acknowledge',
+            ),
           ),
         ],
       ),
@@ -350,11 +382,20 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
           children: [
             Container(
               decoration: BoxDecoration(
-                color: isBackground ? theme.colorScheme.inverseSurface : theme.colorScheme.surface,
+                color: isBackground
+                    ? theme.colorScheme.inverseSurface
+                    : theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant,
+                  width: 1,
+                ),
                 boxShadow: const [
-                  BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, 10))
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
+                  ),
                 ],
               ),
               clipBehavior: Clip.antiAlias,
@@ -371,10 +412,23 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))],
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: Icon(Icons.close, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                  child: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -388,7 +442,8 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
     if (isBackground) {
       return Stack(
         children: [
-          if (widget.data.backgroundImage != null && widget.data.backgroundImage!.isNotEmpty)
+          if (widget.data.backgroundImage != null &&
+              widget.data.backgroundImage!.isNotEmpty)
             Positioned.fill(
               child: CachedNetworkImage(
                 imageUrl: widget.data.backgroundImage!,
@@ -413,8 +468,10 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.data.layout == 'full_image' || widget.data.layout == 'half_image') ...[
-            if (widget.data.imageUrl != null && widget.data.imageUrl!.isNotEmpty)
+          if (widget.data.layout == 'full_image' ||
+              widget.data.layout == 'half_image') ...[
+            if (widget.data.imageUrl != null &&
+                widget.data.imageUrl!.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: CachedNetworkImage(
@@ -435,9 +492,15 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
 
   Widget _buildTextContent(BuildContext context, bool isBackground) {
     final theme = Theme.of(context);
-    final titleColor = isBackground ? Colors.white : theme.colorScheme.onSurface;
-    final subtitleColor = isBackground ? Colors.amber.shade300 : theme.colorScheme.primary;
-    final bodyColor = isBackground ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.onSurfaceVariant;
+    final titleColor = isBackground
+        ? Colors.white
+        : theme.colorScheme.onSurface;
+    final subtitleColor = isBackground
+        ? Colors.amber.shade300
+        : theme.colorScheme.primary;
+    final bodyColor = isBackground
+        ? Colors.white.withValues(alpha: 0.9)
+        : theme.colorScheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -451,7 +514,8 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (widget.data.subtitle != null && widget.data.subtitle!.isNotEmpty) ...[
+        if (widget.data.subtitle != null &&
+            widget.data.subtitle!.isNotEmpty) ...[
           const SizedBox(height: 4),
           Text(
             widget.data.subtitle!,
@@ -468,12 +532,15 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(color: bodyColor),
         ),
-        if (widget.data.description != null && widget.data.description!.isNotEmpty) ...[
+        if (widget.data.description != null &&
+            widget.data.description!.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             widget.data.description!,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(color: bodyColor.withValues(alpha: 0.8)),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: bodyColor.withValues(alpha: 0.8),
+            ),
           ),
         ],
         _buildLinkButton(context, isBackground),
@@ -482,8 +549,9 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
   }
 
   Widget _buildLinkButton(BuildContext context, bool isBackground) {
-    if (widget.data.linkUrl == null || widget.data.linkUrl!.isEmpty) return const SizedBox.shrink();
-    
+    if (widget.data.linkUrl == null || widget.data.linkUrl!.isEmpty)
+      return const SizedBox.shrink();
+
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 20.0),
@@ -492,14 +560,22 @@ class _OverlayWidgetState extends State<_OverlayWidget> with SingleTickerProvide
         child: FilledButton(
           onPressed: _handleTap,
           style: FilledButton.styleFrom(
-            backgroundColor: isBackground ? theme.colorScheme.surface : theme.colorScheme.primary,
-            foregroundColor: isBackground ? theme.colorScheme.onSurface : theme.colorScheme.onPrimary,
+            backgroundColor: isBackground
+                ? theme.colorScheme.surface
+                : theme.colorScheme.primary,
+            foregroundColor: isBackground
+                ? theme.colorScheme.onSurface
+                : theme.colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
             elevation: 0,
           ),
           child: Text(
-            (widget.data.linkButtonText?.isNotEmpty == true) ? widget.data.linkButtonText! : 'View Details',
+            (widget.data.linkButtonText?.isNotEmpty == true)
+                ? widget.data.linkButtonText!
+                : 'View Details',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),

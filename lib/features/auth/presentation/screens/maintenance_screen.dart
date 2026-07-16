@@ -24,9 +24,9 @@ class MaintenanceScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark 
-                    ? theme.colorScheme.primary.withValues(alpha: 0.1) 
-                    : theme.colorScheme.primary.withValues(alpha: 0.05),
+                  color: isDark
+                      ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                      : theme.colorScheme.primary.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

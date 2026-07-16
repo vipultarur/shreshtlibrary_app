@@ -17,15 +17,17 @@ class RestrictedFeatureScreen extends StatelessWidget {
     final status = dashboard.membershipStatus;
     final isPending = status == 'PENDING';
     final isSuspended = status == 'SUSPENDED';
-    
+
     final title = dashboard.expiryDialogTitle ?? 'Feature Restricted';
-    final message = dashboard.expiryDialogMessage ?? 'You do not have access to this feature.';
+    final message =
+        dashboard.expiryDialogMessage ??
+        'You do not have access to this feature.';
 
     final theme = Theme.of(context);
-    
+
     IconData icon;
     Color color;
-    
+
     if (isPending) {
       icon = Icons.hourglass_top_rounded;
       color = Colors.orange.shade600;
@@ -42,7 +44,10 @@ class RestrictedFeatureScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Access Denied', style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+        title: Text(
+          'Access Denied',
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+        ),
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: theme.textTheme.bodyLarge?.color),
       ),
@@ -73,7 +78,9 @@ class RestrictedFeatureScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildBenefitsCard(context),
               const SizedBox(height: 32),
-              if (!isPending && !isSuspended && !dashboard.restrictedFeatures.contains('payments'))
+              if (!isPending &&
+                  !isSuspended &&
+                  !dashboard.restrictedFeatures.contains('payments'))
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -86,7 +93,10 @@ class RestrictedFeatureScreen extends StatelessWidget {
                     ),
                     child: const Text(
                       'Renew Plan',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
@@ -107,7 +117,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
         benefits = [
           'Track your daily check-ins and check-outs',
           'Maintain your attendance streak',
-          'View your historical attendance records'
+          'View your historical attendance records',
         ];
         break;
       case 'study':
@@ -115,7 +125,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
         benefits = [
           'Use the smart study timer to focus',
           'Track your deep work sessions',
-          'Compete with peers on the leaderboard'
+          'Compete with peers on the leaderboard',
         ];
         break;
       case 'payments':
@@ -123,7 +133,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
         benefits = [
           'Purchase premium membership plans',
           'Renew your current subscription',
-          'View your past payment history'
+          'View your past payment history',
         ];
         break;
       case 'notifications':
@@ -131,7 +141,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
         benefits = [
           'Receive real-time library updates',
           'Get important announcements instantly',
-          'Stay informed about upcoming events'
+          'Stay informed about upcoming events',
         ];
         break;
       case 'library_info':
@@ -139,7 +149,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
         benefits = [
           'Access library rules and guidelines',
           'View available facilities and services',
-          'See contact details and timings'
+          'See contact details and timings',
         ];
         break;
       default:
@@ -172,7 +182,7 @@ class RestrictedFeatureScreen extends StatelessWidget {
               Text(
                 'Unlock $title',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold, 
+                  fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: theme.textTheme.bodyLarge?.color,
                 ),
@@ -180,17 +190,30 @@ class RestrictedFeatureScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...benefits.map((b) => Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
-                const SizedBox(width: 12),
-                Expanded(child: Text(b, style: TextStyle(color: theme.textTheme.bodyMedium?.color))),
-              ],
+          ...benefits.map(
+            (b) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.green,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      b,
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -201,15 +224,17 @@ void showRestrictionDialog(BuildContext context, StudentDashboard dashboard) {
   final status = dashboard.membershipStatus;
   final isPending = status == 'PENDING';
   final isSuspended = status == 'SUSPENDED';
-  
+
   final title = dashboard.expiryDialogTitle ?? 'Feature Restricted';
-  final message = dashboard.expiryDialogMessage ?? 'You do not have access to this feature.';
+  final message =
+      dashboard.expiryDialogMessage ??
+      'You do not have access to this feature.';
 
   final theme = Theme.of(context);
-  
+
   IconData icon;
   Color color;
-  
+
   if (isPending) {
     icon = Icons.hourglass_top_rounded;
     color = Colors.orange.shade600;
@@ -297,7 +322,10 @@ void showRestrictionDialog(BuildContext context, StudentDashboard dashboard) {
                   ),
                   child: Text(
                     (!isPending && !isSuspended) ? 'Renew Plan' : 'OK, Got it',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),

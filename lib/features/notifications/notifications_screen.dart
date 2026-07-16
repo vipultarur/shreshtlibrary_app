@@ -16,7 +16,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -57,14 +58,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     // Listen for incoming foreground messages and refresh the list
-    ref.listen(
-      foregroundMessageStreamProvider,
-      (previous, next) {
-        if (next.hasValue) {
-          ref.invalidate(notificationsProvider);
-        }
-      },
-    );
+    ref.listen(foregroundMessageStreamProvider, (previous, next) {
+      if (next.hasValue) {
+        ref.invalidate(notificationsProvider);
+      }
+    });
 
     final l10n = AppLocalizations.of(context)!;
 
@@ -95,42 +93,65 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           AsyncPane(
             value: ref.watch(notificationsProvider),
             builder: (rows) {
-              final visibleRows = rows.where((item) => !_dismissedIds.contains(item.id)).toList();
-              
+              final visibleRows = rows
+                  .where((item) => !_dismissedIds.contains(item.id))
+                  .toList();
+
               return visibleRows.isEmpty
-                  ? SectionCard(child: Text(l10n.noti_empty))
+                  ? EmptyStateWidget(
+                      icon: Icons.notifications_none_rounded,
+                      title: l10n.noti_empty,
+                      subtitle: "You're all caught up!",
+                    )
                   : Column(
-                      children: visibleRows.map((item) {
-                        return Dismissible(
-                          key: ValueKey(item.id),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                            padding: const EdgeInsets.only(right: 24),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(16),
+                      children: visibleRows.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final item = entry.value;
+                        return FadeInSlide(
+                          delay: Duration(milliseconds: 50 * index),
+                          child: Dismissible(
+                            key: ValueKey(item.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 16,
+                              ),
+                              padding: const EdgeInsets.only(right: 24),
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.red.shade900.withValues(alpha: 0.3)
+                                    : Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.red,
+                              ),
                             ),
-                            child: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                          ),
-                          onDismissed: (_) async {
-                            setState(() {
-                              _dismissedIds.add(item.id);
-                            });
-                            try {
-                              await ref.read(studentApiProvider).deleteNotification(item.id);
-                              ref.invalidate(notificationsProvider);
-                            } catch (_) {
-                              if (mounted) {
-                                setState(() {
-                                  _dismissedIds.remove(item.id);
-                                });
-                                showSnack(context, l10n.noti_failed_delete);
+                            onDismissed: (_) async {
+                              setState(() {
+                                _dismissedIds.add(item.id);
+                              });
+                              try {
+                                await ref
+                                    .read(studentApiProvider)
+                                    .deleteNotification(item.id);
+                                ref.invalidate(notificationsProvider);
+                              } catch (_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _dismissedIds.remove(item.id);
+                                  });
+                                  showSnack(context, l10n.noti_failed_delete);
+                                }
                               }
-                            }
-                          },
-                          child: NotificationCard(item),
+                            },
+                            child: NotificationCard(item),
+                          ),
                         );
                       }).toList(),
                     );
@@ -141,4 +162,3 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 }
-

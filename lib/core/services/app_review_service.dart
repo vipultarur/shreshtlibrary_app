@@ -9,11 +9,12 @@ class AppReviewService {
 
   // Android package name or iOS App ID
   // Replace with actual Play Store / App Store link
-  static const String _storeUrl = 'https://play.google.com/store/apps/details?id=com.shreshtlibrary.student';
+  static const String _storeUrl =
+      'https://play.google.com/store/apps/details?id=com.shreshtlibrary.student';
 
   static Future<void> checkAndShowReviewDialog(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     final bool hasReviewed = prefs.getBool(_keyHasReviewed) ?? false;
     if (hasReviewed) return;
 
@@ -27,11 +28,11 @@ class AppReviewService {
     }
 
     final firstOpenDate = DateTime.fromMillisecondsSinceEpoch(firstOpen);
-    
+
     // Check if 1 day has passed since first open
     if (now.difference(firstOpenDate).inDays >= 1) {
       final int lastPrompt = prefs.getInt(_keyLastPromptTime) ?? 0;
-      
+
       if (lastPrompt == 0) {
         // Never prompted before, but 1 day has passed
         if (context.mounted) {
@@ -65,7 +66,10 @@ class AppReviewService {
             return Dialog(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
               child: Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
@@ -90,16 +94,22 @@ class AppReviewService {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade50,
+                        color: isDark
+                            ? Colors.amber.shade900.withValues(alpha: 0.3)
+                            : Colors.amber.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.stars_rounded, size: 48, color: Colors.amber),
+                      child: const Icon(
+                        Icons.stars_rounded,
+                        size: 32,
+                        color: Colors.amber,
+                      ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     Text(
                       'Enjoying the App?',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -127,8 +137,12 @@ class AppReviewService {
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               child: Icon(
-                                index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
-                                color: index < selectedRating ? Colors.amber : Colors.grey.withValues(alpha: 0.4),
+                                index < selectedRating
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
+                                color: index < selectedRating
+                                    ? Colors.amber
+                                    : Colors.grey.withValues(alpha: 0.4),
                                 size: 40,
                               ),
                             ),
@@ -150,7 +164,10 @@ class AppReviewService {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text('Not Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Not Now',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -163,9 +180,14 @@ class AppReviewService {
                                       Navigator.of(context).pop();
                                     }
                                     try {
-                                      await launchUrlString(_storeUrl, mode: LaunchMode.externalApplication);
+                                      await launchUrlString(
+                                        _storeUrl,
+                                        mode: LaunchMode.externalApplication,
+                                      );
                                     } catch (e) {
-                                      debugPrint('Could not launch store url: $e');
+                                      debugPrint(
+                                        'Could not launch store url: $e',
+                                      );
                                     }
                                   }
                                 : null,
@@ -175,7 +197,10 @@ class AppReviewService {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Submit',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ],
@@ -184,7 +209,7 @@ class AppReviewService {
                 ),
               ),
             );
-          }
+          },
         );
       },
     );

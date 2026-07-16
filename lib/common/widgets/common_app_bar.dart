@@ -4,7 +4,8 @@ import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final Widget? leftIcon; // Optional custom left icon widget (replaces default back button)
+  final Widget?
+  leftIcon; // Optional custom left icon widget (replaces default back button)
   final Widget? rightIcon; // Optional action icon/widget
   final bool showBackButton;
   final bool transparent;
@@ -30,9 +31,11 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      color: transparent 
-          ? Colors.transparent 
-          : (isDark ? AppColors.darkAppBarBg : theme.colorScheme.primary.withValues(alpha: 0.2)),
+      color: transparent
+          ? Colors.transparent
+          : (isDark
+                ? AppColors.darkAppBarBg
+                : theme.colorScheme.primary.withValues(alpha: 0.2)),
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -43,22 +46,30 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 children: [
                   if (shouldShowLeft) ...[
-                    leftIcon ?? Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back, color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color),
-                        onPressed: () {
-                          if (canPop) {
-                            context.pop();
-                          }
-                        },
-                      ),
-                    ),
+                    leftIcon ??
+                        Container(
+                          width: 45,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.darkSurface
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: isDark
+                                  ? AppColors.darkPrimaryText
+                                  : theme.textTheme.bodyLarge?.color,
+                            ),
+                            onPressed: () {
+                              if (canPop) {
+                                context.pop();
+                              }
+                            },
+                          ),
+                        ),
                     const SizedBox(width: 12),
                   ],
                   Expanded(
@@ -68,17 +79,16 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
-                        color: isDark ? AppColors.darkPrimaryText : theme.textTheme.bodyLarge?.color,
+                        color: isDark
+                            ? AppColors.darkPrimaryText
+                            : theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            if (rightIcon != null) ...[
-              const SizedBox(width: 12),
-              rightIcon!,
-            ],
+            if (rightIcon != null) ...[const SizedBox(width: 12), rightIcon!],
           ],
         ),
       ),

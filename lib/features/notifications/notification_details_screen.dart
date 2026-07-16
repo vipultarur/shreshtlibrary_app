@@ -10,27 +10,25 @@ import 'package:shreshtlibrary/core/config/app_config.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 class NotificationDetailsScreen extends ConsumerWidget {
-  const NotificationDetailsScreen({
-    super.key,
-    this.id,
-    this.notification,
-  });
+  const NotificationDetailsScreen({super.key, this.id, this.notification});
 
   final String? id;
   final StudentNotification? notification;
 
   void _launchUrl(BuildContext context, String url) async {
     if (url.isEmpty) return;
-    
-    if (url.startsWith('/') && !url.contains('.pdf') && !url.startsWith('/media/')) {
+
+    if (url.startsWith('/') &&
+        !url.contains('.pdf') &&
+        !url.startsWith('/media/')) {
       GoRouter.of(context).push(url);
     } else {
       String finalUrl = url;
       if (url.startsWith('/')) {
-         final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
-             ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
-             : AppConfig.apiBaseUrl;
-         finalUrl = '$baseUrl$url';
+        final baseUrl = AppConfig.apiBaseUrl.endsWith('/')
+            ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1)
+            : AppConfig.apiBaseUrl;
+        finalUrl = '$baseUrl$url';
       }
       if (await canLaunchUrlString(finalUrl)) {
         await launchUrlString(finalUrl, mode: LaunchMode.externalApplication);
@@ -68,23 +66,46 @@ class NotificationDetailsScreen extends ConsumerWidget {
 
     final titleLower = item.title.toLowerCase();
     final typeLower = item.type.toLowerCase();
-    
-    if (typeLower.contains('fee') || typeLower.contains('payment') || titleLower.contains('fee') || titleLower.contains('payment') || titleLower.contains('purchase') || titleLower.contains('off ')) {
+
+    if (typeLower.contains('fee') ||
+        typeLower.contains('payment') ||
+        titleLower.contains('fee') ||
+        titleLower.contains('payment') ||
+        titleLower.contains('purchase') ||
+        titleLower.contains('off ')) {
       icon = Icons.local_activity_rounded;
       iconColor = isDark ? Colors.redAccent.shade100 : Colors.red.shade500;
-      bgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50;
-    } else if (typeLower.contains('attendance') || titleLower.contains('attendance') || titleLower.contains('success')) {
+      bgColor = isDark
+          ? Colors.red.shade900.withValues(alpha: 0.3)
+          : Colors.red.shade50;
+    } else if (typeLower.contains('attendance') ||
+        titleLower.contains('attendance') ||
+        titleLower.contains('success')) {
       icon = Icons.chair_alt_rounded;
       iconColor = isDark ? Colors.green.shade300 : Colors.green.shade600;
-      bgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.green.shade50;
-    } else if (typeLower.contains('alert') || typeLower.contains('warning') || titleLower.contains('device') || titleLower.contains('alert') || titleLower.contains('absent') || titleLower.contains('warning')) {
+      bgColor = isDark
+          ? Colors.green.shade900.withValues(alpha: 0.3)
+          : Colors.green.shade50;
+    } else if (typeLower.contains('alert') ||
+        typeLower.contains('warning') ||
+        titleLower.contains('device') ||
+        titleLower.contains('alert') ||
+        titleLower.contains('absent') ||
+        titleLower.contains('warning')) {
       icon = Icons.priority_high_rounded;
       iconColor = isDark ? Colors.orange.shade300 : Colors.orange.shade600;
-      bgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
-    } else if (typeLower.contains('event') || typeLower.contains('holiday') || titleLower.contains('event') || titleLower.contains('holiday')) {
+      bgColor = isDark
+          ? Colors.orange.shade900.withValues(alpha: 0.3)
+          : Colors.orange.shade50;
+    } else if (typeLower.contains('event') ||
+        typeLower.contains('holiday') ||
+        titleLower.contains('event') ||
+        titleLower.contains('holiday')) {
       icon = Icons.celebration_rounded;
       iconColor = isDark ? Colors.purple.shade300 : Colors.purple.shade600;
-      bgColor = isDark ? Colors.purple.shade900.withValues(alpha: 0.3) : Colors.purple.shade50;
+      bgColor = isDark
+          ? Colors.purple.shade900.withValues(alpha: 0.3)
+          : Colors.purple.shade50;
     }
 
     return Scaffold(
@@ -94,24 +115,33 @@ class NotificationDetailsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.only(top: 16, bottom: 32, left: 24, right: 24),
+              padding: const EdgeInsets.only(
+                top: 16,
+                bottom: 32,
+                left: 24,
+                right: 24,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    isDark ? theme.colorScheme.surface : theme.colorScheme.surface,
+                    isDark
+                        ? theme.colorScheme.surface
+                        : theme.colorScheme.surface,
                     bgColor.withValues(alpha: isDark ? 0.2 : 0.4),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(40),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: bgColor.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
-                  )
-                ]
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -153,7 +183,10 @@ class NotificationDetailsScreen extends ConsumerWidget {
                   ],
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(20),
@@ -181,13 +214,15 @@ class NotificationDetailsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if ((item.body.isNotEmpty && item.body != item.title) || (item.description != null && item.description!.isNotEmpty))
+                  if ((item.body.isNotEmpty && item.body != item.title) ||
+                      (item.description != null &&
+                          item.description!.isNotEmpty))
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
@@ -198,13 +233,14 @@ class NotificationDetailsScreen extends ConsumerWidget {
                             color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (item.body.isNotEmpty && item.body != item.title) ...[
+                          if (item.body.isNotEmpty &&
+                              item.body != item.title) ...[
                             Text(
                               item.body,
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -215,7 +251,8 @@ class NotificationDetailsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                           ],
-                          if (item.description != null && item.description!.isNotEmpty)
+                          if (item.description != null &&
+                              item.description!.isNotEmpty)
                             Text(
                               item.description!,
                               style: theme.textTheme.bodyLarge?.copyWith(
@@ -228,7 +265,8 @@ class NotificationDetailsScreen extends ConsumerWidget {
                     ),
                   const SizedBox(height: 24),
 
-                  if (item.images.isNotEmpty || item.backgroundImage != null) ...[
+                  if (item.images.isNotEmpty ||
+                      item.backgroundImage != null) ...[
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
@@ -237,60 +275,78 @@ class NotificationDetailsScreen extends ConsumerWidget {
                             color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 16,
                             offset: const Offset(0, 8),
-                          )
+                          ),
                         ],
                       ),
                       clipBehavior: Clip.hardEdge,
                       child: CachedNetworkImage(
-                        imageUrl: item.images.isNotEmpty ? item.images.first : item.backgroundImage!,
+                        imageUrl: item.images.isNotEmpty
+                            ? item.images.first
+                            : item.backgroundImage!,
                         width: double.infinity,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           height: 200,
                           color: theme.colorScheme.surfaceContainerHighest,
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
                         errorWidget: (context, url, error) => Container(
                           height: 200,
                           color: theme.colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                          child: const Icon(
+                            Icons.broken_image,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
                   ],
-                  
+
                   if (item.images.length > 1) ...[
-                    ...item.images.skip(1).map((imgUrl) => Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            )
-                          ],
-                        ),
-                        clipBehavior: Clip.hardEdge,
-                        child: CachedNetworkImage(
-                          imageUrl: imgUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            height: 200,
-                            color: theme.colorScheme.surfaceContainerHighest,
+                    ...item.images
+                        .skip(1)
+                        .map(
+                          (imgUrl) => Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              clipBehavior: Clip.hardEdge,
+                              child: CachedNetworkImage(
+                                imageUrl: imgUrl,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  height: 200,
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  height: 200,
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                  child: const Icon(
+                                    Icons.broken_image,
+                                    size: 48,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            height: 200,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                          ),
                         ),
-                      ),
-                    )),
                   ],
 
                   if (item.linkUrl != null && item.linkUrl!.isNotEmpty) ...[
@@ -299,11 +355,11 @@ class NotificationDetailsScreen extends ConsumerWidget {
                       onPressed: () => _launchUrl(context, item.linkUrl!),
                       icon: const Icon(Icons.open_in_new_rounded),
                       label: Text(
-                        item.linkButtonText?.isNotEmpty == true 
-                            ? item.linkButtonText! 
+                        item.linkButtonText?.isNotEmpty == true
+                            ? item.linkButtonText!
                             : 'Open Link',
                         style: const TextStyle(
-                          fontSize: 16, 
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),

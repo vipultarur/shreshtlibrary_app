@@ -15,14 +15,12 @@ class AppShell extends ConsumerStatefulWidget {
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver {
-
+class _AppShellState extends ConsumerState<AppShell>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-
   }
 
   @override
@@ -55,18 +53,22 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: widget.navigationShell, // SafeArea handled by individual screens to allow full bleed if needed
+      body: widget
+          .navigationShell, // SafeArea handled by individual screens to allow full bleed if needed
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(
           margin: const EdgeInsets.fromLTRB(18, 0, 18, 20),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: theme.bottomNavigationBarTheme.backgroundColor ?? Colors.white,
+            color:
+                theme.bottomNavigationBarTheme.backgroundColor ?? Colors.white,
             borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.black45
+                    : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -131,11 +133,15 @@ class _NavBarItem extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final color = isSelected
-        ? (theme.bottomNavigationBarTheme.selectedItemColor ?? theme.colorScheme.primary)
-        : (theme.bottomNavigationBarTheme.unselectedItemColor ?? theme.colorScheme.onSurfaceVariant);
+        ? (theme.bottomNavigationBarTheme.selectedItemColor ??
+              theme.colorScheme.primary)
+        : (theme.bottomNavigationBarTheme.unselectedItemColor ??
+              theme.colorScheme.onSurfaceVariant);
 
     final bgColor = isSelected
-        ? (isDark ? AppColors.darkNavSelectedBg : theme.colorScheme.primary.withValues(alpha: 0.1))
+        ? (isDark
+              ? AppColors.darkNavSelectedBg
+              : theme.colorScheme.primary.withValues(alpha: 0.1))
         : Colors.transparent;
 
     return GestureDetector(
@@ -153,11 +159,7 @@ class _NavBarItem extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset(
-              iconPath,
-              height: 24,
-              width: 24,
-            ),
+            SvgPicture.asset(iconPath, height: 24, width: 24),
             if (isSelected) ...[
               const SizedBox(width: 4),
               Text(

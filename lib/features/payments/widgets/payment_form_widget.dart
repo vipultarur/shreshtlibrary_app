@@ -57,7 +57,10 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
   void _handleExternalWallet(ExternalWalletResponse response) {
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
-      showSnack(context, l10n.payment_external_wallet(response.walletName ?? ''));
+      showSnack(
+        context,
+        l10n.payment_external_wallet(response.walletName ?? ''),
+      );
     }
   }
 
@@ -75,10 +78,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
       'amount': (plan.price * 100).toInt(),
       'name': 'Shresht Library',
       'description': plan.name,
-      'prefill': {
-        'contact': '',
-        'email': ''
-      }
+      'prefill': {'contact': '', 'email': ''},
     };
     try {
       _razorpay.open(options);
@@ -110,7 +110,9 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
           );
       ref.invalidate(paymentHistoryProvider);
       ref.invalidate(membershipsProvider);
-      ref.read(notificationServiceProvider).showNotification(
+      ref
+          .read(notificationServiceProvider)
+          .showNotification(
             title: l10n.payment_noti_title,
             body: l10n.payment_noti_body,
           );
@@ -153,29 +155,26 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) =>
-                setState(() => _selectedPlan = value),
+            onChanged: (value) => setState(() => _selectedPlan = value),
             decoration: InputDecoration(
               labelText: l10n.payment_label_plan,
-              errorText: _fieldErrors['plan_id'] is List ? _fieldErrors['plan_id'][0] : _fieldErrors['plan_id']?.toString(),
+              errorText: _fieldErrors['plan_id'] is List
+                  ? _fieldErrors['plan_id'][0]
+                  : _fieldErrors['plan_id']?.toString(),
             ),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _mode,
             items: ['UPI', 'Cash', 'Card', 'Bank Transfer']
-                .map(
-                  (mode) => DropdownMenuItem(
-                    value: mode,
-                    child: Text(mode),
-                  ),
-                )
+                .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
                 .toList(),
-            onChanged: (value) =>
-                setState(() => _mode = value ?? 'UPI'),
+            onChanged: (value) => setState(() => _mode = value ?? 'UPI'),
             decoration: InputDecoration(
               labelText: l10n.payment_label_mode,
-              errorText: _fieldErrors['payment_mode'] is List ? _fieldErrors['payment_mode'][0] : _fieldErrors['payment_mode']?.toString(),
+              errorText: _fieldErrors['payment_mode'] is List
+                  ? _fieldErrors['payment_mode'][0]
+                  : _fieldErrors['payment_mode']?.toString(),
             ),
           ),
           const SizedBox(height: 12),
@@ -183,7 +182,9 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
             controller: _transaction,
             decoration: InputDecoration(
               labelText: l10n.payment_label_transaction,
-              errorText: _fieldErrors['transaction_id'] is List ? _fieldErrors['transaction_id'][0] : _fieldErrors['transaction_id']?.toString(),
+              errorText: _fieldErrors['transaction_id'] is List
+                  ? _fieldErrors['transaction_id'][0]
+                  : _fieldErrors['transaction_id']?.toString(),
             ),
           ),
           const SizedBox(height: 12),
@@ -203,7 +204,8 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
                       ? null
                       : () {
                           final plan = items.firstWhere(
-                              (p) => p.id == _selectedPlan);
+                            (p) => p.id == _selectedPlan,
+                          );
                           _startRazorpay(plan);
                         },
                   icon: const Icon(Icons.payment),

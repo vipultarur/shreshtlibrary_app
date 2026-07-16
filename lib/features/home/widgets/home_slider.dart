@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/models/models.dart';
 import '../../../core/services/providers.dart';
 
-
 class HomeSliderWidget extends ConsumerWidget {
   const HomeSliderWidget({super.key});
 
@@ -37,7 +36,9 @@ class HomeSliderWidget extends ConsumerWidget {
                   autoPlayAnimationDuration: const Duration(milliseconds: 800),
                   autoPlayCurve: Curves.fastOutSlowIn,
                 ),
-                items: sliders.map((slider) => _SliderCard(slider: slider)).toList(),
+                items: sliders
+                    .map((slider) => _SliderCard(slider: slider))
+                    .toList(),
               ),
             );
           },
@@ -88,10 +89,7 @@ class _SliderCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.7),
-              ],
+              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
             ),
           ),
           padding: const EdgeInsets.all(16),
@@ -130,11 +128,16 @@ class _SliderCard extends StatelessWidget {
               if (slider.linkUrl.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

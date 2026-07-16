@@ -10,15 +10,16 @@ import '../widgets/auth_text_field.dart';
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   final String identifier;
   final String token;
-  
+
   const ResetPasswordScreen({
-    super.key, 
+    super.key,
     required this.identifier,
     required this.token,
   });
 
   @override
-  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
@@ -49,7 +50,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       setState(() {
         _fieldErrors = {
           if (password.isEmpty) 'password': 'Password is required.',
-          if (confirmPassword.isEmpty) 'confirm': 'Confirm Password is required.',
+          if (confirmPassword.isEmpty)
+            'confirm': 'Confirm Password is required.',
         };
       });
       return;
@@ -67,7 +69,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     });
 
     try {
-      await ref.read(authControllerProvider.notifier).resetPassword(widget.identifier, widget.token, password);
+      await ref
+          .read(authControllerProvider.notifier)
+          .resetPassword(widget.identifier, widget.token, password);
       if (mounted) {
         setState(() => _requesting = false);
         showSnack(context, 'Password reset successfully! Please login.');
@@ -109,7 +113,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           Text(
             'Your OTP has been verified. Please create a new password below.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 32),
 
@@ -118,9 +125,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             hint: 'Enter your new password',
             controller: _passwordController,
             obscureText: _obscurePassword,
-            suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
-            errorText: _fieldErrors['new_password'] is List ? _fieldErrors['new_password'][0] : _fieldErrors['password']?.toString(),
+            suffixIcon: _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            onSuffixTap: () =>
+                setState(() => _obscurePassword = !_obscurePassword),
+            errorText: _fieldErrors['new_password'] is List
+                ? _fieldErrors['new_password'][0]
+                : _fieldErrors['password']?.toString(),
           ),
           const SizedBox(height: 16),
           AuthTextField(
@@ -128,8 +140,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             hint: 'Re-enter your new password',
             controller: _confirmPasswordController,
             obscureText: _obscureConfirmPassword,
-            suffixIcon: _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            onSuffixTap: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+            suffixIcon: _obscureConfirmPassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            onSuffixTap: () => setState(
+              () => _obscureConfirmPassword = !_obscureConfirmPassword,
+            ),
             errorText: _fieldErrors['confirm']?.toString(),
           ),
           const SizedBox(height: 24),
@@ -145,7 +161,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               elevation: 0,
             ),
             child: _requesting
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
                 : const Text(
                     'Update Password',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
@@ -154,7 +177,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => context.go('/login'),
-            child: Text('Cancel', style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

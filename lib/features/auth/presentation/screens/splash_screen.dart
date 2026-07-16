@@ -12,7 +12,8 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
@@ -24,9 +25,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       duration: const Duration(milliseconds: 1200),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
     _navigateToNext();
@@ -45,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
     final cache = ref.read(localCacheServiceProvider);
     final auth = ref.read(authControllerProvider);
-    
+
     if (!cache.hasSelectedLanguage()) {
       context.go('/language-selection');
     } else if (auth.isAuthenticated) {
@@ -82,9 +84,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
           // Optional subtle overlay for better loading visibility (very light)
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.1),
-            ),
+            child: Container(color: Colors.black.withValues(alpha: 0.1)),
           ),
 
           // Loading indicator at bottom
@@ -96,10 +96,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
-                  return Opacity(
-                    opacity: _fadeAnimation.value,
-                    child: child,
-                  );
+                  return Opacity(opacity: _fadeAnimation.value, child: child);
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -110,7 +107,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                     child: ShaderMask(
                       shaderCallback: (bounds) {
                         return const LinearGradient(
-                          colors: [AppColors.lightPrimary, AppColors.lightSecondary],
+                          colors: [
+                            AppColors.lightPrimary,
+                            AppColors.lightSecondary,
+                          ],
                         ).createShader(bounds);
                       },
                       blendMode: BlendMode.srcATop,

@@ -29,14 +29,16 @@ class StudySessionService {
     // Create channel
     final androidPlugin = _localNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (androidPlugin != null) {
       await androidPlugin.createNotificationChannel(
         const AndroidNotificationChannel(
           _channelId,
           _channelName,
           description: 'Tracks your active study time',
-          importance: Importance.low, // Low importance for persistent (no sound)
+          importance:
+              Importance.low, // Low importance for persistent (no sound)
           playSound: false,
           enableVibration: false,
         ),
@@ -99,16 +101,20 @@ void onStart(ServiceInstance service) async {
   // Motion Detection Setup
   StreamSubscription? accelerometerSub;
   DateTime lastMotionTime = DateTime.now();
-  
-  accelerometerSub = userAccelerometerEventStream().listen((UserAccelerometerEvent event) {
+
+  accelerometerSub = userAccelerometerEventStream().listen((
+    UserAccelerometerEvent event,
+  ) {
     // userAccelerometerEventStream excludes gravity.
     // So any magnitude is pure physical movement of the device.
-    final magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
-    
+    final magnitude = sqrt(
+      event.x * event.x + event.y * event.y + event.z * event.z,
+    );
+
     // Ignore small movements (e.g. slight jitter on table). Pickups usually > 1.5.
     if (magnitude > 1.5) {
       lastMotionTime = DateTime.now();
-      
+
       bool isPaused = prefs.getBool('is_paused') ?? false;
       if (!isPaused) {
         // Pause session immediately on motion
@@ -141,23 +147,24 @@ void onStart(ServiceInstance service) async {
         final startTimeStr = prefs.getString('study_session_start');
         if (startTimeStr != null) {
           final startTime = DateTime.parse(startTimeStr);
-          
+
           if (isPaused) {
             int pausedSecs = prefs.getInt('paused_seconds') ?? 0;
             await prefs.setInt('paused_seconds', pausedSecs + 1);
-            
+
             // Notify UI
             final elapsedSecs = prefs.getInt('last_elapsed_seconds') ?? 0;
-            int remaining = 60 - DateTime.now().difference(lastMotionTime).inSeconds;
+            int remaining =
+                60 - DateTime.now().difference(lastMotionTime).inSeconds;
             if (remaining < 0) remaining = 0;
 
             service.invoke('update', {
-              'elapsed': elapsedSecs, 
+              'elapsed': elapsedSecs,
               'is_paused': true,
               'remaining_verification_seconds': remaining,
               'paused_seconds': pausedSecs,
             });
-            
+
             localNotificationsPlugin.show(
               id: StudySessionService._notificationId,
               title: 'Study Paused - Motion Detected',
@@ -176,14 +183,18 @@ void onStart(ServiceInstance service) async {
           } else {
             // Calculate active elapsed time
             int pausedSecs = prefs.getInt('paused_seconds') ?? 0;
-            final elapsed = DateTime.now().difference(startTime) - Duration(seconds: pausedSecs);
+            final elapsed =
+                DateTime.now().difference(startTime) -
+                Duration(seconds: pausedSecs);
             await prefs.setInt('last_elapsed_seconds', elapsed.inSeconds);
-            
+
             String twoDigits(int n) => n.toString().padLeft(2, "0");
             String twoDigitMinutes = twoDigits(elapsed.inMinutes.remainder(60));
             String twoDigitSeconds = twoDigits(elapsed.inSeconds.remainder(60));
-            String hours = elapsed.inHours > 0 ? "${twoDigits(elapsed.inHours)}:" : "";
-            
+            String hours = elapsed.inHours > 0
+                ? "${twoDigits(elapsed.inHours)}:"
+                : "";
+
             final timeStr = "$hours$twoDigitMinutes:$twoDigitSeconds";
 
             localNotificationsPlugin.show(
@@ -201,9 +212,9 @@ void onStart(ServiceInstance service) async {
                 ),
               ),
             );
-            
+
             service.invoke('update', {
-              'elapsed': elapsed.inSeconds, 
+              'elapsed': elapsed.inSeconds,
               'is_paused': false,
               'paused_seconds': pausedSecs,
             });

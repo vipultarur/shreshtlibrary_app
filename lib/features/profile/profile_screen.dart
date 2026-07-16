@@ -10,6 +10,8 @@ import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
+import 'package:shreshtlibrary/features/auth/presentation/screens/language_selection_screen.dart';
+import 'package:shreshtlibrary/features/home/widgets/digital_id_card.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
@@ -19,9 +21,7 @@ import 'package:shreshtlibrary/core/errors/api_failure.dart';
 final profileProvider = StreamProvider.autoDispose<StudentProfile>(
   (ref) => ref.watch(studentApiProvider).profileStream(),
 );
-final idCardProvider = StreamProvider.autoDispose<StudentIdCard>(
-  (ref) => ref.watch(studentApiProvider).idCardStream(),
-);
+
 final referralProvider = StreamProvider.autoDispose<ReferralCode>(
   (ref) => ref.watch(studentApiProvider).referralCodeStream(),
 );
@@ -63,9 +63,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           builder: (context, ref, child) {
             final activeLocale = ref.watch(localeProvider);
             final l10n = AppLocalizations.of(context)!;
-            
+
             return Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 100),
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: 100,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,27 +85,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
                   _buildLanguageOption(
-                    context, 
-                    ref, 
-                    label: 'English', 
-                    code: 'en', 
-                    isActive: activeLocale.languageCode == 'en'
+                    context,
+                    ref,
+                    label: 'English',
+                    code: 'en',
+                    isActive: activeLocale.languageCode == 'en',
                   ),
                   const SizedBox(height: 12),
                   _buildLanguageOption(
-                    context, 
-                    ref, 
-                    label: 'हिन्दी', 
-                    code: 'hi', 
-                    isActive: activeLocale.languageCode == 'hi'
+                    context,
+                    ref,
+                    label: 'हिन्दी',
+                    code: 'hi',
+                    isActive: activeLocale.languageCode == 'hi',
                   ),
                   const SizedBox(height: 12),
                   _buildLanguageOption(
-                    context, 
-                    ref, 
-                    label: 'ગુજરાતી', 
-                    code: 'gu', 
-                    isActive: activeLocale.languageCode == 'gu'
+                    context,
+                    ref,
+                    label: 'ગુજરાતી',
+                    code: 'gu',
+                    isActive: activeLocale.languageCode == 'gu',
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -113,11 +118,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildLanguageOption(
-    BuildContext context, 
+    BuildContext context,
     WidgetRef ref, {
-    required String label, 
-    required String code, 
-    required bool isActive
+    required String label,
+    required String code,
+    required bool isActive,
   }) {
     final theme = Theme.of(context);
     return InkWell(
@@ -129,7 +134,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
+          color: isActive
+              ? theme.colorScheme.primaryContainer
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isActive ? theme.colorScheme.primary : theme.dividerColor,
@@ -144,14 +151,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? theme.colorScheme.primary : theme.textTheme.bodyLarge?.color,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.textTheme.bodyLarge?.color,
               ),
             ),
             if (isActive)
-              Icon(
-                Icons.check_circle,
-                color: theme.colorScheme.primary,
-              )
+              Icon(Icons.check_circle, color: theme.colorScheme.primary)
             else
               const SizedBox(width: 24, height: 24),
           ],
@@ -182,44 +188,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         return Consumer(
           builder: (context, ref, child) {
             final activeTheme = ref.watch(themeModeProvider);
-            
+
             return Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 100),
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: 100,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
                     'App Theme',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   _buildThemeOption(
-                    context, 
-                    ref, 
-                    label: 'System Default', 
-                    mode: ThemeMode.system, 
-                    isActive: activeTheme == ThemeMode.system
+                    context,
+                    ref,
+                    label: 'System Default',
+                    mode: ThemeMode.system,
+                    isActive: activeTheme == ThemeMode.system,
                   ),
                   const SizedBox(height: 12),
                   _buildThemeOption(
-                    context, 
-                    ref, 
-                    label: 'Light', 
-                    mode: ThemeMode.light, 
-                    isActive: activeTheme == ThemeMode.light
+                    context,
+                    ref,
+                    label: 'Light',
+                    mode: ThemeMode.light,
+                    isActive: activeTheme == ThemeMode.light,
                   ),
                   const SizedBox(height: 12),
                   _buildThemeOption(
-                    context, 
-                    ref, 
-                    label: 'Dark', 
-                    mode: ThemeMode.dark, 
-                    isActive: activeTheme == ThemeMode.dark
+                    context,
+                    ref,
+                    label: 'Dark',
+                    mode: ThemeMode.dark,
+                    isActive: activeTheme == ThemeMode.dark,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -232,11 +240,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildThemeOption(
-    BuildContext context, 
+    BuildContext context,
     WidgetRef ref, {
-    required String label, 
-    required ThemeMode mode, 
-    required bool isActive
+    required String label,
+    required ThemeMode mode,
+    required bool isActive,
   }) {
     final theme = Theme.of(context);
     return InkWell(
@@ -248,7 +256,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
+          color: isActive
+              ? theme.colorScheme.primaryContainer
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isActive ? theme.colorScheme.primary : theme.dividerColor,
@@ -263,14 +273,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? theme.colorScheme.primary : theme.textTheme.bodyLarge?.color,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.textTheme.bodyLarge?.color,
               ),
             ),
             if (isActive)
-              Icon(
-                Icons.check_circle,
-                color: theme.colorScheme.primary,
-              )
+              Icon(Icons.check_circle, color: theme.colorScheme.primary)
             else
               const SizedBox(width: 24, height: 24),
           ],
@@ -304,7 +313,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.logout, color: Colors.redAccent, size: 20),
+              child: const Icon(
+                Icons.logout,
+                color: Colors.redAccent,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -323,7 +336,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const ProfileSummaryCard(),
-              
+
               SectionTitle(l10n.profile_section_account),
               SectionCard(
                 children: [
@@ -345,9 +358,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Consumer(
                 builder: (context, ref, _) {
                   final dash = ref.watch(dashboardProvider).value;
-                  final isPaymentsRestricted = dash?.restrictedFeatures.contains('payments') ?? false;
+                  final isPaymentsRestricted =
+                      dash?.restrictedFeatures.contains('payments') ?? false;
 
-                  final isNotificationsRestricted = dash?.restrictedFeatures.contains('notifications') ?? false;
+                  final isNotificationsRestricted =
+                      dash?.restrictedFeatures.contains('notifications') ??
+                      false;
 
                   return SectionCard(
                     children: [
@@ -380,7 +396,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           if (isNotificationsRestricted && dash != null) {
                             showRestrictionDialog(context, dash);
                           } else {
-                            setState(() => _notificationsEnabled = !_notificationsEnabled);
+                            setState(
+                              () => _notificationsEnabled =
+                                  !_notificationsEnabled,
+                            );
                           }
                         },
                         showDivider: false,
@@ -445,7 +464,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SettingsTile(
                     icon: Icons.logout,
                     title: l10n.profile_tile_logout,
-                    onTap: () => ref.read(authControllerProvider.notifier).logout(),
+                    onTap: () =>
+                        ref.read(authControllerProvider.notifier).logout(),
                     iconColor: Colors.redAccent,
                     textColor: Colors.redAccent,
                     showDivider: false,
@@ -467,13 +487,18 @@ class ProfileSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final dashAsync = ref.watch(dashboardProvider);
-    final status = dashAsync.value?.membershipStatus ?? l10n.profile_label_loading;
-    
+    final status =
+        dashAsync.value?.membershipStatus ?? l10n.profile_label_loading;
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = theme.colorScheme.surface;
-    final textColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
-    final secondaryTextColor = theme.textTheme.bodyMedium?.color ?? (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
+    final textColor =
+        theme.textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    final secondaryTextColor =
+        theme.textTheme.bodyMedium?.color ??
+        (isDark ? Colors.grey.shade400 : Colors.grey.shade600);
     final editBgColor = theme.scaffoldBackgroundColor;
 
     return AsyncPane(
@@ -487,7 +512,9 @@ class ProfileSummaryCard extends ConsumerWidget {
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.black26
+                    : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -501,17 +528,22 @@ class ProfileSummaryCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
                   shape: BoxShape.circle,
-                  image: profile.profilePhoto != null && profile.profilePhoto!.isNotEmpty
+                  image:
+                      profile.profilePhoto != null &&
+                          profile.profilePhoto!.isNotEmpty
                       ? DecorationImage(
                           image: CachedNetworkImageProvider(
                             profile.profilePhoto!,
-                            errorListener: (err) => debugPrint('Image error: $err'),
+                            errorListener: (err) =>
+                                debugPrint('Image error: $err'),
                           ),
                           fit: BoxFit.cover,
                         )
                       : null,
                 ),
-                child: profile.profilePhoto == null || profile.profilePhoto!.isEmpty
+                child:
+                    profile.profilePhoto == null ||
+                        profile.profilePhoto!.isEmpty
                     ? const Icon(Icons.person, color: Colors.white, size: 32)
                     : null,
               ),
@@ -532,11 +564,10 @@ class ProfileSummaryCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      profile.email.isNotEmpty ? profile.email : l10n.profile_no_email,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: secondaryTextColor,
-                      ),
+                      profile.email.isNotEmpty
+                          ? profile.email
+                          : l10n.profile_no_email,
+                      style: TextStyle(fontSize: 13, color: secondaryTextColor),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -550,7 +581,10 @@ class ProfileSummaryCard extends ConsumerWidget {
                 onTap: () => context.push('/profile/account'),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: editBgColor,
                     borderRadius: BorderRadius.circular(24),
@@ -562,7 +596,11 @@ class ProfileSummaryCard extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         l10n.profile_edit_btn,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
                       ),
                     ],
                   ),
@@ -583,12 +621,18 @@ class SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final textColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
+    final textColor =
+        theme.textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
     return Padding(
       padding: const EdgeInsets.only(left: 8, bottom: 12, top: 24),
       child: Text(
         title,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: textColor,
+        ),
       ),
     );
   }
@@ -607,15 +651,15 @@ class SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
+            color: isDark
+                ? Colors.black26
+                : Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 }
@@ -644,7 +688,9 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final defaultTextColor = theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87);
+    final defaultTextColor =
+        theme.textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
     final iconBgColor = theme.scaffoldBackgroundColor;
     final dividerColor = theme.dividerColor;
 
@@ -663,17 +709,30 @@ class SettingsTile extends StatelessWidget {
                     color: iconBgColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 20, color: iconColor ?? defaultTextColor),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: iconColor ?? defaultTextColor,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: textColor ?? defaultTextColor),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textColor ?? defaultTextColor,
+                    ),
                   ),
                 ),
-                if (trailing != null) trailing!
-                else Icon(Icons.chevron_right, color: isDark ? Colors.white54 : Colors.black54),
+                if (trailing != null)
+                  trailing!
+                else
+                  Icon(
+                    Icons.chevron_right,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
               ],
             ),
           ),
@@ -687,8 +746,6 @@ class SettingsTile extends StatelessWidget {
     );
   }
 }
-
-
 
 // Sub-screens for Account Navigation
 
@@ -719,11 +776,11 @@ class AccountInfoScreen extends ConsumerWidget {
   }
 }
 
-
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
   @override
-  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
@@ -741,7 +798,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   }
 
   Future<void> _submit() async {
-    if (_oldPassword.text.isEmpty || _newPassword.text.isEmpty || _confirmPassword.text.isEmpty) {
+    if (_oldPassword.text.isEmpty ||
+        _newPassword.text.isEmpty ||
+        _confirmPassword.text.isEmpty) {
       showSnack(context, 'Please fill all fields');
       return;
     }
@@ -751,11 +810,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     }
     setState(() => _busy = true);
     try {
-      await ref.read(studentApiProvider).changePassword(
-        oldPassword: _oldPassword.text,
-        newPassword: _newPassword.text,
-        confirmPassword: _confirmPassword.text,
-      );
+      await ref
+          .read(studentApiProvider)
+          .changePassword(
+            oldPassword: _oldPassword.text,
+            newPassword: _newPassword.text,
+            confirmPassword: _confirmPassword.text,
+          );
       if (mounted) {
         showSnack(context, 'Password changed successfully');
         context.pop();
@@ -785,7 +846,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 labelText: 'Old Password',
                 filled: true,
                 fillColor: theme.colorScheme.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -796,7 +859,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 labelText: 'New Password',
                 filled: true,
                 fillColor: theme.colorScheme.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -807,7 +872,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 labelText: 'Confirm New Password',
                 filled: true,
                 fillColor: theme.colorScheme.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -815,9 +882,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               onPressed: _busy ? null : _submit,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: _busy ? const CircularProgressIndicator(color: Colors.white) : const Text('Change Password'),
+              child: _busy
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Change Password'),
             ),
           ],
         ),
@@ -826,69 +897,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   }
 }
 
-
 class IdCardScreen extends ConsumerWidget {
   const IdCardScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CommonAppBar(title: l10n.profile_tile_id_card),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: AsyncPane(
-          value: ref.watch(idCardProvider),
-          builder: (card) => Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                InfoTile(
-                  label: l10n.profile_label_name,
-                  value: card.fullName,
-                  icon: Icons.badge_outlined,
-                ),
-                InfoTile(
-                  label: l10n.profile_label_mobile,
-                  value: card.mobile,
-                  icon: Icons.phone_outlined,
-                ),
-                InfoTile(
-                  label: l10n.profile_label_goal,
-                  value: card.goal,
-                  icon: Icons.flag_outlined,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.qr_code_2, size: 24, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6)),
-                      const SizedBox(width: 8),
-                      SelectableText(
-                        card.qrData,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.textTheme.bodyLarge?.color),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: DigitalIdCardWidget(),
       ),
     );
   }
@@ -901,18 +922,23 @@ class ReferralsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: CommonAppBar(
-        title: l10n.profile_tile_referrals,
-      ),
+      appBar: CommonAppBar(title: l10n.profile_tile_referrals),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.profile_referral_program, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color)),
+            Text(
+              l10n.profile_referral_program,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
+            ),
             const SizedBox(height: 16),
             AsyncPane(
               value: ref.watch(referralProvider),
@@ -921,7 +947,10 @@ class ReferralsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withValues(alpha: 0.8),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -930,7 +959,10 @@ class ReferralsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       l10n.profile_your_referral_code,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     SelectableText(
@@ -945,7 +977,10 @@ class ReferralsScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       l10n.profile_referral_used_by(referral.usedByCount),
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -956,7 +991,11 @@ class ReferralsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Text(
               l10n.profile_referral_history,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
             ),
             const SizedBox(height: 16),
             AsyncPane(
@@ -965,11 +1004,16 @@ class ReferralsScreen extends ConsumerWidget {
                   ? Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: isDark ? theme.colorScheme.surface : Colors.grey.shade100,
+                        color: isDark
+                            ? theme.colorScheme.surface
+                            : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Center(
-                        child: Text(l10n.profile_no_referral_history, style: const TextStyle(color: Colors.grey)),
+                        child: Text(
+                          l10n.profile_no_referral_history,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
                       ),
                     )
                   : Column(
@@ -977,7 +1021,10 @@ class ReferralsScreen extends ConsumerWidget {
                           .map(
                             (row) => Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
@@ -1004,7 +1051,8 @@ class ReviewSectionWidget extends ConsumerStatefulWidget {
   const ReviewSectionWidget({super.key});
 
   @override
-  ConsumerState<ReviewSectionWidget> createState() => _ReviewSectionWidgetState();
+  ConsumerState<ReviewSectionWidget> createState() =>
+      _ReviewSectionWidgetState();
 }
 
 class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
@@ -1022,7 +1070,10 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
             return Dialog(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
               child: Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
@@ -1045,100 +1096,124 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.amber.shade900.withValues(alpha: 0.3) : Colors.amber.shade50,
-                        shape: BoxShape.circle,
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.amber.shade900.withValues(alpha: 0.3)
+                              : Colors.amber.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.edit_note_rounded,
+                          size: 32,
+                          color: Colors.amber,
+                        ),
                       ),
-                      child: const Icon(Icons.edit_note_rounded, size: 40, color: Colors.amber),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Write a Review',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 16),
+                      Text(
+                        'Write a Review',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'How would you rate your experience?',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                        color: theme.colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 12),
+                      Text(
+                        'How would you rate your experience?',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.5,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: GestureDetector(
-                            onTap: () {
-                              setDialogState(() {
-                                selectedRating = index + 1;
-                              });
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              child: Icon(
-                                index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
-                                color: index < selectedRating ? Colors.amber : Colors.grey.withValues(alpha: 0.4),
-                                size: 40,
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: GestureDetector(
+                              onTap: () {
+                                setDialogState(() {
+                                  selectedRating = index + 1;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  index < selectedRating
+                                      ? Icons.star_rounded
+                                      : Icons.star_border_rounded,
+                                  color: index < selectedRating
+                                      ? Colors.amber
+                                      : Colors.grey.withValues(alpha: 0.4),
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 24),
+                      TextField(
+                        controller: commentController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Share your thoughts (optional)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white10
+                              : Colors.grey.shade100,
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: commentController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: 'Share your thoughts (optional)',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
-                        contentPadding: const EdgeInsets.all(16),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: selectedRating > 0
+                                  ? () => Navigator.pop(context, true)
+                                  : null,
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Submit',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: selectedRating > 0 ? () => Navigator.pop(context, true) : null,
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
                     ],
                   ),
                 ),
@@ -1151,7 +1226,9 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
 
     if (result == true && mounted) {
       try {
-        await ref.read(studentApiProvider).submitReview(
+        await ref
+            .read(studentApiProvider)
+            .submitReview(
               rating: selectedRating,
               comment: commentController.text.trim(),
             );
@@ -1191,12 +1268,17 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
                       children: [
                         const Text(
                           'Your Review',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Row(
                           children: List.generate(5, (index) {
                             return Icon(
-                              index < review.rating ? Icons.star : Icons.star_border,
+                              index < review.rating
+                                  ? Icons.star
+                                  : Icons.star_border,
                               color: Colors.amber,
                               size: 20,
                             );
@@ -1208,18 +1290,12 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
                       const SizedBox(height: 8),
                       Text(
                         review.comment,
-                        style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    Text(
-                      review.isApproved ?? false ? 'Status: Approved' : 'Status: Pending Approval',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: review.isApproved ?? false ? Colors.green : Colors.orange,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
                   ],
                 ),
               );
@@ -1238,12 +1314,13 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
           ),
           error: (err, stack) => Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Error loading review', style: TextStyle(color: theme.colorScheme.error)),
+            child: Text(
+              'Error loading review',
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
           ),
         ),
       ],
     );
   }
 }
-
-

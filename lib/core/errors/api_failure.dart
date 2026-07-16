@@ -11,7 +11,9 @@ class ApiFailure implements Exception {
     final payload = error.response?.data;
     if (payload is Map<String, dynamic>) {
       final message = payload['message']?.toString();
-      final errors = payload.containsKey('errors') ? payload['errors'] : payload;
+      final errors = payload.containsKey('errors')
+          ? payload['errors']
+          : payload;
       return ApiFailure(
         message == null || message.isEmpty
             ? _messageFromErrors(errors)

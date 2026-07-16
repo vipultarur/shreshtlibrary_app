@@ -13,7 +13,8 @@ class VerifyResetOtpScreen extends ConsumerStatefulWidget {
   const VerifyResetOtpScreen({super.key, required this.identifier});
 
   @override
-  ConsumerState<VerifyResetOtpScreen> createState() => _VerifyResetOtpScreenState();
+  ConsumerState<VerifyResetOtpScreen> createState() =>
+      _VerifyResetOtpScreenState();
 }
 
 class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
@@ -70,7 +71,9 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
     setState(() => _resending = true);
 
     try {
-      await ref.read(authControllerProvider.notifier).forgotPassword(widget.identifier);
+      await ref
+          .read(authControllerProvider.notifier)
+          .forgotPassword(widget.identifier);
       if (mounted) {
         setState(() => _resending = false);
         _startOtpTimer();
@@ -94,9 +97,7 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
 
     if (otp.isEmpty) {
       setState(() {
-        _fieldErrors = {
-          'otp': 'OTP is required.',
-        };
+        _fieldErrors = {'otp': 'OTP is required.'};
       });
       return;
     }
@@ -114,11 +115,15 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
 
     try {
       // Verify OTP
-      await ref.read(authControllerProvider.notifier).verifyForgotPasswordOtp(widget.identifier, otp);
+      await ref
+          .read(authControllerProvider.notifier)
+          .verifyForgotPasswordOtp(widget.identifier, otp);
       if (mounted) {
         setState(() => _requesting = false);
         // OTP verified successfully, proceed to reset password screen
-        context.push('/reset-password?identifier=${Uri.encodeComponent(widget.identifier)}&token=${Uri.encodeComponent(otp)}');
+        context.push(
+          '/reset-password?identifier=${Uri.encodeComponent(widget.identifier)}&token=${Uri.encodeComponent(otp)}',
+        );
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -156,7 +161,10 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
           Text(
             'An OTP has been sent to ${widget.identifier}. Enter it below to proceed.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 8),
 
@@ -199,7 +207,9 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
             controller: _otpController,
             keyboardType: TextInputType.number,
             suffixIcon: Icons.lock_clock_outlined,
-            errorText: _fieldErrors['token'] is List ? _fieldErrors['token'][0] : _fieldErrors['otp']?.toString(),
+            errorText: _fieldErrors['token'] is List
+                ? _fieldErrors['token'][0]
+                : _fieldErrors['otp']?.toString(),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -214,7 +224,14 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
               elevation: 0,
             ),
             child: _requesting
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
                 : const Text(
                     'Verify',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
@@ -227,21 +244,33 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
             ElevatedButton.icon(
               onPressed: _resending ? null : _resendOtp,
               icon: _resending
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.refresh),
               label: Text(_resending ? 'Sending...' : 'Resend OTP'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primaryContainer,
                 foregroundColor: theme.colorScheme.onPrimaryContainer,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
             ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => context.go('/login'),
-            child: Text('Back to Login', style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Back to Login',
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

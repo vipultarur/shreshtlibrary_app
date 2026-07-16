@@ -9,6 +9,8 @@ export 'common_app_bar.dart';
 export 'connectivity_wrapper.dart';
 export 'premium_buy_container.dart';
 export 'gallery_image_dialog.dart';
+export 'empty_state.dart';
+export 'fade_in_slide.dart';
 
 class PageScaffold extends ConsumerWidget {
   const PageScaffold({
@@ -29,7 +31,7 @@ class PageScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CommonAppBar(
@@ -43,7 +45,10 @@ class PageScaffold extends ConsumerWidget {
               onRefresh: onRefresh ?? () async {},
               color: theme.colorScheme.primary,
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 children: [child],
               ),
             )
@@ -74,7 +79,9 @@ class SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05),
+            color: isDark
+                ? Colors.black45
+                : Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -132,7 +139,7 @@ class InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -142,7 +149,9 @@ class InfoTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (iconColor ?? theme.colorScheme.primary).withValues(alpha: 0.1),
+                color: (iconColor ?? theme.colorScheme.primary).withValues(
+                  alpha: 0.1,
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -202,8 +211,12 @@ class AsyncPane<T> extends StatelessWidget {
         itemBuilder: (context, index) => Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Shimmer.fromColors(
-            baseColor: theme.brightness == Brightness.dark ? Colors.white10 : Colors.black12,
-            highlightColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.white24,
+            baseColor: theme.brightness == Brightness.dark
+                ? Colors.white10
+                : Colors.black12,
+            highlightColor: theme.brightness == Brightness.dark
+                ? Colors.white24
+                : Colors.white24,
             child: Container(
               height: 100,
               decoration: BoxDecoration(
@@ -230,7 +243,7 @@ class ErrorPane extends StatelessWidget {
     final message = error is ApiFailure
         ? (error as ApiFailure).message
         : error.toString();
-        
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -257,7 +270,10 @@ void showSnack(BuildContext context, String message) {
   final theme = Theme.of(context);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(message, style: TextStyle(color: theme.colorScheme.surface)),
+      content: Text(
+        message,
+        style: TextStyle(color: theme.colorScheme.surface),
+      ),
       backgroundColor: theme.colorScheme.onSurface,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

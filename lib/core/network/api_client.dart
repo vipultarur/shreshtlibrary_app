@@ -144,10 +144,7 @@ class ApiClient {
     }
 
     _refreshFuture ??= _refreshDio
-        .post<dynamic>(
-          '/auth/token/refresh',
-          data: {'refresh': tokens.refresh},
-        )
+        .post<dynamic>('/auth/token/refresh', data: {'refresh': tokens.refresh})
         .then((response) async {
           final payload = response.data;
           String? access;

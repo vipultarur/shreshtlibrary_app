@@ -24,7 +24,8 @@ class ShreshtStudentApp extends ConsumerStatefulWidget {
   ConsumerState<ShreshtStudentApp> createState() => _ShreshtStudentAppState();
 }
 
-final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
   @override
@@ -50,20 +51,30 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         return;
       }
     }
-    
+
     // Default fallback to notifications screen
     ref.read(routerProvider).push('/notifications');
   }
-  
+
   void _listenToNotificationActions() {
     ref.read(notificationServiceProvider).actionStream.listen((action) {
+      // Force refresh critical providers on notification tap to override cache
+      ref.invalidate(dashboardProvider);
 
-      const shellRoutes = ['/home', '/attendance', '/study', '/leaderboard', '/profile'];
-      
+      const shellRoutes = [
+        '/home',
+        '/attendance',
+        '/study',
+        '/leaderboard',
+        '/profile',
+      ];
+
       if (action.startsWith('open_link:')) {
         final link = action.replaceFirst('open_link:', '');
-        
-        if (link.startsWith('/') && !link.contains('.pdf') && !link.startsWith('/media/')) {
+
+        if (link.startsWith('/') &&
+            !link.contains('.pdf') &&
+            !link.startsWith('/media/')) {
           if (shellRoutes.contains(link)) {
             ref.read(routerProvider).go(link);
           } else {
@@ -72,12 +83,15 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         } else {
           String finalUrl = link;
           if (link.startsWith('/')) {
-             final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
-                 ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
-                 : AppConfig.apiBaseUrl;
-             finalUrl = '$baseUrl$link';
+            final baseUrl = AppConfig.apiBaseUrl.endsWith('/')
+                ? AppConfig.apiBaseUrl.substring(
+                    0,
+                    AppConfig.apiBaseUrl.length - 1,
+                  )
+                : AppConfig.apiBaseUrl;
+            finalUrl = '$baseUrl$link';
           }
-          
+
           final uri = Uri.tryParse(finalUrl);
           if (uri != null) {
             launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -96,18 +110,23 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
           try {
             final data = jsonDecode(jsonStr);
             final notification = StudentNotification.fromJson(data);
-            
+
             final typeLower = notification.type.toLowerCase();
             final titleLower = notification.title.toLowerCase();
             final linkUrl = notification.linkUrl ?? '';
-            
-            if (typeLower.contains('study') || 
-                titleLower.contains('study session') || 
-                titleLower.contains('study area') || 
+
+            if (typeLower.contains('study') ||
+                titleLower.contains('study session') ||
+                titleLower.contains('study area') ||
                 linkUrl.startsWith('/study')) {
               ref.read(routerProvider).go('/study');
             } else {
-              ref.read(routerProvider).push('/notifications/${notification.id}', extra: notification);
+              ref
+                  .read(routerProvider)
+                  .push(
+                    '/notifications/${notification.id}',
+                    extra: notification,
+                  );
             }
           } catch (e) {
             debugPrint('[FCM] Error parsing notification JSON: $e');
@@ -123,46 +142,62 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
       }
     });
 
-    ref.read(notificationServiceProvider).foregroundMessageStream.listen((message) {
+    ref.read(notificationServiceProvider).foregroundMessageStream.listen((
+      message,
+    ) {
       if (rootNavigatorKey.currentContext != null) {
-        final title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
+        final title =
+            message.notification?.title ??
+            message.data['title'] ??
+            'New Notification';
         final body = message.notification?.body ?? message.data['body'] ?? '';
         final subtitle = message.data['subtitle'];
         final description = message.data['description'];
         final layout = message.data['layout'] ?? 'text_only';
         final linkUrl = message.data['link_url'];
         final linkButtonText = message.data['link_button_text'];
-        final imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'];
+        final imageUrl =
+            message.notification?.android?.imageUrl ??
+            message.data['image_url'];
         final backgroundImage = message.data['background_image'];
 
         final displayMode = message.data['display_mode'];
-        final type = message.data['type']?.toString().toUpperCase() ?? 'GENERAL';
-        
+        final type =
+            message.data['type']?.toString().toUpperCase() ?? 'GENERAL';
+
         final router = ref.read(routerProvider);
         final currentPath = router.routerDelegate.currentConfiguration.uri.path;
-        
-        final isExcludedScreen = currentPath == '/notifications' || 
-                                 currentPath == '/profile' || 
-                                 currentPath == '/settings';
 
-        final notifId = message.data['notification_id'] ?? message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString();
-        
+        final isExcludedScreen =
+            currentPath == '/notifications' ||
+            currentPath == '/profile' ||
+            currentPath == '/settings';
+
+        final notifId =
+            message.data['notification_id'] ??
+            message.messageId ??
+            DateTime.now().millisecondsSinceEpoch.toString();
+
         final localCache = ref.read(localCacheServiceProvider);
         if (localCache.getProcessedNotifications().contains(notifId)) {
-          debugPrint('[FCM] Notification $notifId already processed. Ignoring duplicate.');
+          debugPrint(
+            '[FCM] Notification $notifId already processed. Ignoring duplicate.',
+          );
           return;
         }
-        
+
         if (displayMode != 'silent' && !isExcludedScreen) {
           Duration? autoDismiss;
           if (displayMode == 'one_time') {
             autoDismiss = const Duration(seconds: 8);
           }
-          
+
           String priority = 'medium';
           if (type == 'EMERGENCY' || type == 'MAINTENANCE') {
             priority = 'critical';
-          } else if (layout == 'text_only' && title.length < 20 && body.length < 50) {
+          } else if (layout == 'text_only' &&
+              title.length < 20 &&
+              body.length < 50) {
             priority = 'low';
           }
 
@@ -183,7 +218,9 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
               rawPayload: message.data,
               onDismissed: () {
                 localCache.markNotificationProcessed(notifId);
-                debugPrint('[FCM] Notification $notifId dismissed and marked as processed.');
+                debugPrint(
+                  '[FCM] Notification $notifId dismissed and marked as processed.',
+                );
               },
             ),
           );
@@ -204,9 +241,7 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
       themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
       builder: (context, child) {
-        return ConnectivityWrapper(
-          child: child ?? const SizedBox.shrink(),
-        );
+        return ConnectivityWrapper(child: child ?? const SizedBox.shrink());
       },
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       locale: locale,
@@ -216,11 +251,7 @@ class _ShreshtStudentAppState extends ConsumerState<ShreshtStudentApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('hi'),
-        Locale('gu'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('hi'), Locale('gu')],
     );
   }
 }

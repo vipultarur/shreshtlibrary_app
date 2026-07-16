@@ -27,16 +27,18 @@ class NotificationCard extends ConsumerWidget {
 
   void _launchUrl(BuildContext context, String url) async {
     if (url.isEmpty) return;
-    
-    if (url.startsWith('/') && !url.contains('.pdf') && !url.startsWith('/media/')) {
+
+    if (url.startsWith('/') &&
+        !url.contains('.pdf') &&
+        !url.startsWith('/media/')) {
       GoRouter.of(context).push(url);
     } else {
       String finalUrl = url;
       if (url.startsWith('/')) {
-         final baseUrl = AppConfig.apiBaseUrl.endsWith('/') 
-             ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1) 
-             : AppConfig.apiBaseUrl;
-         finalUrl = '$baseUrl$url';
+        final baseUrl = AppConfig.apiBaseUrl.endsWith('/')
+            ? AppConfig.apiBaseUrl.substring(0, AppConfig.apiBaseUrl.length - 1)
+            : AppConfig.apiBaseUrl;
+        finalUrl = '$baseUrl$url';
       }
       if (await canLaunchUrlString(finalUrl)) {
         await launchUrlString(finalUrl, mode: LaunchMode.externalApplication);
@@ -49,7 +51,9 @@ class NotificationCard extends ConsumerWidget {
     try {
       final dateTime = DateTime.parse(dateString).toLocal();
       final now = DateTime.now();
-      if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
+      if (dateTime.year == now.year &&
+          dateTime.month == now.month &&
+          dateTime.day == now.day) {
         return DateFormat('h:mm a').format(dateTime);
       }
       return DateFormat('MMM dd, h:mm a').format(dateTime);
@@ -71,23 +75,46 @@ class NotificationCard extends ConsumerWidget {
 
     final titleLower = item.title.toLowerCase();
     final typeLower = item.type.toLowerCase();
-    
-    if (typeLower.contains('fee') || typeLower.contains('payment') || titleLower.contains('fee') || titleLower.contains('payment') || titleLower.contains('purchase') || titleLower.contains('off ')) {
+
+    if (typeLower.contains('fee') ||
+        typeLower.contains('payment') ||
+        titleLower.contains('fee') ||
+        titleLower.contains('payment') ||
+        titleLower.contains('purchase') ||
+        titleLower.contains('off ')) {
       icon = Icons.local_activity_rounded;
       iconColor = isDark ? Colors.redAccent.shade100 : Colors.red.shade500;
-      bgColor = isDark ? Colors.red.shade900.withValues(alpha: 0.3) : Colors.red.shade50;
-    } else if (typeLower.contains('attendance') || titleLower.contains('attendance') || titleLower.contains('success')) {
+      bgColor = isDark
+          ? Colors.red.shade900.withValues(alpha: 0.3)
+          : Colors.red.shade50;
+    } else if (typeLower.contains('attendance') ||
+        titleLower.contains('attendance') ||
+        titleLower.contains('success')) {
       icon = Icons.chair_alt_rounded;
       iconColor = isDark ? Colors.green.shade300 : Colors.green.shade600;
-      bgColor = isDark ? Colors.green.shade900.withValues(alpha: 0.3) : Colors.green.shade50;
-    } else if (typeLower.contains('alert') || typeLower.contains('warning') || titleLower.contains('device') || titleLower.contains('alert') || titleLower.contains('absent') || titleLower.contains('warning')) {
+      bgColor = isDark
+          ? Colors.green.shade900.withValues(alpha: 0.3)
+          : Colors.green.shade50;
+    } else if (typeLower.contains('alert') ||
+        typeLower.contains('warning') ||
+        titleLower.contains('device') ||
+        titleLower.contains('alert') ||
+        titleLower.contains('absent') ||
+        titleLower.contains('warning')) {
       icon = Icons.priority_high_rounded;
       iconColor = isDark ? Colors.orange.shade300 : Colors.orange.shade600;
-      bgColor = isDark ? Colors.orange.shade900.withValues(alpha: 0.3) : Colors.orange.shade50;
-    } else if (typeLower.contains('event') || typeLower.contains('holiday') || titleLower.contains('event') || titleLower.contains('holiday')) {
+      bgColor = isDark
+          ? Colors.orange.shade900.withValues(alpha: 0.3)
+          : Colors.orange.shade50;
+    } else if (typeLower.contains('event') ||
+        typeLower.contains('holiday') ||
+        titleLower.contains('event') ||
+        titleLower.contains('holiday')) {
       icon = Icons.celebration_rounded;
       iconColor = isDark ? Colors.purple.shade300 : Colors.purple.shade600;
-      bgColor = isDark ? Colors.purple.shade900.withValues(alpha: 0.3) : Colors.purple.shade50;
+      bgColor = isDark
+          ? Colors.purple.shade900.withValues(alpha: 0.3)
+          : Colors.purple.shade50;
     }
 
     return InkWell(
@@ -96,7 +123,11 @@ class NotificationCard extends ConsumerWidget {
         context.push('/notifications/${item.id}', extra: item);
       },
       child: Container(
-        color: isUnread ? (isDark ? Colors.white10 : Colors.blue.shade50.withValues(alpha: 0.3)) : Colors.transparent,
+        color: isUnread
+            ? (isDark
+                  ? Colors.white10
+                  : Colors.blue.shade50.withValues(alpha: 0.3))
+            : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,17 +135,17 @@ class NotificationCard extends ConsumerWidget {
             // Unread Dot
             SizedBox(
               width: 16,
-              child: isUnread 
-                ? Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(top: 18),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                  )
-                : const SizedBox(height: 42),
+              child: isUnread
+                  ? Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.only(top: 18),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                  : const SizedBox(height: 42),
             ),
             const SizedBox(width: 8),
             // Squircle Icon
@@ -152,17 +183,22 @@ class NotificationCard extends ConsumerWidget {
                       ),
                     ),
                   ],
-                  if (item.images.isNotEmpty || item.backgroundImage != null) ...[
-                     const SizedBox(height: 12),
-                     ClipRRect(
-                       borderRadius: BorderRadius.circular(12),
-                       child: Image.network(
-                         item.images.isNotEmpty ? item.images.first : item.backgroundImage!,
-                         height: item.layout == 'half_image' ? 120 : (item.layout == 'background_image' ? 240 : 180),
-                         width: double.infinity,
-                         fit: BoxFit.cover,
-                       ),
-                     ),
+                  if (item.images.isNotEmpty ||
+                      item.backgroundImage != null) ...[
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        item.images.isNotEmpty
+                            ? item.images.first
+                            : item.backgroundImage!,
+                        height: item.layout == 'half_image'
+                            ? 120
+                            : (item.layout == 'background_image' ? 240 : 180),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 8),
                   Text(

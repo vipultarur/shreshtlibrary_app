@@ -5,13 +5,7 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
-enum StudySessionStatus {
-  idle,
-  starting,
-  active,
-  stopping,
-  error
-}
+enum StudySessionStatus { idle, starting, active, stopping, error }
 
 class StudySessionState {
   final StudySessionStatus status;
@@ -51,7 +45,8 @@ class StudySessionState {
       errorMessage: errorMessage ?? this.errorMessage,
       currentSession: currentSession ?? this.currentSession,
       isPaused: isPaused ?? this.isPaused,
-      verificationRemaining: verificationRemaining ?? this.verificationRemaining,
+      verificationRemaining:
+          verificationRemaining ?? this.verificationRemaining,
       pausedSeconds: pausedSeconds ?? this.pausedSeconds,
     );
   }
@@ -59,7 +54,7 @@ class StudySessionState {
 
 class StudySessionNotifier extends Notifier<StudySessionState> {
   StreamSubscription<Map<String, dynamic>?>? _updateSub;
-  
+
   @override
   StudySessionState build() {
     _init();
@@ -71,17 +66,20 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     try {
       _setupServiceListener();
       final api = ref.read(studentApiProvider);
       final session = await api.getCurrentSession();
-      
+
       if (session != null && session.isActive) {
         final startTime = DateTime.parse(session.startTime).toLocal();
-        await prefs.setString('study_session_start', startTime.toIso8601String());
+        await prefs.setString(
+          'study_session_start',
+          startTime.toIso8601String(),
+        );
         await prefs.setInt('study_session_id', session.id);
-        
+
         state = state.copyWith(
           status: StudySessionStatus.active,
           startTime: startTime,
@@ -94,7 +92,11 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
         await prefs.remove('study_session_start');
         await prefs.remove('study_session_id');
         await ref.read(studySessionServiceProvider).stopService();
-        state = state.copyWith(status: StudySessionStatus.idle, startTime: null, currentSession: null);
+        state = state.copyWith(
+          status: StudySessionStatus.idle,
+          startTime: null,
+          currentSession: null,
+        );
       }
     } catch (e) {
       // Fallback to local storage if API call fails
@@ -117,9 +119,10 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
       if (event != null) {
         final int elapsedSecs = (event['elapsed'] as num?)?.toInt() ?? 0;
         final bool isPaused = (event['is_paused'] as bool?) ?? false;
-        final int verificationRemaining = (event['remaining_verification_seconds'] as num?)?.toInt() ?? 0;
+        final int verificationRemaining =
+            (event['remaining_verification_seconds'] as num?)?.toInt() ?? 0;
         final int pSeconds = (event['paused_seconds'] as num?)?.toInt() ?? 0;
-        
+
         state = state.copyWith(
           elapsed: Duration(seconds: elapsedSecs),
           isPaused: isPaused,
@@ -131,22 +134,26 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
   }
 
   Future<void> startSession() async {
-    if (state.status == StudySessionStatus.starting || state.status == StudySessionStatus.active) {
+    if (state.status == StudySessionStatus.starting ||
+        state.status == StudySessionStatus.active) {
       return;
     }
-    
-    state = state.copyWith(status: StudySessionStatus.starting, errorMessage: null);
+
+    state = state.copyWith(
+      status: StudySessionStatus.starting,
+      errorMessage: null,
+    );
 
     try {
       final api = ref.read(studentApiProvider);
       final session = await api.startStudySession();
-      
+
       final prefs = await SharedPreferences.getInstance();
       final startTime = DateTime.parse(session.startTime).toLocal();
-      
+
       await prefs.setString('study_session_start', startTime.toIso8601String());
       await prefs.setInt('study_session_id', session.id);
-      
+
       state = state.copyWith(
         status: StudySessionStatus.active,
         startTime: startTime,
@@ -154,9 +161,8 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
         elapsed: Duration.zero,
         isPaused: false,
       );
-      
+
       await ref.read(studySessionServiceProvider).startService();
-      
     } catch (e) {
       state = state.copyWith(
         status: StudySessionStatus.error,
@@ -165,7 +171,10 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
       Future.delayed(const Duration(seconds: 3), () {
         try {
           if (state.status == StudySessionStatus.error) {
-            state = state.copyWith(status: StudySessionStatus.idle, errorMessage: null);
+            state = state.copyWith(
+              status: StudySessionStatus.idle,
+              errorMessage: null,
+            );
           }
         } catch (_) {}
       });
@@ -173,7 +182,8 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
   }
 
   Future<void> stopSession() async {
-    if (state.status == StudySessionStatus.stopping || state.status == StudySessionStatus.idle) {
+    if (state.status == StudySessionStatus.stopping ||
+        state.status == StudySessionStatus.idle) {
       return;
     }
 
@@ -183,22 +193,22 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
       final api = ref.read(studentApiProvider);
       final durationMinutes = state.elapsed.inMinutes;
       final prefs = await SharedPreferences.getInstance();
-      
+
       final pausedSeconds = prefs.getInt('paused_seconds') ?? 0;
       final pausedMinutes = (pausedSeconds / 60).floor();
-      
+
       await api.stopStudySession(durationMinutes, pausedMinutes: pausedMinutes);
-      
+
       await prefs.remove('study_session_start');
       await prefs.remove('study_session_id');
       await prefs.remove('last_motion_detected');
       await prefs.remove('paused_seconds');
       await prefs.remove('is_paused');
-      
+
       await ref.read(studySessionServiceProvider).stopService();
-      
+
       ref.invalidate(studyHistoryProvider);
-      
+
       state = state.copyWith(
         status: StudySessionStatus.idle,
         startTime: null,
@@ -208,13 +218,17 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
     } catch (e) {
       state = state.copyWith(
         status: StudySessionStatus.error,
-        errorMessage: 'Failed to stop session. Ensure you have network connectivity.',
+        errorMessage:
+            'Failed to stop session. Ensure you have network connectivity.',
       );
       // Fallback: we still allow them to try again
       Future.delayed(const Duration(seconds: 3), () {
         try {
           if (state.status == StudySessionStatus.error) {
-            state = state.copyWith(status: StudySessionStatus.active, errorMessage: null);
+            state = state.copyWith(
+              status: StudySessionStatus.active,
+              errorMessage: null,
+            );
           }
         } catch (_) {}
       });
@@ -222,7 +236,10 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
   }
 }
 
-final studySessionProvider = NotifierProvider<StudySessionNotifier, StudySessionState>(StudySessionNotifier.new);
+final studySessionProvider =
+    NotifierProvider<StudySessionNotifier, StudySessionState>(
+      StudySessionNotifier.new,
+    );
 
 final studyHistoryProvider = StreamProvider<List<StudySession>>((ref) {
   final api = ref.watch(studentApiProvider);

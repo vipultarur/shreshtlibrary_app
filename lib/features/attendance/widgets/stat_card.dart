@@ -46,7 +46,7 @@ class StatCard extends StatelessWidget {
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 16, 
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
                       color: theme.textTheme.bodyLarge?.color,
                     ),
@@ -54,8 +54,10 @@ class StatCard extends StatelessWidget {
                   Text(
                     label,
                     style: TextStyle(
-                      fontSize: 10, 
-                      color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8), 
+                      fontSize: 10,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.8,
+                      ),
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,

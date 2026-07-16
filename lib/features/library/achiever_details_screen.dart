@@ -4,11 +4,7 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 class AchieverDetailsScreen extends StatelessWidget {
-  const AchieverDetailsScreen({
-    super.key,
-    this.id,
-    this.achiever,
-  });
+  const AchieverDetailsScreen({super.key, this.id, this.achiever});
 
   final String? id;
   final Achiever? achiever;
@@ -26,10 +22,7 @@ class AchieverDetailsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: const CommonAppBar(
-        title: '',
-        transparent: true,
-      ),
+      appBar: const CommonAppBar(title: '', transparent: true),
       extendBodyBehindAppBar: true,
       body: SingleChildScrollView(
         child: Column(
@@ -46,7 +39,8 @@ class AchieverDetailsScreen extends StatelessWidget {
                       ? DecorationImage(
                           image: CachedNetworkImageProvider(
                             achiever!.photo!,
-                            errorListener: (err) => debugPrint('Image error: $err'),
+                            errorListener: (err) =>
+                                debugPrint('Image error: $err'),
                           ),
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
@@ -54,7 +48,11 @@ class AchieverDetailsScreen extends StatelessWidget {
                       : null,
                 ),
                 child: (achiever!.photo == null || achiever!.photo!.isEmpty)
-                    ? Icon(Icons.emoji_events, size: 120, color: theme.colorScheme.primary.withValues(alpha: 0.5))
+                    ? Icon(
+                        Icons.emoji_events,
+                        size: 120,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                      )
                     : Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -71,14 +69,16 @@ class AchieverDetailsScreen extends StatelessWidget {
                       ),
               ),
             ),
-            
+
             // Details Section
             Transform.translate(
               offset: const Offset(0, -40),
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(40),
+                  ),
                 ),
                 padding: const EdgeInsets.all(32),
                 child: Column(
@@ -107,15 +107,24 @@ class AchieverDetailsScreen extends StatelessWidget {
                       runSpacing: 12,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.military_tech, color: theme.colorScheme.primary, size: 20),
+                              Icon(
+                                Icons.military_tech,
+                                color: theme.colorScheme.primary,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 achiever!.achievement,
@@ -128,15 +137,24 @@ class AchieverDetailsScreen extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                            color: theme.colorScheme.secondary.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.calendar_month, color: theme.colorScheme.secondary, size: 20),
+                              Icon(
+                                Icons.calendar_month,
+                                color: theme.colorScheme.secondary,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 achiever!.year.toString(),
@@ -150,8 +168,9 @@ class AchieverDetailsScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
-                    if (achiever!.goal != null && achiever!.goal!.isNotEmpty) ...[
+
+                    if (achiever!.goal != null &&
+                        achiever!.goal!.isNotEmpty) ...[
                       const SizedBox(height: 40),
                       Text(
                         'Journey & Goal',
@@ -163,16 +182,26 @@ class AchieverDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.grey.shade900 : theme.colorScheme.primary.withValues(alpha: 0.05),
+                          color: isDark
+                              ? Colors.grey.shade900
+                              : theme.colorScheme.primary.withValues(
+                                  alpha: 0.05,
+                                ),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.format_quote, color: theme.colorScheme.primary, size: 32),
+                            Icon(
+                              Icons.format_quote,
+                              color: theme.colorScheme.primary,
+                              size: 32,
+                            ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
@@ -180,7 +209,9 @@ class AchieverDetailsScreen extends StatelessWidget {
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   height: 1.6,
                                   fontStyle: FontStyle.italic,
-                                  color: isDark ? Colors.white70 : Colors.black87,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black87,
                                 ),
                               ),
                             ),
@@ -188,7 +219,7 @@ class AchieverDetailsScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                    
+
                     const SizedBox(height: 40),
                     Center(
                       child: Text(

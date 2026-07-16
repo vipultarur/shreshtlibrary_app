@@ -72,22 +72,37 @@ class AuthTextField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.normal,
+            ),
             errorText: errorText,
             filled: true,
             fillColor: theme.colorScheme.primaryContainer,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? theme.dividerColor, width: 1.5),
+              borderSide: BorderSide(
+                color: borderColor ?? theme.dividerColor,
+                width: 1.5,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? theme.dividerColor, width: 1.5),
+              borderSide: BorderSide(
+                color: borderColor ?? theme.dividerColor,
+                width: 1.5,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor ?? theme.colorScheme.primary, width: 2),
+              borderSide: BorderSide(
+                color: borderColor ?? theme.colorScheme.primary,
+                width: 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -99,7 +114,10 @@ class AuthTextField extends StatelessWidget {
             ),
             suffixIcon: suffixIcon != null
                 ? IconButton(
-                    icon: Icon(suffixIcon, color: iconColor ?? Colors.grey.shade600),
+                    icon: Icon(
+                      suffixIcon,
+                      color: iconColor ?? Colors.grey.shade600,
+                    ),
                     onPressed: onSuffixTap,
                   )
                 : null,

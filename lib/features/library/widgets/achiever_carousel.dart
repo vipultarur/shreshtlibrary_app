@@ -33,8 +33,14 @@ class AchieverCarousel extends StatelessWidget {
                 children: [
                   achiever.photo == null
                       ? Container(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                          child: const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1),
+                          child: const Icon(
+                            Icons.emoji_events,
+                            size: 64,
+                            color: Colors.amber,
+                          ),
                         )
                       : CachedNetworkImage(
                           imageUrl: achiever.photo!,

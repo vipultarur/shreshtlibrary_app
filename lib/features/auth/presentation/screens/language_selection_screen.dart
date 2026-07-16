@@ -9,10 +9,12 @@ class LanguageSelectionScreen extends ConsumerStatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  ConsumerState<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  ConsumerState<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
-class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScreen> {
+class _LanguageSelectionScreenState
+    extends ConsumerState<LanguageSelectionScreen> {
   String _selectedLangCode = 'en';
 
   @override
@@ -51,7 +53,9 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
 
     // We display dual language titles/subtitles on this screen to ensure it is clear to all speakers before selection.
     final title = l10n?.lang_select_title ?? "Choose Language\nभाषा चुनें";
-    final subtitle = l10n?.lang_select_subtitle ?? "Select your preferred language to continue\nआगे बढ़ने के लिए अपनी पसंदीदा भाषा चुनें";
+    final subtitle =
+        l10n?.lang_select_subtitle ??
+        "Select your preferred language to continue\nआगे बढ़ने के लिए अपनी पसंदीदा भाषा चुनें";
     final btnText = l10n?.btn_continue ?? "Continue";
 
     return AuthLayout(
@@ -94,10 +98,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
             ),
             child: Text(
               btnText,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
             ),
           ),
         ],
@@ -114,7 +115,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isSelected = _selectedLangCode == code;
-    
+
     return InkWell(
       onTap: () => _onLanguageSelected(code),
       borderRadius: BorderRadius.circular(16),
@@ -122,13 +123,13 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? theme.colorScheme.primary.withValues(alpha: 0.1)
               : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
-                ? theme.colorScheme.primary 
+            color: isSelected
+                ? theme.colorScheme.primary
                 : (isDark ? theme.dividerColor : Colors.grey.shade300),
             width: 2,
           ),
@@ -145,10 +146,7 @@ class _LanguageSelectionScreenState extends ConsumerState<LanguageSelectionScree
                   color: isDark ? theme.dividerColor : Colors.grey.shade200,
                 ),
               ),
-              child: Text(
-                flag,
-                style: const TextStyle(fontSize: 22),
-              ),
+              child: Text(flag, style: const TextStyle(fontSize: 22)),
             ),
             const SizedBox(width: 16),
             // Text Label

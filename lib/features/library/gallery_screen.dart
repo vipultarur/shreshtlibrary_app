@@ -13,7 +13,7 @@ class GalleryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return PageScaffold(
       title: l10n.library_gallery ?? 'Gallery', // fallback just in case
       onRefresh: () async {
@@ -23,7 +23,9 @@ class GalleryScreen extends ConsumerWidget {
         value: ref.watch(galleryImagesProvider),
         builder: (images) {
           if (images.isEmpty) {
-            return Center(child: Text(l10n.library_no_gallery_images ?? 'No images found.'));
+            return Center(
+              child: Text(l10n.library_no_gallery_images ?? 'No images found.'),
+            );
           }
 
           return MasonryGridView.count(
@@ -48,11 +50,15 @@ class GalleryScreen extends ConsumerWidget {
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
                       height: 150, // default placeholder height
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                     ),
                     errorWidget: (context, url, error) => Container(
                       height: 150,
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       child: const Icon(Icons.broken_image),
                     ),
                   ),

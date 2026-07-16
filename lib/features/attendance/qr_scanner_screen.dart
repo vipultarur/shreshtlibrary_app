@@ -19,14 +19,14 @@ class QrScannerScreen extends ConsumerStatefulWidget {
 
 class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
   bool _busy = false;
-  
+
   // Custom states
   String? _errorTitle;
   String? _errorMessage;
   bool _isSuccess = false;
   String? _successStatus;
   String? _successTime;
-  
+
   // Mobile scanner controller to handle camera states if needed
   late final MobileScannerController _scannerController;
 
@@ -59,60 +59,67 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
       _errorTitle = null;
       _errorMessage = null;
     });
-    
+
     try {
       final result = await ref.read(studentApiProvider).scanQr(value.trim());
       ref.invalidate(attendanceLogsProvider);
       ref.invalidate(dashboardProvider);
-      
+
       if (!mounted) return;
       setState(() {
         _isSuccess = true;
         _busy = false;
-        
+
         // Use result fields for the status badge
         String st = 'Present';
         if (result.lateMark) {
-            st = 'Arrived Late';
+          st = 'Arrived Late';
         }
         _successStatus = st;
         _successTime = result.timeIn;
       });
-      
     } on ApiFailure catch (failure) {
       if (!mounted) return;
-      
+
       final msg = failure.message.toLowerCase();
       String title = "Something Went Wrong";
       String message = "An unexpected error occurred. Please try again later.";
-      
+
       if (msg.contains('invalid') || msg.contains('not valid')) {
         title = "Invalid QR Code";
-        message = "This QR code is not valid. Please scan the QR code displayed by your library.";
+        message =
+            "This QR code is not valid. Please scan the QR code displayed by your library.";
       } else if (msg.contains('expire')) {
         title = "QR Code Expired";
         message = "This QR code has expired. Please scan the latest QR code.";
       } else if (msg.contains('not found')) {
         title = "QR Code Not Found";
-        message = "Unable to verify the QR code. Please try again with the current library QR code.";
+        message =
+            "Unable to verify the QR code. Please try again with the current library QR code.";
       } else if (msg.contains('already marked') || msg.contains('duplicate')) {
         title = "Attendance Already Recorded";
-        message = "Your attendance has already been recorded. Multiple scans are not allowed.";
+        message =
+            "Your attendance has already been recorded. Multiple scans are not allowed.";
       } else if (msg.contains('window closed') || msg.contains('not allowed')) {
         title = "Attendance Closed";
-        message = "Attendance can no longer be marked because the attendance window has ended.";
+        message =
+            "Attendance can no longer be marked because the attendance window has ended.";
       } else if (msg.contains('holiday')) {
         title = "Library Holiday";
-        message = "Attendance is not available today because the library is closed for a holiday.";
+        message =
+            "Attendance is not available today because the library is closed for a holiday.";
       } else if (msg.contains('inactive')) {
         title = "Attendance Not Allowed";
-        message = "Your account is currently inactive. Please contact the library administrator.";
+        message =
+            "Your account is currently inactive. Please contact the library administrator.";
       } else if (msg.contains('used')) {
         title = "QR Code Already Used";
-        message = "This QR code has already been used for your attendance today.";
+        message =
+            "This QR code has already been used for your attendance today.";
       } else if (msg.contains('unavailable') || msg.contains('server')) {
         title = "Server Unavailable";
-        message = "We're unable to process your attendance right now. Please try again shortly.";
+        message =
+            "We're unable to process your attendance right now. Please try again shortly.";
       } else if (msg.contains('internet') || msg.contains('connection')) {
         title = "No Internet Connection";
         message = "Please check your internet connection and try again.";
@@ -120,15 +127,24 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
         title = "Scan Failed";
         message = failure.message;
       }
-      
+
       _showError(title, message);
     } catch (e) {
       if (!mounted) return;
-      _showError("Something Went Wrong", "An unexpected error occurred. Please try again later.");
+      _showError(
+        "Something Went Wrong",
+        "An unexpected error occurred. Please try again later.",
+      );
     }
   }
 
-  Widget _buildMessageCard(String title, String message, {IconData? icon, Color? color, Widget? extra}) {
+  Widget _buildMessageCard(
+    String title,
+    String message, {
+    IconData? icon,
+    Color? color,
+    Widget? extra,
+  }) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(32),
@@ -151,17 +167,14 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            if (extra != null) ...[
-              const SizedBox(height: 32),
-              extra,
-            ],
+            if (extra != null) ...[const SizedBox(height: 32), extra],
             const SizedBox(height: 32),
             FilledButton(
               onPressed: () {
-                if (_isSuccess || 
-                    title == "Attendance Closed" || 
-                    title == "Library Holiday" || 
-                    title == "Attendance Already Recorded" || 
+                if (_isSuccess ||
+                    title == "Attendance Closed" ||
+                    title == "Library Holiday" ||
+                    title == "Attendance Already Recorded" ||
                     title == "Attendance Already Marked") {
                   context.pop();
                 } else {
@@ -174,10 +187,13 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                 }
               },
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
               ),
               child: Text(_isSuccess ? 'Done' : 'Try Again / Back'),
-            )
+            ),
           ],
         ),
       ),
@@ -187,7 +203,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final dashAsync = ref.watch(dashboardProvider);
-    
+
     return Scaffold(
       appBar: AppBar(title: const Text('Scan Attendance QR')),
       body: dashAsync.when(
@@ -216,20 +232,19 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
               color: Colors.red,
             );
           }
-          
+
           if (_isSuccess) {
             return _buildMessageCard(
               "Attendance Marked",
               "Your attendance has been marked successfully.",
               icon: Icons.check_circle,
               color: Colors.green,
-              extra: _successStatus != null ? StatusBadge(
-                status: _successStatus!,
-                time: _successTime,
-              ) : null,
+              extra: _successStatus != null
+                  ? StatusBadge(status: _successStatus!, time: _successTime)
+                  : null,
             );
           }
-          
+
           if (_errorTitle != null) {
             return _buildMessageCard(
               _errorTitle!,
@@ -242,11 +257,14 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
           return Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 color: Theme.of(context).colorScheme.surface,
                 width: double.infinity,
                 child: Text(
-                  _busy 
+                  _busy
                       ? "Please wait while we verify your QR code and mark your attendance."
                       : "Scan the QR code displayed by the library to mark your attendance.",
                   textAlign: TextAlign.center,
@@ -270,11 +288,18 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.camera_alt, size: 64, color: Colors.grey),
+                                const Icon(
+                                  Icons.camera_alt,
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(height: 16),
                                 const Text(
                                   "Camera Unavailable",
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
@@ -312,15 +337,18 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                                 padding: const EdgeInsets.all(16),
                                 iconSize: 28,
                                 color: isOn ? Colors.black : Colors.white,
-                                icon: Icon(isOn ? Icons.flash_on : Icons.flash_off),
-                                onPressed: () => _scannerController.toggleTorch(),
+                                icon: Icon(
+                                  isOn ? Icons.flash_on : Icons.flash_off,
+                                ),
+                                onPressed: () =>
+                                    _scannerController.toggleTorch(),
                               ),
                             );
                           },
                         ),
                       ),
                     ),
-                    if (_busy) 
+                    if (_busy)
                       Container(
                         color: Colors.black.withValues(alpha: 0.7),
                         child: const Center(
@@ -329,9 +357,19 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
                             children: [
                               CircularProgressIndicator(color: Colors.white),
                               SizedBox(height: 24),
-                              Text("Scanning...", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(
+                                "Scanning...",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               SizedBox(height: 8),
-                              Text("Please hold your phone steady while we scan.", style: TextStyle(color: Colors.white70)),
+                              Text(
+                                "Please hold your phone steady while we scan.",
+                                style: TextStyle(color: Colors.white70),
+                              ),
                             ],
                           ),
                         ),
@@ -343,7 +381,11 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => _buildMessageCard("Server Unavailable", "We're unable to process your attendance right now. Please try again shortly.", icon: Icons.wifi_off),
+        error: (err, stack) => _buildMessageCard(
+          "Server Unavailable",
+          "We're unable to process your attendance right now. Please try again shortly.",
+          icon: Icons.wifi_off,
+        ),
       ),
     );
   }

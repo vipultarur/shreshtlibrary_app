@@ -10,18 +10,16 @@ import 'core/services/study_session_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   final notificationService = NotificationService();
   await notificationService.init();
 
   final localCacheService = await LocalCacheService.init();
-  
+
   await StudySessionService().init();
-  
+
   runApp(
     ProviderScope(
       overrides: [

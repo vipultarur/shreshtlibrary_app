@@ -35,27 +35,28 @@ import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
 class ProtectedRoute extends ConsumerWidget {
-  const ProtectedRoute({
-    super.key,
-    required this.feature,
-    required this.child,
-  });
-  
+  const ProtectedRoute({super.key, required this.feature, required this.child});
+
   final String feature;
   final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
-    
+
     return dashboardAsync.when(
       data: (dashboard) {
-        if (dashboard.membershipStatus != 'EXPIRED' && dashboard.restrictedFeatures.contains(feature)) {
-          return RestrictedFeatureScreen(dashboard: dashboard, feature: feature);
+        if (dashboard.membershipStatus != 'EXPIRED' &&
+            dashboard.restrictedFeatures.contains(feature)) {
+          return RestrictedFeatureScreen(
+            dashboard: dashboard,
+            feature: feature,
+          );
         }
         return child;
       },
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) {
         final l10n = AppLocalizations.of(context);
         return Scaffold(
@@ -67,18 +68,26 @@ class ProtectedRoute extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.wifi_off, size: 64, color: Colors.redAccent),
+                    const Icon(
+                      Icons.wifi_off,
+                      size: 64,
+                      color: Colors.redAccent,
+                    ),
                     const SizedBox(height: 16),
                     Text(
-                      l10n?.err_failed_load_permissions ?? 'Failed to load permissions.',
+                      l10n?.err_failed_load_permissions ??
+                          'Failed to load permissions.',
                       style: Theme.of(context).textTheme.titleLarge,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      l10n?.err_check_connection ?? 'Please check your connection and try again.',
+                      l10n?.err_check_connection ??
+                          'Please check your connection and try again.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
@@ -103,7 +112,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ValueNotifier<Object?>(null);
-  
+
   ref.listen(authControllerProvider, (_, next) {
     notifier.value = next;
   });
@@ -119,7 +128,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasSelectedLang = cacheService.hasSelectedLanguage();
 
       // Language Select Guard
-      if (!hasSelectedLang && path != '/splash' && path != '/language-selection') {
+      if (!hasSelectedLang &&
+          path != '/splash' &&
+          path != '/language-selection') {
         return '/language-selection';
       }
 
@@ -137,7 +148,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/maintenance' ||
           path == '/splash' ||
           path == '/language-selection';
-      
+
       if (auth.isLoading) {
         if (path == '/splash' || path == '/language-selection') {
           return null;
@@ -147,13 +158,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth.isMaintenance) {
         return path == '/maintenance' ? null : '/maintenance';
       }
-      
+
       if (!auth.isAuthenticated && !publicPath) {
         final currentUrl = Uri.encodeComponent(state.uri.toString());
         return '/login?redirect_to=$currentUrl';
       }
-      
-      if (auth.isAuthenticated && (path == '/login' || path == '/register' || path == '/forgot-password' || path == '/verify-reset-otp' || path == '/reset-password')) {
+
+      if (auth.isAuthenticated &&
+          (path == '/login' ||
+              path == '/register' ||
+              path == '/forgot-password' ||
+              path == '/verify-reset-otp' ||
+              path == '/reset-password')) {
         final redirectTo = state.uri.queryParameters['redirect_to'];
         if (redirectTo != null && redirectTo.isNotEmpty) {
           return Uri.decodeComponent(redirectTo);
@@ -206,7 +222,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -268,10 +285,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/payments',
-        builder: (context, state) => const ProtectedRoute(
-          feature: 'payments',
-          child: PaymentsScreen(),
-        ),
+        builder: (context, state) =>
+            const ProtectedRoute(feature: 'payments', child: PaymentsScreen()),
       ),
       GoRoute(
         path: '/notifications',
@@ -311,7 +326,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/dashboard',
-        builder: (context, state) => const PlaceholderScreen(title: 'Dashboard'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Dashboard'),
       ),
       GoRoute(
         path: '/attendance/history',
@@ -338,7 +354,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/study/seat-booking/:seatId',
         builder: (context, state) => ProtectedRoute(
           feature: 'study',
-          child: PlaceholderScreen(title: 'Seat Booking', id: state.pathParameters['seatId']),
+          child: PlaceholderScreen(
+            title: 'Seat Booking',
+            id: state.pathParameters['seatId'],
+          ),
         ),
       ),
       GoRoute(
@@ -365,12 +384,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/payments/:id',
         builder: (context, state) => ProtectedRoute(
           feature: 'payments',
-          child: PlaceholderScreen(title: 'Payment Details', id: state.pathParameters['id']),
+          child: PlaceholderScreen(
+            title: 'Payment Details',
+            id: state.pathParameters['id'],
+          ),
         ),
       ),
       GoRoute(
         path: '/membership',
-        builder: (context, state) => const PlaceholderScreen(title: 'Membership'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Membership'),
       ),
       GoRoute(
         path: '/plans',
@@ -398,15 +421,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/privacy-policy',
-        builder: (context, state) => const PlaceholderScreen(title: 'Privacy Policy'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Privacy Policy'),
       ),
       GoRoute(
         path: '/terms-conditions',
-        builder: (context, state) => const PlaceholderScreen(title: 'Terms & Conditions'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Terms & Conditions'),
       ),
       GoRoute(
         path: '/events/:id',
-        builder: (context, state) => PlaceholderScreen(title: 'Event Details', id: state.pathParameters['id']),
+        builder: (context, state) => PlaceholderScreen(
+          title: 'Event Details',
+          id: state.pathParameters['id'],
+        ),
       ),
       GoRoute(
         path: '/profile/account',
@@ -427,4 +455,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-

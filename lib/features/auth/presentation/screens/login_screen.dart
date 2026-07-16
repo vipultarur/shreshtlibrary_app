@@ -7,6 +7,7 @@ import '../widgets/auth_layout.dart';
 import '../widgets/auth_text_field.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -55,10 +56,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleError(AuthState auth, String defaultMsg) {
     final errors = auth.fieldErrors ?? {};
     final nonField = errors['non_field_errors'] ?? errors['detail'];
-    
+
     setState(() {
       if (nonField != null) {
-        final msg = nonField is List ? nonField.first.toString() : nonField.toString();
+        final msg = nonField is List
+            ? nonField.first.toString()
+            : nonField.toString();
         _clientErrors['email'] = msg;
         _clientErrors['password'] = msg;
       } else if (errors.isEmpty) {
@@ -89,7 +92,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (isMobile && !RegExp(r'^[0-9]{10}$').hasMatch(input)) {
         _clientErrors['email'] = l10n.err_invalid_mobile;
         hasError = true;
-      } else if (!isMobile && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input)) {
+      } else if (!isMobile &&
+          !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(input)) {
         _clientErrors['email'] = l10n.err_invalid_email;
         hasError = true;
       }
@@ -107,12 +111,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _busy = true);
     final controller = ref.read(authControllerProvider.notifier);
-    
+
     final isMobile = RegExp(r'^[0-9]+$').hasMatch(input);
     final ok = isMobile
         ? await controller.loginMobile(input, password)
         : await controller.loginEmail(input, password);
-        
+
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
@@ -146,7 +150,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String? errorFor(String field) {
       if (_clientErrors.containsKey(field)) return _clientErrors[field];
       final fieldError = fieldErrors[field];
-      if (fieldError is List && fieldError.isNotEmpty) return fieldError.first.toString();
+      if (fieldError is List && fieldError.isNotEmpty)
+        return fieldError.first.toString();
       return fieldError?.toString();
     }
 
@@ -174,7 +179,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             hint: l10n.login_email_mobile_hint,
             controller: _email,
             suffixIcon: Icons.person_outline,
-            errorText: errorFor('email') ?? errorFor('mobile') ?? errorFor('username'),
+            errorText:
+                errorFor('email') ?? errorFor('mobile') ?? errorFor('username'),
             onChanged: (val) {
               if (_clientErrors.isNotEmpty) {
                 setState(() => _clientErrors.clear());
@@ -187,8 +193,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             hint: l10n.login_password_hint,
             controller: _password,
             obscureText: _obscurePassword,
-            suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
+            suffixIcon: _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            onSuffixTap: () =>
+                setState(() => _obscurePassword = !_obscurePassword),
             errorText: errorFor('password'),
             onChanged: (val) {
               if (_clientErrors.containsKey('password')) {
@@ -206,14 +215,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Checkbox(
                       value: _rememberMe,
-                      onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                      onChanged: (v) =>
+                          setState(() => _rememberMe = v ?? false),
                       activeColor: theme.colorScheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                     Flexible(
                       child: Text(
-                        l10n.login_remember_me, 
-                        style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color),
+                        l10n.login_remember_me,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -225,12 +240,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   final state = GoRouterState.of(context);
                   final redirectTo = state.uri.queryParameters['redirect_to'];
                   if (redirectTo != null) {
-                    context.go('/forgot-password?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                    context.go(
+                      '/forgot-password?redirect_to=${Uri.encodeComponent(redirectTo)}',
+                    );
                   } else {
                     context.go('/forgot-password');
                   }
                 },
-                child: Text(l10n.login_forgot_pwd, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                child: Text(
+                  l10n.login_forgot_pwd,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -250,26 +273,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: theme.colorScheme.onPrimary,
+                      strokeWidth: 2,
+                    ),
                   )
-                : Text(l10n.login_btn, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                : Text(
+                    l10n.login_btn,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(l10n.login_no_acc, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6))),
+              Text(
+                l10n.login_no_acc,
+                style: TextStyle(
+                  color: theme.textTheme.bodyLarge?.color?.withValues(
+                    alpha: 0.6,
+                  ),
+                ),
+              ),
               TextButton(
                 onPressed: () {
                   final state = GoRouterState.of(context);
                   final redirectTo = state.uri.queryParameters['redirect_to'];
                   if (redirectTo != null) {
-                    context.go('/register?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                    context.go(
+                      '/register?redirect_to=${Uri.encodeComponent(redirectTo)}',
+                    );
                   } else {
                     context.go('/register');
                   }
                 },
-                child: Text(l10n.login_sign_up, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                child: Text(
+                  l10n.login_sign_up,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

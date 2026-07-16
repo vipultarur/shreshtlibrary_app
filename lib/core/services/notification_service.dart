@@ -18,23 +18,26 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 String _addIconToTitle(String title, String body, String type) {
   final lowerTitle = title.toLowerCase();
   final lowerBody = body.toLowerCase();
-  
+
   if (lowerTitle.contains('absent') || lowerBody.contains('absent')) {
     return '❌ $title';
-  } else if (lowerTitle.contains('alert') || lowerBody.contains('alert') || lowerTitle.contains('warning')) {
+  } else if (lowerTitle.contains('alert') ||
+      lowerBody.contains('alert') ||
+      lowerTitle.contains('warning')) {
     return '🚨 $title';
   } else if (lowerTitle.contains('present') || lowerBody.contains('present')) {
     return '✅ $title';
   } else if (type.toUpperCase() == 'ATTENDANCE') {
     return '📅 $title';
-  } else if (type.toUpperCase() == 'BILLING' || type.toUpperCase() == 'EXPIRY') {
+  } else if (type.toUpperCase() == 'BILLING' ||
+      type.toUpperCase() == 'EXPIRY') {
     return '💰 $title';
   } else if (type.toUpperCase() == 'ACCOUNT') {
     return '👤 $title';
   } else if (lowerTitle.contains('success')) {
     return '✅ $title';
   }
-  
+
   return '🔔 $title';
 }
 
@@ -46,14 +49,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final plugin = FlutterLocalNotificationsPlugin();
-  const androidSettings =
-      AndroidInitializationSettings('ic_stat_nlogo_v4');
+  const androidSettings = AndroidInitializationSettings('ic_stat_nlogo_v4');
   await plugin.initialize(
-      settings: const InitializationSettings(android: androidSettings));
+    settings: const InitializationSettings(android: androidSettings),
+  );
 
-  final androidPlugin =
-      plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+  final androidPlugin = plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
       'admin_notifications',
@@ -67,38 +71,48 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   );
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
-      'attendance_notifications', 'Attendance Notifications',
+      'attendance_notifications',
+      'Attendance Notifications',
       description: 'Notifications related to attendance',
-      importance: Importance.max, playSound: true, enableVibration: true,
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
     ),
   );
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
-      'billing_notifications', 'Billing Notifications',
+      'billing_notifications',
+      'Billing Notifications',
       description: 'Notifications related to billing and payments',
-      importance: Importance.max, playSound: true, enableVibration: true,
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
     ),
   );
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
-      'account_notifications', 'Account Notifications',
+      'account_notifications',
+      'Account Notifications',
       description: 'Notifications related to account status',
-      importance: Importance.max, playSound: true, enableVibration: true,
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
     ),
   );
 
   String title =
       message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
-  final String body =
-      message.notification?.body ?? message.data['body'] ?? '';
+  final String body = message.notification?.body ?? message.data['body'] ?? '';
   final String subtitle = message.data['subtitle'] ?? '';
   final String imageUrl =
-      message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
+      message.notification?.android?.imageUrl ??
+      message.data['image_url'] ??
+      '';
   final String linkUrl = message.data['link_url'] ?? '';
   final String linkButtonText =
       (message.data['link_button_text'] ?? '').isNotEmpty
-          ? message.data['link_button_text']!
-          : 'View Details';
+      ? message.data['link_button_text']!
+      : 'View Details';
 
   final String type = message.data['type'] ?? 'GENERAL';
   title = _addIconToTitle(title, body, type);
@@ -218,11 +232,13 @@ Future<void> _showRichNotification({
 
   final List<AndroidNotificationAction> actions = [];
   if (linkUrl.isNotEmpty) {
-    actions.add(AndroidNotificationAction(
-      'open_link:$linkUrl',
-      linkButtonText,
-      showsUserInterface: true,
-    ));
+    actions.add(
+      AndroidNotificationAction(
+        'open_link:$linkUrl',
+        linkButtonText,
+        showsUserInterface: true,
+      ),
+    );
   }
 
   await plugin.show(
@@ -266,68 +282,67 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-
   Stream<String> get actionStream => _actionStreamController.stream;
   Stream<RemoteMessage> get foregroundMessageStream =>
       _foregroundMessageController.stream;
 
   static const AndroidNotificationChannel _adminChannel =
       AndroidNotificationChannel(
-    'admin_notifications',
-    'Admin Notifications',
-    description: 'Notifications from the admin',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-    showBadge: true,
-  );
-
+        'admin_notifications',
+        'Admin Notifications',
+        description: 'Notifications from the admin',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        showBadge: true,
+      );
 
   static const AndroidNotificationChannel _defaultChannel =
       AndroidNotificationChannel(
-    'default_notifications',
-    'General Notifications',
-    description: 'General notifications like payments',
-    importance: Importance.high,
-    playSound: true,
-    enableVibration: true,
-  );
+        'default_notifications',
+        'General Notifications',
+        description: 'General notifications like payments',
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
+      );
 
   static const AndroidNotificationChannel _attendanceChannel =
       AndroidNotificationChannel(
-    'attendance_notifications',
-    'Attendance Notifications',
-    description: 'Notifications related to attendance',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-  );
+        'attendance_notifications',
+        'Attendance Notifications',
+        description: 'Notifications related to attendance',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      );
 
   static const AndroidNotificationChannel _billingChannel =
       AndroidNotificationChannel(
-    'billing_notifications',
-    'Billing Notifications',
-    description: 'Notifications related to billing and payments',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-  );
+        'billing_notifications',
+        'Billing Notifications',
+        description: 'Notifications related to billing and payments',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      );
 
   static const AndroidNotificationChannel _accountChannel =
       AndroidNotificationChannel(
-    'account_notifications',
-    'Account Notifications',
-    description: 'Notifications related to account status',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-  );
+        'account_notifications',
+        'Account Notifications',
+        description: 'Notifications related to account status',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      );
 
   Future<void> init() async {
     try {
       try {
         await Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform);
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
       } catch (_) {}
 
       // Register the background handler FIRST (before anything else)
@@ -339,8 +354,8 @@ class NotificationService {
       await flutterLocalNotificationsPlugin.initialize(
         settings: const InitializationSettings(android: androidSettings),
         onDidReceiveNotificationResponse: (NotificationResponse r) {
-          final id = r.actionId ??
-              (r.payload != null ? 'payload:${r.payload}' : null);
+          final id =
+              r.actionId ?? (r.payload != null ? 'payload:${r.payload}' : null);
           if (id != null) _actionStreamController.add(id);
         },
         onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
@@ -348,7 +363,8 @@ class NotificationService {
 
       final androidPlugin = flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
       if (androidPlugin != null) {
         await androidPlugin.createNotificationChannel(_adminChannel);
@@ -371,17 +387,17 @@ class NotificationService {
       // Ensure FCM delivers messages even when app is in foreground
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+            alert: true,
+            badge: true,
+            sound: true,
+          );
 
       // ── FOREGROUND handler ───────────────────────────────────────────────
       // When app is OPEN and a push arrives, handle it strictly via the GlobalOverlayService
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
         debugPrint('[FCM] Data: ${message.data}');
-       
+
         _foregroundMessageController.add(message);
         await showSystemNotification(message);
       });
@@ -391,8 +407,8 @@ class NotificationService {
         _handleMessageTap(message);
       });
 
-      final RemoteMessage? initialMessage =
-          await FirebaseMessaging.instance.getInitialMessage();
+      final RemoteMessage? initialMessage = await FirebaseMessaging.instance
+          .getInitialMessage();
       if (initialMessage != null) {
         debugPrint('[FCM] getInitialMessage: ${initialMessage.data}');
         _handleMessageTap(initialMessage);
@@ -411,13 +427,20 @@ class NotificationService {
   }
 
   void _handleMessageTap(RemoteMessage message) {
-    String title = message.notification?.title ?? message.data['title'] ?? 'Shresht Library';
-    final String body = message.notification?.body ?? message.data['body'] ?? '';
+    String title =
+        message.notification?.title ??
+        message.data['title'] ??
+        'Shresht Library';
+    final String body =
+        message.notification?.body ?? message.data['body'] ?? '';
     final String type = message.data['type'] ?? 'GENERAL';
     title = _addIconToTitle(title, body, type);
-    
-    final String imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
-    
+
+    final String imageUrl =
+        message.notification?.android?.imageUrl ??
+        message.data['image_url'] ??
+        '';
+
     final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
     final notificationMap = {
       'id': id,
@@ -428,8 +451,10 @@ class NotificationService {
       if (imageUrl.isNotEmpty) 'images': [imageUrl],
       ...message.data,
     };
-    
-    _actionStreamController.add('payload:notification_json:${jsonEncode(notificationMap)}');
+
+    _actionStreamController.add(
+      'payload:notification_json:${jsonEncode(notificationMap)}',
+    );
   }
 
   Future<void> showNotification({
@@ -462,7 +487,10 @@ class NotificationService {
   }
 
   Future<void> showSystemNotification(RemoteMessage message) async {
-    String title = message.notification?.title ?? message.data['title'] ?? 'New Notification';
+    String title =
+        message.notification?.title ??
+        message.data['title'] ??
+        'New Notification';
     final body = message.notification?.body ?? message.data['body'] ?? '';
     final type = message.data['type'] ?? 'GENERAL';
     title = _addIconToTitle(title, body, type);
@@ -492,7 +520,10 @@ class NotificationService {
         break;
     }
 
-    final String imageUrl = message.notification?.android?.imageUrl ?? message.data['image_url'] ?? '';
+    final String imageUrl =
+        message.notification?.android?.imageUrl ??
+        message.data['image_url'] ??
+        '';
 
     final notificationMap = {
       'id': DateTime.now().millisecondsSinceEpoch.remainder(100000),

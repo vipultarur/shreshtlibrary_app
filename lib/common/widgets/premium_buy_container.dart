@@ -12,16 +12,13 @@ class PremiumBuyContainer extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.tertiary,
-          ],
+          colors: [theme.colorScheme.primary, theme.colorScheme.tertiary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -42,7 +39,11 @@ class PremiumBuyContainer extends ConsumerWidget {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.workspace_premium, size: 48, color: Colors.amber),
+            child: const Icon(
+              Icons.workspace_premium,
+              size: 48,
+              color: Colors.amber,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -70,15 +71,24 @@ class PremiumBuyContainer extends ConsumerWidget {
               onPressed: () {
                 context.push('/payments');
               },
-              icon: Icon(Icons.arrow_forward_rounded, color: theme.colorScheme.primary),
+              icon: Icon(
+                Icons.arrow_forward_rounded,
+                color: theme.colorScheme.primary,
+              ),
               label: Text(
                 'View Plans',
-                style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
           ),

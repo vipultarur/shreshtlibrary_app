@@ -32,12 +32,20 @@ void showGalleryImageDialog(BuildContext context, GalleryImage image) {
                           placeholder: (context, url) => const SizedBox(
                             height: 100,
                             width: 100,
-                            child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                           errorWidget: (context, url, error) => const SizedBox(
                             height: 100,
                             width: 100,
-                            child: Icon(Icons.broken_image, size: 50, color: Colors.white),
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 50,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -52,7 +60,11 @@ void showGalleryImageDialog(BuildContext context, GalleryImage image) {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           onPressed: () => Navigator.of(context).pop(),
                           padding: const EdgeInsets.all(8),
                           constraints: const BoxConstraints(),
@@ -62,17 +74,25 @@ void showGalleryImageDialog(BuildContext context, GalleryImage image) {
                   ],
                 ),
               ),
-              if (image.caption != null && image.caption!.trim().isNotEmpty) ...[
+              if (image.caption != null &&
+                  image.caption!.trim().isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.75),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     image.caption!.trim(),
-                    style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),

@@ -101,7 +101,7 @@ class ScannerOverlayPainter extends CustomPainter {
 
     // Draw animated scan line
     final lineY = cutOutRect.top + (cutOutRect.height * animationValue);
-    
+
     // Draw the glowing gradient
     if (animationValue > 0.05) {
       final gradientHeight = 40.0;
@@ -121,11 +121,8 @@ class ScannerOverlayPainter extends CustomPainter {
           ],
         ).createShader(gradientRect)
         ..blendMode = BlendMode.srcOver;
-      
-      canvas.drawRect(
-        gradientRect.intersect(cutOutRect), 
-        gradientPaint,
-      );
+
+      canvas.drawRect(gradientRect.intersect(cutOutRect), gradientPaint);
     }
 
     // Draw the sharp scan line
@@ -133,7 +130,7 @@ class ScannerOverlayPainter extends CustomPainter {
       ..color = borderColor
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
-      
+
     canvas.drawLine(
       Offset(cutOutRect.left + 5, lineY),
       Offset(cutOutRect.right - 5, lineY),
@@ -142,7 +139,7 @@ class ScannerOverlayPainter extends CustomPainter {
 
     // Draw corners
     final path = Path();
-    
+
     // Top Left
     path.moveTo(cutOutRect.left, cutOutRect.top + borderLength);
     path.lineTo(cutOutRect.left, cutOutRect.top + borderRadius);
@@ -185,6 +182,6 @@ class ScannerOverlayPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant ScannerOverlayPainter oldDelegate) {
     return oldDelegate.animationValue != animationValue ||
-           oldDelegate.borderColor != borderColor;
+        oldDelegate.borderColor != borderColor;
   }
 }

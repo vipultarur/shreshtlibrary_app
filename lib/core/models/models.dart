@@ -10,17 +10,19 @@ String? optionalText(Object? value) => value?.toString();
 String? resolveImageUrl(Object? value) {
   String? path = value?.toString();
   if (path == null || path.isEmpty) return null;
-  
+
   if (path.startsWith('/media/http')) {
     path = path.substring(7);
   }
-  
+
   if (path.startsWith('http')) return path;
   final uri = Uri.parse(AppConfig.apiBaseUrl);
-  final origin = '${uri.scheme}://${uri.host}${uri.port == 80 || uri.port == 443 ? '' : ':${uri.port}'}';
+  final origin =
+      '${uri.scheme}://${uri.host}${uri.port == 80 || uri.port == 443 ? '' : ':${uri.port}'}';
   final normalizedPath = path.startsWith('/') ? path : '/$path';
   return '$origin$normalizedPath';
 }
+
 int integer(Object? value, [int fallback = 0]) =>
     int.tryParse(value?.toString() ?? '') ?? fallback;
 double decimal(Object? value, [double fallback = 0]) =>
@@ -164,6 +166,7 @@ class StudentDashboard {
     this.attendanceStatus,
     this.attendanceTime,
     this.allowQrScan = false,
+    this.cacheVersions,
   });
 
   final int studentId;
@@ -185,6 +188,7 @@ class StudentDashboard {
   final String? attendanceStatus;
   final String? attendanceTime;
   final bool allowQrScan;
+  final Map<String, dynamic>? cacheVersions;
 
   factory StudentDashboard.fromJson(JsonMap json) {
     final expiryDialog = json['expiry_dialog'] as JsonMap?;
@@ -195,9 +199,17 @@ class StudentDashboard {
       membershipDaysLeft: integer(json['membership_days_left']),
       isPremium: boolean(json['is_premium']),
       membershipStatus: text(json['membership_status'], 'NEW'),
-      restrictedFeatures: (json['restricted_features'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      expiryDialogTitle: expiryDialog != null ? text(expiryDialog['title']) : null,
-      expiryDialogMessage: expiryDialog != null ? text(expiryDialog['message']) : null,
+      restrictedFeatures:
+          (json['restricted_features'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      expiryDialogTitle: expiryDialog != null
+          ? text(expiryDialog['title'])
+          : null,
+      expiryDialogMessage: expiryDialog != null
+          ? text(expiryDialog['message'])
+          : null,
       assignedSeat: text(json['assigned_seat']),
       assignedSeatFloor: text(json['assigned_seat_floor']),
       markedAttendanceToday: boolean(json['marked_attendance_today']),
@@ -208,6 +220,7 @@ class StudentDashboard {
       attendanceStatus: optionalText(json['attendance_status']),
       attendanceTime: optionalText(json['attendance_time']),
       allowQrScan: boolean(json['allow_qr_scan']),
+      cacheVersions: json['cache_versions'] as Map<String, dynamic>?,
     );
   }
 
@@ -433,7 +446,10 @@ class MembershipRecord {
 
   factory MembershipRecord.fromJson(JsonMap json) => MembershipRecord(
     id: integer(json['id']),
-    planName: text(json['plan_name'] ?? (json['plan'] is Map ? json['plan']['name'] : json['plan'])),
+    planName: text(
+      json['plan_name'] ??
+          (json['plan'] is Map ? json['plan']['name'] : json['plan']),
+    ),
     startDate: text(json['start_date']),
     endDate: text(json['end_date']),
     status: text(json['status']),
@@ -517,9 +533,6 @@ class SeatAssignment {
   );
 }
 
-
-
-
 class StudentNotification {
   const StudentNotification({
     required this.id,
@@ -558,7 +571,10 @@ class StudentNotification {
   factory StudentNotification.fromJson(JsonMap json) {
     String rawBody = text(json['body']);
     List<String> extractedImages = [];
-    final imgRegex = RegExp(r'''<img[^>]+src=["']([^"']+)["']''', caseSensitive: false);
+    final imgRegex = RegExp(
+      r'''<img[^>]+src=["']([^"']+)["']''',
+      caseSensitive: false,
+    );
     for (final match in imgRegex.allMatches(rawBody)) {
       final src = match.group(1);
       if (src != null) {
@@ -576,10 +592,12 @@ class StudentNotification {
         .replaceAll('&nbsp;', ' ')
         .trim();
 
-    final jsonImages = (json['images'] as List<dynamic>?)
-        ?.map((e) => resolveImageUrl(e) ?? '')
-        .where((e) => e.isNotEmpty)
-        .toList() ?? [];
+    final jsonImages =
+        (json['images'] as List<dynamic>?)
+            ?.map((e) => resolveImageUrl(e) ?? '')
+            .where((e) => e.isNotEmpty)
+            .toList() ??
+        [];
 
     return StudentNotification(
       id: integer(json['id']),
@@ -600,7 +618,6 @@ class StudentNotification {
     );
   }
 }
-
 
 class LibraryInfo {
   const LibraryInfo({
@@ -726,7 +743,9 @@ class LibraryInfo {
     facebookUrl: optionalText(json['facebook_url']),
     instagramUrl: optionalText(json['instagram_url']),
     latitude: decimal(json['latitude']) == 0 ? null : decimal(json['latitude']),
-    longitude: decimal(json['longitude']) == 0 ? null : decimal(json['longitude']),
+    longitude: decimal(json['longitude']) == 0
+        ? null
+        : decimal(json['longitude']),
     googleMapUrl: optionalText(json['google_map_url']),
     openingTime: optionalText(json['opening_time']),
     closingTime: optionalText(json['closing_time']),

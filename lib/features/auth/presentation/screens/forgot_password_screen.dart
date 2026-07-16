@@ -14,7 +14,8 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -62,14 +63,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       final isNumber = RegExp(r'^[0-9]+$').hasMatch(identifier);
       if (isNumber) {
         setState(() {
-          _fieldErrors = {'identifier': 'WhatsApp is disabled. Please enter your email address.'};
+          _fieldErrors = {
+            'identifier':
+                'WhatsApp is disabled. Please enter your email address.',
+          };
           _requesting = false;
         });
         return;
       }
       if (!identifier.contains('@') || !identifier.contains('.')) {
         setState(() {
-          _fieldErrors = {'identifier': 'Please enter a valid email address (e.g. student@gmail.com).'};
+          _fieldErrors = {
+            'identifier':
+                'Please enter a valid email address (e.g. student@gmail.com).',
+          };
           _requesting = false;
         });
         return;
@@ -80,7 +87,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       final isMobile = RegExp(r'^[0-9]{10,}$').hasMatch(identifier);
       if (!isEmail && !isMobile) {
         setState(() {
-          _fieldErrors = {'identifier': 'Enter a valid email or mobile number.'};
+          _fieldErrors = {
+            'identifier': 'Enter a valid email or mobile number.',
+          };
           _requesting = false;
         });
         return;
@@ -88,13 +97,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
 
     try {
-      await ref.read(authControllerProvider.notifier).forgotPassword(identifier);
+      await ref
+          .read(authControllerProvider.notifier)
+          .forgotPassword(identifier);
       if (mounted) {
         setState(() {
           _requesting = false;
         });
         showSnack(context, 'OTP sent! Check your email.');
-        context.go('/verify-reset-otp?identifier=${Uri.encodeComponent(identifier)}');
+        context.go(
+          '/verify-reset-otp?identifier=${Uri.encodeComponent(identifier)}',
+        );
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -133,16 +146,26 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           Text(
             l10n.forgot_pwd_desc,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 32),
           AuthTextField(
-            label: _whatsappEnabled ? l10n.forgot_pwd_label_input : l10n.register_email,
-            hint: _whatsappEnabled ? l10n.forgot_pwd_hint_input : 'student@gmail.com',
+            label: _whatsappEnabled
+                ? l10n.forgot_pwd_label_input
+                : l10n.register_email,
+            hint: _whatsappEnabled
+                ? l10n.forgot_pwd_hint_input
+                : 'student@gmail.com',
             controller: _identifier,
             keyboardType: TextInputType.emailAddress,
             suffixIcon: Icons.email_outlined,
-            errorText: _fieldErrors['identifier'] is List ? _fieldErrors['identifier'][0] : (_fieldErrors['identifier'] ?? _fieldErrors['email'])?.toString(),
+            errorText: _fieldErrors['identifier'] is List
+                ? _fieldErrors['identifier'][0]
+                : (_fieldErrors['identifier'] ?? _fieldErrors['email'])
+                      ?.toString(),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -157,10 +180,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               elevation: 0,
             ),
             child: _requesting
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
                 : Text(
                     l10n.forgot_pwd_btn_send,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
           ),
           const SizedBox(height: 24),
@@ -169,12 +202,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               final state = GoRouterState.of(context);
               final redirectTo = state.uri.queryParameters['redirect_to'];
               if (redirectTo != null) {
-                context.go('/login?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                context.go(
+                  '/login?redirect_to=${Uri.encodeComponent(redirectTo)}',
+                );
               } else {
                 context.go('/login');
               }
             },
-            child: Text(l10n.forgot_pwd_back_to_signin, style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold)),
+            child: Text(
+              l10n.forgot_pwd_back_to_signin,
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

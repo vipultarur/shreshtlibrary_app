@@ -28,7 +28,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
   late final TextEditingController _email;
   late final TextEditingController _goal;
   late final TextEditingController _dob;
-  late final TextEditingController _caste;
   late final TextEditingController _address;
   late final TextEditingController _parentMobile;
 
@@ -51,7 +50,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     _email = TextEditingController(text: p.email);
     _goal = TextEditingController(text: p.goal);
     _dob = TextEditingController(text: p.dob ?? '');
-    _caste = TextEditingController(text: p.caste ?? '');
     _address = TextEditingController(text: p.address ?? '');
     _parentMobile = TextEditingController(text: p.parentMobile ?? '');
   }
@@ -66,7 +64,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       if (_email.text != p.email) _email.text = p.email;
       if (_goal.text != p.goal) _goal.text = p.goal;
       if (_dob.text != (p.dob ?? '')) _dob.text = p.dob ?? '';
-      if (_caste.text != (p.caste ?? '')) _caste.text = p.caste ?? '';
       if (_address.text != (p.address ?? '')) _address.text = p.address ?? '';
       if (_parentMobile.text != (p.parentMobile ?? '')) {
         _parentMobile.text = p.parentMobile ?? '';
@@ -85,7 +82,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       _email,
       _goal,
       _dob,
-      _caste,
       _address,
       _parentMobile,
     ]) {
@@ -102,21 +98,22 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       _fieldErrors = {};
     });
     try {
-      final updated = await ref.read(studentApiProvider).updateProfile(
-        StudentProfile(
-          username: widget.profile.username,
-          firstName: _firstName.text.trim(),
-          lastName: _lastName.text.trim(),
-          email: _email.text.trim(),
-          mobile: widget.profile.mobile,
-          goal: _goal.text.trim(),
-          dob: _dob.text.trim(),
-          caste: _caste.text.trim(),
-          address: _address.text.trim(),
-          profilePhoto: _updatedPhotoUrl ?? widget.profile.profilePhoto,
-          parentMobile: _parentMobile.text.trim(),
-        ),
-      );
+      final updated = await ref
+          .read(studentApiProvider)
+          .updateProfile(
+            StudentProfile(
+              username: widget.profile.username,
+              firstName: _firstName.text.trim(),
+              lastName: _lastName.text.trim(),
+              email: _email.text.trim(),
+              mobile: widget.profile.mobile,
+              goal: _goal.text.trim(),
+              dob: _dob.text.trim(),
+              address: _address.text.trim(),
+              profilePhoto: _updatedPhotoUrl ?? widget.profile.profilePhoto,
+              parentMobile: _parentMobile.text.trim(),
+            ),
+          );
       // Update displayed photo URL from the server response if available.
       if (updated.profilePhoto != null && updated.profilePhoto!.isNotEmpty) {
         _updatedPhotoUrl = _cacheBust(updated.profilePhoto!);
@@ -255,8 +252,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
     final textColor = theme.textTheme.bodyLarge?.color;
 
     // Priority: local file picked → updated URL from server → original URL
-    final currentPhotoUrl =
-        _updatedPhotoUrl ?? widget.profile.profilePhoto;
+    final currentPhotoUrl = _updatedPhotoUrl ?? widget.profile.profilePhoto;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -266,11 +262,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           child: Stack(
             children: [
               _buildAvatar(currentPhotoUrl, theme),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: _buildCameraButton(theme),
-              ),
+              Positioned(bottom: 0, right: 0, child: _buildCameraButton(theme)),
             ],
           ),
         ),
@@ -312,7 +304,11 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
               child: TextField(
                 controller: _firstName,
                 style: TextStyle(color: textColor),
-                decoration: _dec(context, l10n.profile_first_name, 'first_name'),
+                decoration: _dec(
+                  context,
+                  l10n.profile_first_name,
+                  'first_name',
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -370,13 +366,6 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             l10n.profile_parent_mobile,
             'parent_mobile',
           ),
-        ),
-        const SizedBox(height: 16),
-
-        TextField(
-          controller: _caste,
-          style: TextStyle(color: textColor),
-          decoration: _dec(context, l10n.profile_caste, 'caste'),
         ),
         const SizedBox(height: 16),
 
@@ -476,7 +465,9 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
           width: 4,
         ),
       ),
-      child: ClipOval(child: SizedBox(width: size, height: size, child: avatar)),
+      child: ClipOval(
+        child: SizedBox(width: size, height: size, child: avatar),
+      ),
     );
   }
 
@@ -515,7 +506,11 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
                   strokeWidth: 2,
                 ),
               )
-            : Icon(Icons.camera_alt, size: 20, color: theme.colorScheme.onPrimary),
+            : Icon(
+                Icons.camera_alt,
+                size: 20,
+                color: theme.colorScheme.onPrimary,
+              ),
       ),
     );
   }

@@ -36,34 +36,52 @@ class HomeLibraryInfoWidget extends ConsumerWidget {
                   return Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Stack(
                       children: [
-                        if (facility.image != null && facility.image!.isNotEmpty)
+                        if (facility.image != null &&
+                            facility.image!.isNotEmpty)
                           Image.network(
                             facility.image!,
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: index % 2 == 0 ? 180 : 130,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              height: index % 2 == 0 ? 180 : 130,
-                              color: Colors.grey.withValues(alpha: 0.2),
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  height: index % 2 == 0 ? 180 : 130,
+                                  color: Colors.grey.withValues(alpha: 0.2),
+                                  child: const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                           )
                         else
                           Container(
                             height: index % 2 == 0 ? 180 : 130,
-                            color: Colors.primaries[index % Colors.primaries.length].shade100,
-                            child: const Center(child: Icon(Icons.category, color: Colors.black26)),
+                            color: Colors
+                                .primaries[index % Colors.primaries.length]
+                                .shade100,
+                            child: const Center(
+                              child: Icon(
+                                Icons.category,
+                                color: Colors.black26,
+                              ),
+                            ),
                           ),
                         Positioned(
                           top: 8,
                           left: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(12),
@@ -100,17 +118,25 @@ class HomeLibraryInfoWidget extends ConsumerWidget {
                           (achiever) => ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: achiever.photo == null
-                                ? const CircleAvatar(child: Icon(Icons.emoji_events_outlined))
+                                ? const CircleAvatar(
+                                    child: Icon(Icons.emoji_events_outlined),
+                                  )
                                 : CircleAvatar(
                                     backgroundImage: CachedNetworkImageProvider(
                                       achiever.photo!,
-                                      errorListener: (err) => debugPrint('Image error: $err'),
+                                      errorListener: (err) =>
+                                          debugPrint('Image error: $err'),
                                     ),
                                   ),
                             title: Text(achiever.name),
-                            subtitle: Text('${achiever.achievement} (${achiever.year})'),
+                            subtitle: Text(
+                              '${achiever.achievement} (${achiever.year})',
+                            ),
                             onTap: () {
-                              context.push('/achievers/${achiever.id}', extra: achiever);
+                              context.push(
+                                '/achievers/${achiever.id}',
+                                extra: achiever,
+                              );
                             },
                           ),
                         )
@@ -128,7 +154,9 @@ class HomeLibraryInfoWidget extends ConsumerWidget {
                 value: ref.watch(reviewSummaryProvider),
                 builder: (summary) => Text(
                   '${summary.averageRating.toStringAsFixed(1)} average from ${summary.count} reviews',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 12),

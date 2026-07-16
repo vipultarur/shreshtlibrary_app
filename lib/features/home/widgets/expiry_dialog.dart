@@ -28,7 +28,9 @@ class ExpiryDialog extends StatelessWidget {
             margin: const EdgeInsets.only(top: 16, right: 16),
             clipBehavior: Clip.antiAlias,
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -39,14 +41,19 @@ class ExpiryDialog extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isPending
                           ? [Colors.orange.shade600, Colors.amber.shade400]
-                          : [theme.colorScheme.error, theme.colorScheme.errorContainer],
+                          : [
+                              theme.colorScheme.error,
+                              theme.colorScheme.errorContainer,
+                            ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                   ),
                   child: Center(
                     child: Icon(
-                      isPending ? Icons.hourglass_top_rounded : Icons.warning_rounded,
+                      isPending
+                          ? Icons.hourglass_top_rounded
+                          : Icons.warning_rounded,
                       size: 64,
                       color: Colors.white,
                     ),
@@ -91,7 +98,10 @@ class ExpiryDialog extends StatelessWidget {
                           ),
                           child: Text(
                             isPending ? 'OK, Got it' : 'Renew Plan',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),

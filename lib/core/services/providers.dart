@@ -41,13 +41,18 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   @override
   AsyncValue<StudentDashboard> build() {
     final cache = ref.read(localCacheServiceProvider);
-    final cachedData = cache.getCache('dashboard');
-    
+    final cachedData = cache.getCache(
+      'dashboard',
+      maxAge: const Duration(minutes: 5),
+    );
+
     if (cachedData != null && cachedData is Map<String, dynamic>) {
-      Future.microtask(_fetch);
+      // Return cached data immediately for instant load,
+      // but always refresh in background to ensure data is fresh.
+      Future.microtask(() => _fetch());
       return AsyncData(StudentDashboard.fromJson(cachedData));
     }
-    
+
     _fetch();
     return const AsyncLoading();
   }
@@ -55,6 +60,27 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   Future<void> _fetch() async {
     try {
       final dashboard = await ref.watch(studentApiProvider).dashboard();
+      
+      final cache = ref.read(localCacheServiceProvider);
+      if (dashboard.cacheVersions != null) {
+        final localVersions = cache.getCacheVersions();
+        bool versionsUpdated = false;
+        
+        dashboard.cacheVersions!.forEach((key, remoteVersion) {
+          final localVersion = localVersions[key];
+          if (localVersion != remoteVersion) {
+            // Version changed! Clear this specific cache so the StreamProvider is forced to fetch
+            cache.clearCache(key);
+            localVersions[key] = remoteVersion;
+            versionsUpdated = true;
+          }
+        });
+        
+        if (versionsUpdated) {
+          await cache.saveCacheVersions(localVersions);
+        }
+      }
+      
       state = AsyncData(dashboard);
     } catch (e, st) {
       if (!state.hasValue) {
@@ -68,7 +94,10 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   }
 }
 
-final dashboardProvider = NotifierProvider<DashboardNotifier, AsyncValue<StudentDashboard>>(DashboardNotifier.new);
+final dashboardProvider =
+    NotifierProvider<DashboardNotifier, AsyncValue<StudentDashboard>>(
+      DashboardNotifier.new,
+    );
 
 final myReviewProvider = StreamProvider.autoDispose<ReviewRecord?>((ref) {
   return ref.watch(studentApiProvider).myReviewStream();

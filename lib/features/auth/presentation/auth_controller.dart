@@ -20,11 +20,17 @@ class AuthState {
   });
 
   const AuthState.loading() : this(isLoading: true, isAuthenticated: false);
-  
-  const AuthState.maintenance() : this(isLoading: false, isAuthenticated: false, isMaintenance: true);
+
+  const AuthState.maintenance()
+    : this(isLoading: false, isAuthenticated: false, isMaintenance: true);
 
   const AuthState.signedOut([String? error, Map<String, dynamic>? fieldErrors])
-    : this(isLoading: false, isAuthenticated: false, error: error, fieldErrors: fieldErrors);
+    : this(
+        isLoading: false,
+        isAuthenticated: false,
+        error: error,
+        fieldErrors: fieldErrors,
+      );
 
   const AuthState.signedIn({AuthUser? user})
     : this(isLoading: false, isAuthenticated: true, user: user);
@@ -57,7 +63,10 @@ class AuthController extends Notifier<AuthState> {
 
   void _startPolling() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) => _pollStatus());
+    _pollingTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _pollStatus(),
+    );
   }
 
   void _stopPolling() {
@@ -83,7 +92,7 @@ class AuthController extends Notifier<AuthState> {
       if (state.isAuthenticated) {
         final dashboard = await _api.dashboard();
         ref.read(dashboardProvider.notifier).updateData(dashboard);
-        
+
         // If suspended, we might want to sign out or just let restricted features screen handle it.
         // Actually, RestrictedFeatureScreen handles SUSPENDED.
       }
@@ -104,7 +113,7 @@ class AuthController extends Notifier<AuthState> {
       // Always refresh the FCM token with the backend on startup,
       // because the OS may have issued a new token since last login.
       _registerFcmToken();
-      
+
       // Listen for future token rotations (OS can refresh the token any time)
       FirebaseMessaging.instance.onTokenRefresh.listen(_registerFcmTokenValue);
     }
@@ -133,7 +142,6 @@ class AuthController extends Notifier<AuthState> {
     } catch (_) {}
   }
 
-
   Future<bool> loginEmail(String email, String password) {
     return _completeLogin(() => _api.loginEmail(email, password));
   }
@@ -146,7 +154,8 @@ class AuthController extends Notifier<AuthState> {
     return _completeLogin(() => _api.verifyOtp(mobile, otp));
   }
 
-  Future<void> verifyRegisterOtp(String mobile, String otp) => _api.verifyRegisterOtp(mobile, otp);
+  Future<void> verifyRegisterOtp(String mobile, String otp) =>
+      _api.verifyRegisterOtp(mobile, otp);
 
   Future<bool> register(Map<String, dynamic> payload) {
     return _completeLogin(() => _api.register(payload));
@@ -156,16 +165,20 @@ class AuthController extends Notifier<AuthState> {
       _api.checkAvailability(email: email, mobile: mobile);
 
   Future<void> sendOtp(String mobile) => _api.sendOtp(mobile);
-  
+
   Future<void> sendRegisterOtp(String mobile) => _api.sendRegisterOtp(mobile);
 
-  Future<void> forgotPassword(String identifier) => _api.forgotPassword(identifier);
+  Future<void> forgotPassword(String identifier) =>
+      _api.forgotPassword(identifier);
 
   Future<void> verifyForgotPasswordOtp(String identifier, String token) =>
       _api.verifyForgotPasswordOtp(identifier, token);
 
-  Future<void> resetPassword(String identifier, String token, String password) =>
-      _api.resetPassword(identifier, token, password);
+  Future<void> resetPassword(
+    String identifier,
+    String token,
+    String password,
+  ) => _api.resetPassword(identifier, token, password);
 
   Future<void> logout() async {
     try {
@@ -173,13 +186,13 @@ class AuthController extends Notifier<AuthState> {
     } catch (_) {
       // Local logout must still complete if the server is unavailable.
     }
-    
+
     try {
       await FirebaseMessaging.instance.deleteToken();
     } catch (_) {
       // Ignore FCM errors during logout
     }
-    
+
     await ref.read(tokenStoreProvider).clear();
     state = const AuthState.signedOut();
   }
@@ -189,7 +202,7 @@ class AuthController extends Notifier<AuthState> {
       final result = await action();
       await ref.read(tokenStoreProvider).save(result.tokens);
       state = AuthState.signedIn(user: result.user);
-      
+
       // Register FCM token after successful login
       try {
         final token = await FirebaseMessaging.instance.getToken();
@@ -199,10 +212,12 @@ class AuthController extends Notifier<AuthState> {
       } catch (_) {
         // Ignore FCM errors during login
       }
-      
+
       return true;
     } on ApiFailure catch (failure) {
-      final fieldErrors = failure.errors is Map ? failure.errors as Map<String, dynamic> : null;
+      final fieldErrors = failure.errors is Map
+          ? failure.errors as Map<String, dynamic>
+          : null;
       state = AuthState.signedOut(failure.message, fieldErrors);
       return false;
     } catch (error) {

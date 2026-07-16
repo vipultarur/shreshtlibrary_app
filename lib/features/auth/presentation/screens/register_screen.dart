@@ -46,8 +46,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final Map<String, String> _clientErrors = {};
 
   static const goals = [
-    'UPSC', 'GPSC', 'CONSTABLE', 'Banking', 'Army',
-    'Teacher', 'Railway', 'SSC', 'CA', 'Other',
+    'UPSC',
+    'GPSC',
+    'CONSTABLE',
+    'Banking',
+    'Army',
+    'Teacher',
+    'Railway',
+    'SSC',
+    'CA',
+    'Other',
   ];
 
   final _firstNameFocus = FocusNode();
@@ -65,7 +73,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _emailFocus.addListener(_onEmailFocusChange);
     _mobileFocus.addListener(_onMobileFocusChange);
     _fetchConfig();
-    _configPollingTimer = Timer.periodic(const Duration(seconds: 10), (_) => _fetchConfig());
+    _configPollingTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => _fetchConfig(),
+    );
   }
 
   Future<void> _fetchConfig() async {
@@ -101,26 +112,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _checkAvailability({String? email, String? mobile}) async {
-    if (email != null && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) email = null;
-    if (mobile != null && !RegExp(r'^[0-9]{10}$').hasMatch(mobile)) mobile = null;
+    if (email != null &&
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email))
+      email = null;
+    if (mobile != null && !RegExp(r'^[0-9]{10}$').hasMatch(mobile))
+      mobile = null;
 
     if (email == null && mobile == null) return;
 
     try {
-      final reqOtp = await ref.read(authControllerProvider.notifier).checkAvailability(email: email, mobile: mobile);
+      final reqOtp = await ref
+          .read(authControllerProvider.notifier)
+          .checkAvailability(email: email, mobile: mobile);
       if (mounted && mobile != null) {
         setState(() => _requireOtp = reqOtp);
       }
     } catch (e) {
-      if (e is ApiFailure && e.errors != null && e.errors is Map<String, dynamic>) {
+      if (e is ApiFailure &&
+          e.errors != null &&
+          e.errors is Map<String, dynamic>) {
         final errorsMap = e.errors as Map<String, dynamic>;
         setState(() {
           if (email != null && errorsMap['email'] != null) {
-            final msg = errorsMap['email'] is List ? errorsMap['email'][0] : errorsMap['email'];
+            final msg = errorsMap['email'] is List
+                ? errorsMap['email'][0]
+                : errorsMap['email'];
             _clientErrors['email'] = msg.toString();
           }
           if (mobile != null && errorsMap['mobile'] != null) {
-            final msg = errorsMap['mobile'] is List ? errorsMap['mobile'][0] : errorsMap['mobile'];
+            final msg = errorsMap['mobile'] is List
+                ? errorsMap['mobile'][0]
+                : errorsMap['mobile'];
             _clientErrors['mobile'] = msg.toString();
           }
         });
@@ -133,7 +155,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _resendTimer?.cancel();
     _configPollingTimer?.cancel();
     for (final controller in [
-      _firstName, _lastName, _email, _mobile, _otp, _dob, _address, _parentMobile, _password, _confirmPassword,
+      _firstName,
+      _lastName,
+      _email,
+      _mobile,
+      _otp,
+      _dob,
+      _address,
+      _parentMobile,
+      _password,
+      _confirmPassword,
     ]) {
       controller.dispose();
     }
@@ -152,7 +183,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final errors = auth.fieldErrors ?? {};
     final nonField = errors['non_field_errors'] ?? errors['detail'];
     if (nonField != null) {
-      final msg = nonField is List ? nonField.first.toString() : nonField.toString();
+      final msg = nonField is List
+          ? nonField.first.toString()
+          : nonField.toString();
       showSnack(context, msg);
     } else if (errors.isEmpty) {
       showSnack(context, auth.error ?? defaultMsg);
@@ -166,7 +199,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final mobile = _mobile.text.trim();
     final l10n = AppLocalizations.of(context)!;
     if (mobile.length != 10) {
-      setState(() => _clientErrors['mobile'] = l10n.register_err_invalid_mobile);
+      setState(
+        () => _clientErrors['mobile'] = l10n.register_err_invalid_mobile,
+      );
       return;
     }
     setState(() {
@@ -199,11 +234,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } on ApiFailure catch (e) {
       if (mounted) {
-        if (e.errors is Map<String, dynamic> && (e.errors as Map<String, dynamic>).containsKey('mobile')) {
-           final msg = (e.errors as Map<String, dynamic>)['mobile'];
-           setState(() => _clientErrors['mobile'] = msg is List ? msg[0] : msg.toString());
+        if (e.errors is Map<String, dynamic> &&
+            (e.errors as Map<String, dynamic>).containsKey('mobile')) {
+          final msg = (e.errors as Map<String, dynamic>)['mobile'];
+          setState(
+            () =>
+                _clientErrors['mobile'] = msg is List ? msg[0] : msg.toString(),
+          );
         } else {
-           showSnack(context, e.message);
+          showSnack(context, e.message);
         }
       }
     } finally {
@@ -216,7 +255,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final mobile = _mobile.text.trim();
     final otp = _otp.text.trim();
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (otp.isEmpty) {
       setState(() => _clientErrors['otp'] = l10n.register_err_otp_required);
       return;
@@ -232,7 +271,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      await ref.read(authControllerProvider.notifier).verifyRegisterOtp(mobile, otp);
+      await ref
+          .read(authControllerProvider.notifier)
+          .verifyRegisterOtp(mobile, otp);
       if (mounted) {
         setState(() {
           _otpVerified = true;
@@ -242,11 +283,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } on ApiFailure catch (e) {
       if (mounted) {
-        if (e.errors is Map<String, dynamic> && (e.errors as Map<String, dynamic>).containsKey('otp')) {
-           final msg = (e.errors as Map<String, dynamic>)['otp'];
-           setState(() => _clientErrors['otp'] = msg is List ? msg[0] : msg.toString());
+        if (e.errors is Map<String, dynamic> &&
+            (e.errors as Map<String, dynamic>).containsKey('otp')) {
+          final msg = (e.errors as Map<String, dynamic>)['otp'];
+          setState(
+            () => _clientErrors['otp'] = msg is List ? msg[0] : msg.toString(),
+          );
         } else {
-           setState(() => _clientErrors['otp'] = e.message);
+          setState(() => _clientErrors['otp'] = e.message);
         }
       }
     } finally {
@@ -267,13 +311,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final confirmPassword = _confirmPassword.text;
     final l10n = AppLocalizations.of(context)!;
 
-    final duplicateMobile = _clientErrors['mobile'] == 'Mobile number already exists.';
+    final duplicateMobile =
+        _clientErrors['mobile'] == 'Mobile number already exists.';
     final duplicateEmail = _clientErrors['email'] == 'Email already exists.';
 
     setState(() {
       _clientErrors.clear();
-      if (duplicateMobile) _clientErrors['mobile'] = l10n.register_err_mobile_exists;
-      if (duplicateEmail) _clientErrors['email'] = l10n.register_err_email_exists;
+      if (duplicateMobile)
+        _clientErrors['mobile'] = l10n.register_err_mobile_exists;
+      if (duplicateEmail)
+        _clientErrors['email'] = l10n.register_err_email_exists;
     });
 
     bool hasError = false;
@@ -287,9 +334,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       firstErrorFocus ??= focusNode;
     }
 
-    if (firstName.isEmpty) { addError('first_name', l10n.register_err_first_name_required, _firstNameFocus); }
-    if (lastName.isEmpty) { addError('last_name', l10n.register_err_last_name_required, _lastNameFocus); }
-    
+    if (firstName.isEmpty) {
+      addError(
+        'first_name',
+        l10n.register_err_first_name_required,
+        _firstNameFocus,
+      );
+    }
+    if (lastName.isEmpty) {
+      addError(
+        'last_name',
+        l10n.register_err_last_name_required,
+        _lastNameFocus,
+      );
+    }
+
     if (email.isEmpty) {
       addError('email', l10n.register_err_email_required, _emailFocus);
     } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
@@ -307,13 +366,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       hasError = true;
       firstErrorFocus ??= _mobileFocus;
     }
-    
+
     if (_requireOtp && otp.isEmpty) {
       addError('otp', l10n.register_err_otp_required, _otpFocus);
     }
 
-    if (dob.isEmpty) { addError('dob', l10n.register_err_dob_required, _dobFocus); }
-    
+    if (dob.isEmpty) {
+      addError('dob', l10n.register_err_dob_required, _dobFocus);
+    }
+
     if (password.isEmpty) {
       addError('password', l10n.register_err_password_required, _passwordFocus);
     } else if (password.length < 6) {
@@ -321,14 +382,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     if (confirmPassword.isEmpty) {
-      addError('confirm_password', l10n.register_err_confirm_password_required, _confirmPasswordFocus);
+      addError(
+        'confirm_password',
+        l10n.register_err_confirm_password_required,
+        _confirmPasswordFocus,
+      );
     } else if (password != confirmPassword) {
-      addError('confirm_password', l10n.register_err_password_mismatch, _confirmPasswordFocus);
+      addError(
+        'confirm_password',
+        l10n.register_err_password_mismatch,
+        _confirmPasswordFocus,
+      );
     }
 
     if (hasError) {
       setState(() {});
-      if (_step == 2 && (_clientErrors.containsKey('first_name') || _clientErrors.containsKey('last_name') || _clientErrors.containsKey('email') || _clientErrors.containsKey('mobile') || _clientErrors.containsKey('otp'))) {
+      if (_step == 2 &&
+          (_clientErrors.containsKey('first_name') ||
+              _clientErrors.containsKey('last_name') ||
+              _clientErrors.containsKey('email') ||
+              _clientErrors.containsKey('mobile') ||
+              _clientErrors.containsKey('otp'))) {
         setState(() => _step = 1);
         showSnack(context, l10n.register_snack_fix_step1);
       }
@@ -365,10 +439,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } else {
       final auth = ref.read(authControllerProvider);
       final fieldErrors = auth.fieldErrors ?? {};
-      if (_step == 2 && (fieldErrors.containsKey('first_name') || fieldErrors.containsKey('last_name') || fieldErrors.containsKey('email') || fieldErrors.containsKey('mobile') || fieldErrors.containsKey('otp'))) {
+      if (_step == 2 &&
+          (fieldErrors.containsKey('first_name') ||
+              fieldErrors.containsKey('last_name') ||
+              fieldErrors.containsKey('email') ||
+              fieldErrors.containsKey('mobile') ||
+              fieldErrors.containsKey('otp'))) {
         setState(() {
           _step = 1;
-          if (fieldErrors.containsKey('mobile') || fieldErrors.containsKey('otp')) {
+          if (fieldErrors.containsKey('mobile') ||
+              fieldErrors.containsKey('otp')) {
             _otpVerified = false;
             _otpSent = false;
           }
@@ -383,7 +463,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _pickDob() async {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime(2000),
@@ -393,7 +473,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
-            colorScheme: isDark 
+            colorScheme: isDark
                 ? ColorScheme.dark(
                     primary: theme.colorScheme.primary,
                     onPrimary: Colors.white,
@@ -408,19 +488,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
             dialogBackgroundColor: theme.colorScheme.surface,
             datePickerTheme: DatePickerThemeData(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               headerBackgroundColor: theme.colorScheme.primary,
               headerForegroundColor: Colors.white,
               backgroundColor: theme.colorScheme.surface,
-              dayStyle: const TextStyle(fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
-              yearStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
-              weekdayStyle: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Outfit'),
+              dayStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Outfit',
+              ),
+              yearStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Outfit',
+              ),
+              weekdayStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Outfit',
+              ),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: theme.colorScheme.primary,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Outfit'),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontFamily: 'Outfit',
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
             ),
           ),
@@ -429,7 +527,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       },
     );
     if (date != null) {
-      _dob.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      _dob.text =
+          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
     }
   }
 
@@ -443,7 +542,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     String? errorFor(String field) {
       if (_clientErrors.containsKey(field)) return _clientErrors[field];
       final fieldError = fieldErrors[field];
-      if (fieldError is List && fieldError.isNotEmpty) return fieldError.first.toString();
+      if (fieldError is List && fieldError.isNotEmpty)
+        return fieldError.first.toString();
       return fieldError?.toString();
     }
 
@@ -456,7 +556,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           children: [
             Text(
               l10n.register_personal_info,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -515,7 +619,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _mobile,
               focusNode: _mobileFocus,
               keyboardType: TextInputType.phone,
-              suffixIcon: (_requireOtp && _otpVerified) ? Icons.check_circle : Icons.phone_android,
+              suffixIcon: (_requireOtp && _otpVerified)
+                  ? Icons.check_circle
+                  : Icons.phone_android,
               iconColor: (_requireOtp && _otpVerified) ? Colors.green : null,
               borderColor: (_requireOtp && _otpVerified) ? Colors.green : null,
               inputFormatters: [
@@ -542,7 +648,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             if (_requireOtp && _otpVerified)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: Text(l10n.register_verified, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                child: Text(
+                  l10n.register_verified,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             if (_requireOtp && _otpSent && !_otpVerified) ...[
               const SizedBox(height: 12),
@@ -569,15 +682,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                    onPressed: _resendSeconds > 0 || _sendingOtp || _verifyingOtp ? null : _sendOtp,
-                    child: _sendingOtp 
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    onPressed:
+                        _resendSeconds > 0 || _sendingOtp || _verifyingOtp
+                        ? null
+                        : _sendOtp,
+                    child: _sendingOtp
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : Text(
-                            _resendSeconds > 0 ? l10n.register_resend_otp_in(_resendSeconds.toString()) : l10n.register_resend_otp, 
+                            _resendSeconds > 0
+                                ? l10n.register_resend_otp_in(
+                                    _resendSeconds.toString(),
+                                  )
+                                : l10n.register_resend_otp,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: _resendSeconds > 0 ? Colors.grey : Theme.of(context).colorScheme.primary,
-                            )
+                              color: _resendSeconds > 0
+                                  ? Colors.grey
+                                  : Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                   ),
                   ElevatedButton(
@@ -590,7 +716,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ),
                     child: _verifyingOtp
-                        ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2))
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: theme.colorScheme.onPrimary,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(l10n.register_verify_otp),
                   ),
                 ],
@@ -601,9 +734,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _sendOtp,
-                  child: _sendingOtp 
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(l10n.register_send_otp, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: _sendingOtp
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(
+                          l10n.register_send_otp,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ],
@@ -619,10 +759,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   firstErrorFocus ??= fn;
                 }
 
-                if (_firstName.text.trim().isEmpty) addError('first_name', l10n.register_err_first_name_required, _firstNameFocus);
-                if (_lastName.text.trim().isEmpty) addError('last_name', l10n.register_err_last_name_required, _lastNameFocus);
-                if (_email.text.trim().isEmpty) addError('email', l10n.register_err_email_required, _emailFocus);
-                if (_mobile.text.trim().isEmpty) addError('mobile', l10n.register_err_mobile_required, _mobileFocus);
+                if (_firstName.text.trim().isEmpty)
+                  addError(
+                    'first_name',
+                    l10n.register_err_first_name_required,
+                    _firstNameFocus,
+                  );
+                if (_lastName.text.trim().isEmpty)
+                  addError(
+                    'last_name',
+                    l10n.register_err_last_name_required,
+                    _lastNameFocus,
+                  );
+                if (_email.text.trim().isEmpty)
+                  addError(
+                    'email',
+                    l10n.register_err_email_required,
+                    _emailFocus,
+                  );
+                if (_mobile.text.trim().isEmpty)
+                  addError(
+                    'mobile',
+                    l10n.register_err_mobile_required,
+                    _mobileFocus,
+                  );
 
                 if (hasError) {
                   setState(() {});
@@ -646,24 +806,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 elevation: 0,
               ),
-              child: Text(l10n.btn_continue, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+              child: Text(
+                l10n.btn_continue,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(l10n.register_already_have_acc, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6))),
+                Text(
+                  l10n.register_already_have_acc,
+                  style: TextStyle(
+                    color: theme.textTheme.bodyLarge?.color?.withValues(
+                      alpha: 0.6,
+                    ),
+                  ),
+                ),
                 TextButton(
                   onPressed: () {
                     final state = GoRouterState.of(context);
                     final redirectTo = state.uri.queryParameters['redirect_to'];
                     if (redirectTo != null) {
-                      context.go('/login?redirect_to=${Uri.encodeComponent(redirectTo)}');
+                      context.go(
+                        '/login?redirect_to=${Uri.encodeComponent(redirectTo)}',
+                      );
                     } else {
                       context.go('/login');
                     }
                   },
-                  child: Text(l10n.register_sign_in, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    l10n.register_sign_in,
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -680,7 +861,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           Text(
             l10n.register_step2_header,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -706,11 +891,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     Text(
                       l10n.register_gender,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
@@ -728,17 +920,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   Radio<String>(
                                     value: 'Male',
                                     groupValue: _gender,
-                                    onChanged: (val) => setState(() => _gender = val!),
-                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    fillColor: WidgetStateProperty.resolveWith((states) {
-                                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
+                                    onChanged: (val) =>
+                                        setState(() => _gender = val!),
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ),
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    fillColor: WidgetStateProperty.resolveWith((
+                                      states,
+                                    ) {
+                                      if (states.contains(WidgetState.selected))
+                                        return Theme.of(
+                                          context,
+                                        ).colorScheme.primary;
                                       return Colors.grey.shade400;
                                     }),
                                   ),
                                   const SizedBox(width: 4),
                                   Flexible(
-                                    child: Text(l10n.register_gender_male, style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color), overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      l10n.register_gender_male,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme.textTheme.bodyLarge?.color,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -754,17 +963,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   Radio<String>(
                                     value: 'Female',
                                     groupValue: _gender,
-                                    onChanged: (val) => setState(() => _gender = val!),
-                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    fillColor: WidgetStateProperty.resolveWith((states) {
-                                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
+                                    onChanged: (val) =>
+                                        setState(() => _gender = val!),
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ),
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    fillColor: WidgetStateProperty.resolveWith((
+                                      states,
+                                    ) {
+                                      if (states.contains(WidgetState.selected))
+                                        return Theme.of(
+                                          context,
+                                        ).colorScheme.primary;
                                       return Colors.grey.shade400;
                                     }),
                                   ),
                                   const SizedBox(width: 4),
                                   Flexible(
-                                    child: Text(l10n.register_gender_female, style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color), overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      l10n.register_gender_female,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme.textTheme.bodyLarge?.color,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -788,32 +1014,67 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     Text(
                       l10n.register_goal,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       initialValue: _goal,
                       dropdownColor: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      icon: Icon(Icons.keyboard_arrow_down_rounded, color: theme.textTheme.bodyLarge?.color),
-                      style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 14),
-                      items: goals.map((goal) => DropdownMenuItem(value: goal, child: Text(goal, style: TextStyle(color: theme.textTheme.bodyLarge?.color)))).toList(),
-                      onChanged: (value) => setState(() => _goal = value ?? 'Other'),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                      style: TextStyle(
+                        color: theme.textTheme.bodyLarge?.color,
+                        fontSize: 14,
+                      ),
+                      items: goals
+                          .map(
+                            (goal) => DropdownMenuItem(
+                              value: goal,
+                              child: Text(
+                                goal,
+                                style: TextStyle(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          setState(() => _goal = value ?? 'Other'),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: theme.colorScheme.primaryContainer,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
+                          borderSide: BorderSide(
+                            color: theme.dividerColor,
+                            width: 1.5,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: theme.dividerColor, width: 1.5),
+                          borderSide: BorderSide(
+                            color: theme.dividerColor,
+                            width: 1.5,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -855,8 +1116,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _password,
                   focusNode: _passwordFocus,
                   obscureText: _obscurePassword,
-                  suffixIcon: _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  onSuffixTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                  suffixIcon: _obscurePassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  onSuffixTap: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   errorText: errorFor('password'),
                 ),
               ),
@@ -868,8 +1132,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _confirmPassword,
                   focusNode: _confirmPasswordFocus,
                   obscureText: _obscureConfirmPassword,
-                  suffixIcon: _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  onSuffixTap: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  suffixIcon: _obscureConfirmPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  onSuffixTap: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  ),
                   errorText: errorFor('confirm_password'),
                 ),
               ),
@@ -891,16 +1159,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ? SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: theme.colorScheme.onPrimary,
+                      strokeWidth: 2,
+                    ),
                   )
-                : Text(l10n.register_title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+                : Text(
+                    l10n.register_title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () {
               setState(() => _step = 1);
             },
-            child: Text(l10n.register_back_step1, style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6), fontWeight: FontWeight.bold)),
+            child: Text(
+              l10n.register_back_step1,
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

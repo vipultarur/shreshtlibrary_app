@@ -14,10 +14,16 @@ class PlaceholderScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('$title Screen is under construction.', style: const TextStyle(fontSize: 16)),
+            Text(
+              '$title Screen is under construction.',
+              style: const TextStyle(fontSize: 16),
+            ),
             if (id != null) ...[
               const SizedBox(height: 16),
-              Text('Provided ID: $id', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                'Provided ID: $id',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ],
           ],
         ),

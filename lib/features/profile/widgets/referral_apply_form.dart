@@ -53,7 +53,9 @@ class _ReferralApplyFormState extends ConsumerState<ReferralApplyForm> {
             controller: _code,
             decoration: InputDecoration(
               labelText: l10n.referral_apply_label,
-              errorText: _fieldErrors['code'] is List ? _fieldErrors['code'][0] : _fieldErrors['code']?.toString(),
+              errorText: _fieldErrors['code'] is List
+                  ? _fieldErrors['code'][0]
+                  : _fieldErrors['code']?.toString(),
             ),
           ),
         ),

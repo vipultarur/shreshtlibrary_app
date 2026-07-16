@@ -13,7 +13,7 @@ class FacilitiesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    
+
     return PageScaffold(
       title: l10n.lib_title_facilities,
       onRefresh: () async {
@@ -40,7 +40,9 @@ class FacilitiesScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.2 : 0.05,
+                      ),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -66,7 +68,13 @@ class FacilitiesScreen extends ConsumerWidget {
                           ),
                           errorWidget: (context, url, error) => SizedBox(
                             height: 160,
-                            child: Icon(Icons.broken_image, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 50),
+                            child: Icon(
+                              Icons.broken_image,
+                              color: theme.iconTheme.color?.withValues(
+                                alpha: 0.5,
+                              ),
+                              size: 50,
+                            ),
                           ),
                         ),
                       )
@@ -75,7 +83,11 @@ class FacilitiesScreen extends ConsumerWidget {
                         height: 160,
                         width: double.infinity,
                         color: theme.colorScheme.surfaceContainerHighest,
-                        child: Icon(Icons.check_circle_outline, color: theme.iconTheme.color?.withValues(alpha: 0.5), size: 50),
+                        child: Icon(
+                          Icons.check_circle_outline,
+                          color: theme.iconTheme.color?.withValues(alpha: 0.5),
+                          size: 50,
+                        ),
                       ),
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -90,13 +102,15 @@ class FacilitiesScreen extends ConsumerWidget {
                               color: theme.textTheme.titleLarge?.color,
                             ),
                           ),
-                          if (facility.description != null && facility.description!.isNotEmpty) ...[
+                          if (facility.description != null &&
+                              facility.description!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Text(
                               facility.description!,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                                color: theme.textTheme.bodyMedium?.color
+                                    ?.withValues(alpha: 0.8),
                                 height: 1.4,
                               ),
                             ),
