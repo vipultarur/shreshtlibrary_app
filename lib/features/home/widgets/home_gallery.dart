@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:shimmer/shimmer.dart';
-
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
+
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/common/widgets/section_header.dart';
 import 'package:shreshtlibrary/common/widgets/gallery_image_dialog.dart';
+import 'package:shreshtlibrary/features/library/library_screen.dart';
 
 class HomeGallery extends ConsumerWidget {
   const HomeGallery({super.key});

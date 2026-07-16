@@ -16,6 +16,7 @@ import 'package:shreshtlibrary/core/services/locale_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shreshtlibrary/core/config/app_config.dart';
 import 'package:shreshtlibrary/common/widgets/connectivity_wrapper.dart';
+import 'package:shreshtlibrary/core/services/providers.dart';
 
 class ShreshtStudentApp extends ConsumerStatefulWidget {
   const ShreshtStudentApp({super.key});
