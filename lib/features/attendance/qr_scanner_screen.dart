@@ -112,6 +112,10 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
         title = "Attendance Not Allowed";
         message =
             "Your account is currently inactive. Please contact the library staffistrator.";
+      } else if (failure.code == 'LIBRARY_SUBSCRIPTION_EXPIRED' || msg.contains('subscription expired') || msg.contains('subscription has expired')) {
+        title = "Library Subscription Expired";
+        message =
+            "The library's platform subscription has expired. Attendance cannot be recorded at this time.";
       } else if (msg.contains('used')) {
         title = "QR Code Already Used";
         message =

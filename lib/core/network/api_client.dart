@@ -73,6 +73,7 @@ class ApiClient {
         throw ApiFailure(
           payload['message']?.toString() ?? 'Request failed.',
           errors: payload['errors'],
+          code: payload['code']?.toString(),
         );
       }
       return parser(payload.containsKey('data') ? payload['data'] : payload);

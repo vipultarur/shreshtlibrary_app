@@ -163,6 +163,27 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
       );
 
       await ref.read(studySessionServiceProvider).startService();
+    } on ApiFailure catch (e) {
+      String msg = 'Failed to start session. Please try again.';
+      if (e.code == 'LIBRARY_SUBSCRIPTION_EXPIRED' || e.message.toLowerCase().contains('subscription has expired')) {
+        msg = 'The library\'s platform subscription has expired. You cannot start study sessions at this time.';
+      } else {
+        msg = e.message;
+      }
+      state = state.copyWith(
+        status: StudySessionStatus.error,
+        errorMessage: msg,
+      );
+      Future.delayed(const Duration(seconds: 3), () {
+        try {
+          if (state.status == StudySessionStatus.error) {
+            state = state.copyWith(
+              status: StudySessionStatus.idle,
+              errorMessage: null,
+            );
+          }
+        } catch (_) {}
+      });
     } catch (e) {
       state = state.copyWith(
         status: StudySessionStatus.error,
