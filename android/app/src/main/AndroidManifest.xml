@@ -67,7 +67,7 @@
         <!-- Firebase: default notification channel for background/terminated messages -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="admin_notifications" />
+            android:value="staff_notifications" />
 
         <!-- Firebase: monochrome icon for notification tray (required Android 5+) -->
         <meta-data

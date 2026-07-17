@@ -53,7 +53,7 @@ class PendingStatusBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Purchase a plan or contact admin to activate your full access.',
+                  'Purchase a plan or contact staff to activate your full access.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: Colors.orange.shade700,
                   ),

@@ -111,7 +111,7 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
       } else if (msg.contains('inactive')) {
         title = "Attendance Not Allowed";
         message =
-            "Your account is currently inactive. Please contact the library administrator.";
+            "Your account is currently inactive. Please contact the library staffistrator.";
       } else if (msg.contains('used')) {
         title = "QR Code Already Used";
         message =

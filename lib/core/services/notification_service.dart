@@ -60,9 +60,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       >();
   await androidPlugin?.createNotificationChannel(
     const AndroidNotificationChannel(
-      'admin_notifications',
-      'Admin Notifications',
-      description: 'Notifications from the admin',
+      'staff_notifications',
+      'staff Notifications',
+      description: 'Notifications from the staff',
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
@@ -142,9 +142,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       channelDesc = 'Notifications related to account status';
       break;
     default:
-      channelId = 'admin_notifications';
-      channelName = 'Admin Notifications';
-      channelDesc = 'Notifications from the admin';
+      channelId = 'staff_notifications';
+      channelName = 'staff Notifications';
+      channelDesc = 'Notifications from the staff';
       break;
   }
 
@@ -182,9 +182,9 @@ Future<void> _showRichNotification({
   String imageUrl = '',
   String linkUrl = '',
   String linkButtonText = 'View Details',
-  String channelId = 'admin_notifications',
-  String channelName = 'Admin Notifications',
-  String channelDesc = 'Notifications from the admin',
+  String channelId = 'staff_notifications',
+  String channelName = 'staff Notifications',
+  String channelDesc = 'Notifications from the staff',
   String? payload,
 }) async {
   StyleInformation? styleInformation;
@@ -286,11 +286,11 @@ class NotificationService {
   Stream<RemoteMessage> get foregroundMessageStream =>
       _foregroundMessageController.stream;
 
-  static const AndroidNotificationChannel _adminChannel =
+  static const AndroidNotificationChannel _staffChannel =
       AndroidNotificationChannel(
-        'admin_notifications',
-        'Admin Notifications',
-        description: 'Notifications from the admin',
+        'staff_notifications',
+        'staff Notifications',
+        description: 'Notifications from the staff',
         importance: Importance.max,
         playSound: true,
         enableVibration: true,
@@ -367,7 +367,7 @@ class NotificationService {
           >();
 
       if (androidPlugin != null) {
-        await androidPlugin.createNotificationChannel(_adminChannel);
+        await androidPlugin.createNotificationChannel(_staffChannel);
         await androidPlugin.createNotificationChannel(_defaultChannel);
         await androidPlugin.createNotificationChannel(_attendanceChannel);
         await androidPlugin.createNotificationChannel(_billingChannel);

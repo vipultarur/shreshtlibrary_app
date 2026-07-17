@@ -577,7 +577,7 @@ abstract class AppLocalizations {
   /// No description provided for @home_pending_activation_desc.
   ///
   /// In en, this message translates to:
-  /// **'Please purchase a plan or contact admin to activate.'**
+  /// **'Please purchase a plan or contact staff to activate.'**
   String get home_pending_activation_desc;
 
   /// No description provided for @home_plans.
@@ -595,7 +595,7 @@ abstract class AppLocalizations {
   /// No description provided for @home_account_suspended_desc.
   ///
   /// In en, this message translates to:
-  /// **'Your account has been suspended by the administrator.'**
+  /// **'Your account has been suspended by the staffistrator.'**
   String get home_account_suspended_desc;
 
   /// No description provided for @home_membership_expired.
@@ -1033,7 +1033,7 @@ abstract class AppLocalizations {
   /// No description provided for @payment_submitted.
   ///
   /// In en, this message translates to:
-  /// **'Payment submitted for admin verification.'**
+  /// **'Payment submitted for staff verification.'**
   String get payment_submitted;
 
   /// No description provided for @noti_marked_read.

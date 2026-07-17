@@ -253,7 +253,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get home_pending_activation_desc =>
-      'Please purchase a plan or contact admin to activate.';
+      'Please purchase a plan or contact staff to activate.';
 
   @override
   String get home_plans => 'Plans';
@@ -263,7 +263,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get home_account_suspended_desc =>
-      'Your account has been suspended by the administrator.';
+      'Your account has been suspended by the staffistrator.';
 
   @override
   String get home_membership_expired => 'Membership Expired';
@@ -504,7 +504,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payment_select_plan => 'Select a membership plan.';
 
   @override
-  String get payment_submitted => 'Payment submitted for admin verification.';
+  String get payment_submitted => 'Payment submitted for staff verification.';
 
   @override
   String get noti_marked_read => 'Marked as read.';

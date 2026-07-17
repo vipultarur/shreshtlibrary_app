@@ -58,7 +58,7 @@ class SubscriptionExpiredScreen extends ConsumerWidget {
                     ],
                   ),
                   child: Text(
-                    'Your library is currently unavailable because its subscription has expired. Please contact your library administrator.',
+                    'Your library is currently unavailable because its subscription has expired. Please contact your library staffistrator.',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       height: 1.5,
