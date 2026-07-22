@@ -130,8 +130,7 @@ class LocalCacheService {
   Future<void> invalidatePattern(String pattern) async {
     final keysToDelete = _box.keys.where((key) {
       if (key is String) {
-        // Cache keys are stored as 'cache_$key', so we check if the original key starts with pattern
-        return key.startsWith('cache_$pattern');
+        return key.contains(pattern);
       }
       return false;
     }).toList();

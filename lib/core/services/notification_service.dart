@@ -12,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../firebase_options.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
+  final cache = ref.read(localCacheServiceProvider);
+  return NotificationService(cache);
 });
 
 // ─── Notification Icons Helper ────────────────────────────────────────────────
@@ -294,8 +295,14 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
   if (id != null) _actionStreamController.add(id);
 }
 
+import 'local_cache_service.dart';
+
 // ─── NotificationService ──────────────────────────────────────────────────────
 class NotificationService {
+  final LocalCacheService? _cache;
+  static final Map<String, int> _knownVersions = {};
+  NotificationService([this._cache]);
+
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -413,6 +420,23 @@ class NotificationService {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
         debugPrint('[FCM] Data: ${message.data}');
+
+        if (message.data['type'] == 'CACHE_INVALIDATE') {
+          final scope = message.data['scope'] as String?;
+          final versionStr = message.data['version']?.toString();
+          final version = versionStr != null ? int.tryParse(versionStr) ?? 0 : 0;
+
+          if (scope != null && scope.isNotEmpty) {
+            final knownVersion = _knownVersions[scope] ?? 0;
+            if (version > 0 && version <= knownVersion) {
+              debugPrint('[FCM CACHE] Ignored stale/out-of-order push for $scope (version $version <= known $knownVersion)');
+              return;
+            }
+            if (version > 0) _knownVersions[scope] = version;
+            debugPrint('[FCM CACHE] Silent cache invalidation triggered for scope: $scope (v$version)');
+            await _cache?.invalidatePattern(scope);
+          }
+        }
 
         try {
           final prefs = await SharedPreferences.getInstance();

@@ -551,7 +551,7 @@ class StudentApi {
       '/library/info',
       'library_info',
       (json) => LibraryInfo.fromJson(json),
-      maxAge: const Duration(days: 365),
+      maxAge: const Duration(hours: 24),
     );
   }
 
@@ -566,25 +566,13 @@ class StudentApi {
     return await _client.unwrapList(response, Facility.fromJson);
   }
 
-  Stream<List<Facility>> facilitiesStream() async* {
-    final cached = _cache.getCache(
+  Stream<List<Facility>> facilitiesStream() {
+    return _streamList<Facility>(
+      '/library/facilities',
       'facilities',
+      Facility.fromJson,
       maxAge: const Duration(hours: 4),
     );
-    bool hasValidCache = false;
-    if (cached != null && cached is List) {
-      try {
-        yield cached.whereType<JsonMap>().map(Facility.fromJson).toList();
-        hasValidCache = true;
-      } catch (_) {}
-    }
-    if (hasValidCache) return;
-
-    try {
-      yield await facilities();
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
   }
 
   Future<List<Achiever>> achievers({bool featured = false}) async {
@@ -602,23 +590,15 @@ class StudentApi {
     return await _client.unwrapList(response, Achiever.fromJson);
   }
 
-  Stream<List<Achiever>> achieversStream({bool featured = false}) async* {
+  Stream<List<Achiever>> achieversStream({bool featured = false}) {
     final cacheKey = featured ? 'achievers_featured' : 'achievers';
-    final cached = _cache.getCache(cacheKey, maxAge: const Duration(hours: 4));
-    bool hasValidCache = false;
-    if (cached != null && cached is List) {
-      try {
-        yield cached.whereType<JsonMap>().map(Achiever.fromJson).toList();
-        hasValidCache = true;
-      } catch (_) {}
-    }
-    if (hasValidCache) return;
-
-    try {
-      yield await achievers(featured: featured);
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
+    return _streamList<Achiever>(
+      '/library/achievers',
+      cacheKey,
+      Achiever.fromJson,
+      query: featured ? {'featured': 'true'} : null,
+      maxAge: const Duration(hours: 4),
+    );
   }
 
   Future<List<ReviewRecord>> reviews() async {
@@ -642,25 +622,13 @@ class StudentApi {
     });
   }
 
-  Stream<ReviewSummary> reviewSummaryStream() async* {
-    final cached = _cache.getCache(
+  Stream<ReviewSummary> reviewSummaryStream() {
+    return _streamItem<ReviewSummary>(
+      '/library/reviews/summary',
       'review_summary',
+      (json) => ReviewSummary.fromJson(json),
       maxAge: const Duration(hours: 1),
     );
-    bool hasValidCache = false;
-    if (cached != null) {
-      try {
-        yield ReviewSummary.fromJson(cached);
-        hasValidCache = true;
-      } catch (_) {}
-    }
-    if (hasValidCache) return;
-
-    try {
-      yield await reviewSummary();
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
   }
 
   Future<List<GalleryImage>> galleryImages() async {
@@ -674,25 +642,13 @@ class StudentApi {
     return await _client.unwrapList(response, GalleryImage.fromJson);
   }
 
-  Stream<List<GalleryImage>> galleryImagesStream() async* {
-    final cached = _cache.getCache(
+  Stream<List<GalleryImage>> galleryImagesStream() {
+    return _streamList<GalleryImage>(
+      '/library/gallery',
       'gallery_images',
+      GalleryImage.fromJson,
       maxAge: const Duration(hours: 4),
     );
-    bool hasValidCache = false;
-    if (cached != null && cached is List) {
-      try {
-        yield cached.whereType<JsonMap>().map(GalleryImage.fromJson).toList();
-        hasValidCache = true;
-      } catch (_) {}
-    }
-    if (hasValidCache) return;
-
-    try {
-      yield await galleryImages();
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
   }
 
   Future<ReviewRecord> submitReview({
@@ -725,23 +681,24 @@ class StudentApi {
   }
 
   Stream<ReviewRecord?> myReviewStream() async* {
-    final cached = _cache.getCache(
-      'my_review',
-      maxAge: const Duration(minutes: 15),
-    );
-    bool hasValidCache = false;
-    if (cached != null) {
+    // Yield stale cache instantly for 0ms UI
+    final staleCache = _cache.getCache('my_review');
+    bool hasYielded = false;
+    if (staleCache != null) {
       try {
-        yield ReviewRecord.fromJson(cached);
-        hasValidCache = true;
+        yield ReviewRecord.fromJson(staleCache);
+        hasYielded = true;
       } catch (_) {}
     }
-    if (hasValidCache) return;
+
+    // Always revalidate from network
+    final validCache = _cache.getCache('my_review', maxAge: const Duration(minutes: 15));
+    if (hasYielded && validCache != null) return;
 
     try {
       yield await myReview();
     } catch (_) {
-      if (cached == null) rethrow;
+      if (!hasYielded) rethrow;
     }
   }
 
@@ -756,25 +713,13 @@ class StudentApi {
     return await _client.unwrapList(response, HomeSlider.fromJson);
   }
 
-  Stream<List<HomeSlider>> slidersStream() async* {
-    final cached = _cache.getCache(
+  Stream<List<HomeSlider>> slidersStream() {
+    return _streamList<HomeSlider>(
+      '/sliders',
       'home_sliders',
+      HomeSlider.fromJson,
       maxAge: const Duration(hours: 2),
     );
-    bool hasValidCache = false;
-    if (cached != null && cached is List) {
-      try {
-        yield cached.whereType<JsonMap>().map(HomeSlider.fromJson).toList();
-        hasValidCache = true;
-      } catch (_) {}
-    }
-    if (hasValidCache) return;
-
-    try {
-      yield await sliders();
-    } catch (_) {
-      if (cached == null) rethrow;
-    }
   }
 
   Stream<StudentProfile> profileStream() => _streamItem(
