@@ -225,6 +225,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get home_good_morning => 'શુભ સવાર';
 
   @override
+  String get home_good_afternoon => 'શુભ બપોર';
+
+  @override
+  String get home_good_evening => 'શુભ સાંજ';
+
+  @override
   String get home_holiday => 'રજા';
 
   @override
@@ -938,4 +944,376 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get btn_retry => 'ફરી પ્રયાસ કરો';
+
+  @override
+  String get settings_title => 'સેટિંગ્સ';
+
+  @override
+  String get settings_general => 'સામાન્ય';
+
+  @override
+  String get settings_theme => 'થીમ';
+
+  @override
+  String get settings_information => 'માહિતી';
+
+  @override
+  String get settings_privacy_policy => 'ગોપનીયતા નીતિ';
+
+  @override
+  String get settings_instructions => 'સૂચનાઓ';
+
+  @override
+  String get settings_developer_info => 'ડેવલપર માહિતી';
+
+  @override
+  String get settings_app_version => 'એપ્લિકેશન આવૃત્તિ';
+
+  @override
+  String get settings_logout => 'લૉગઆઉટ';
+
+  @override
+  String get settings_logout_confirm => 'શું તમે ખરેખર લૉગઆઉટ કરવા માંગો છો?';
+
+  @override
+  String get settings_logout_cancel => 'રદ કરો';
+
+  @override
+  String get settings_logout_yes => 'લૉગઆઉટ';
+
+  @override
+  String get dev_info_title => 'ડેવલપર માહિતી';
+
+  @override
+  String get dev_info_app_by => 'એપ્લિકેશન વિકસિત દ્વારા';
+
+  @override
+  String get dev_info_name => 'હિતેશ પટેલ';
+
+  @override
+  String get dev_info_role => 'મુખ્ય ડેવલપર અને મેઈન્ટેનર';
+
+  @override
+  String get dev_info_contact => 'સંપર્ક: developer@shreshtlibrary.com';
+
+  @override
+  String get privacy_policy_title => 'ગોપનીયતા નીતિ';
+
+  @override
+  String get privacy_policy_intro =>
+      'તમારી ગોપનીયતા અમારા માટે મહત્વપૂર્ણ છે. આ ગોપનીયતા નીતિ સમજાવે છે કે શ્રેષ્ઠ લાઇબ્રેરી તમારો વ્યક્તિગત ડેટા કેવી રીતે એકત્રિત કરે છે, તેનો ઉપયોગ કરે છે અને સુરક્ષિત કરે છે.';
+
+  @override
+  String get privacy_data_collection => 'ડેટા સંગ્રહ';
+
+  @override
+  String get privacy_data_collection_desc =>
+      'અમે અમારી લાઇબ્રેરી સેવાઓ પ્રદાન કરવા અને સુધારવા માટે તમારું નામ, મોબાઇલ નંબર, ઇમેઇલ અને અભ્યાસ લક્ષ્યો જેવી માહિતી એકત્રિત કરીએ છીએ.';
+
+  @override
+  String get privacy_data_usage => 'ડેટા ઉપયોગ';
+
+  @override
+  String get privacy_data_usage_desc =>
+      'એકત્રિત ડેટાનો ઉપયોગ વપરાશકર્તા પ્રમાણીકરણ, હાજરી સંચાલન, અભ્યાસ સત્ર ટ્રેકિંગ અને લાઇબ્રેરી અપડેટ્સ સંચાર કરવા માટે થાય છે.';
+
+  @override
+  String get privacy_data_security => 'ડેટા સુરક્ષા';
+
+  @override
+  String get privacy_data_security_desc =>
+      'અમે તમારી વ્યક્તિગત માહિતીને અનધિકૃત ઍક્સેસ, ફેરફાર અથવા જાહેરાત સામે સુરક્ષિત કરવા માટે યોગ્ય સુરક્ષા પગલાં લાગુ કરીએ છીએ.';
+
+  @override
+  String get privacy_contact => 'અમારો સંપર્ક કરો';
+
+  @override
+  String get privacy_contact_desc =>
+      'જો તમને આ ગોપનીયતા નીતિ વિશે કોઈ પ્રશ્નો હોય, તો કૃપા કરીને અમારી સહાયક ટીમનો સંપર્ક કરો.';
+
+  @override
+  String get inst_title => 'સૂચનાઓ';
+
+  @override
+  String get inst_home => 'હોમ સ્ક્રીન';
+
+  @override
+  String get inst_home_desc =>
+      'હોમ સ્ક્રીન તમારી વર્તમાન લાઇબ્રેરી સ્થિતિ દર્શાવે છે. હાજરી સ્થિતિ વિજેટ તમને તમારી આજની હાજરીની ઝડપી ઝાંખી આપે છે. ચેક-ઇન અને ચેક-આઉટ માટે QR કોડ સ્કેન કરવા માટે \'સ્કેન\' બટનનો ઉપયોગ કરો.';
+
+  @override
+  String get inst_attendance => 'હાજરી અને QR';
+
+  @override
+  String get inst_attendance_desc =>
+      '• QR સ્કેન: લાઇબ્રેરી ડેસ્ક પર પ્રદર્શિત QR કોડ સ્કેન કરો. સિસ્ટમ મંજૂર સ્કેનિંગ વિન્ડોના આધારે તમારા ચેક-ઇન/ચેક-આઉટ સમયની નોંધ કરે છે.\n• મોડા આવવાના ગુણ: જો તમે મંજૂર સમય પછી ચેક-ઇન કરો છો, તો તેને મોડા તરીકે ચિહ્નિત કરવામાં આવશે.\n• ઇતિહાસ: મહિનાઓ બદલવા માટે કૅલેન્ડર પર આડા સ્વાઇપ કરો. રંગો હાજર (લીલો), ગેરહાજર (લાલ), અથવા રજા (ગ્રે) દર્શાવે છે.';
+
+  @override
+  String get inst_study => 'અભ્યાસ વિસ્તાર';
+
+  @override
+  String get inst_study_desc =>
+      '• અભ્યાસ સત્ર: એકવાર ચેક ઇન કર્યા પછી, તમે તમારા ઉત્પાદક કલાકોને ટ્રૅક કરવા માટે અભ્યાસ સત્ર શરૂ કરી શકો છો.\n• વિક્ષેપ વિરોધી: જો તમે તમારો ફોન ખસેડો છો અથવા એપ્લિકેશન્સ સ્વિચ કરો છો, તો ટ્રેકર થોભી જશે. વધુ કલાકો મેળવવા માટે ધ્યાન કેન્દ્રિત રાખો.\n• વિશ્લેષણ: દૈનિક, સાપ્તાહિક અને માસિક આંકડા માટે ટૅબ્સ પર સ્વાઇપ કરીને અથવા ટેપ કરીને તમારું અભ્યાસ વિશ્લેષણ જુઓ.';
+
+  @override
+  String get inst_status => 'વિદ્યાર્થી સ્થિતિ';
+
+  @override
+  String get inst_status_desc =>
+      '• લાઇવ: તમારી પાસે સક્રિય સભ્યપદ છે અને તમે બધી સુવિધાઓનો ઉપયોગ કરી શકો છો.\n• બાકી છે: તમારી સભ્યપદ ચુકવણી કર્મચારીઓ દ્વારા સમીક્ષા હેઠળ છે.\n• સસ્પેન્ડેડ: તમારું એકાઉન્ટ એડમિનિસ્ટ્રેટર દ્વારા અસ્થાયી રૂપે અક્ષમ કરવામાં આવ્યું છે.\n• સમાપ્ત: તમારી સભ્યપદ સમાપ્ત થઈ ગઈ છે. કૃપા કરીને સુવિધાઓને ઍક્સેસ કરવા માટે રીન્યુ કરો.';
+
+  @override
+  String get inst_leaderboard => 'લીડરબોર્ડ';
+
+  @override
+  String get inst_leaderboard_desc =>
+      'લીડરબોર્ડ વિદ્યાર્થીઓને તેમના કુલ કેન્દ્રિત અભ્યાસ કલાકોના આધારે ક્રમ આપે છે. રેન્કમાં ઉપર આવવા માટે વિક્ષેપો વિના સતત અભ્યાસ કરો!';
+
+  @override
+  String get inst_home_subtitle => 'તમારું ડેશબોર્ડ વિહંગાવલોકન';
+
+  @override
+  String get inst_attendance_subtitle => 'ચેક ઇન અને આઉટ કેવી રીતે કરવું';
+
+  @override
+  String get inst_calendar => 'હાજરી';
+
+  @override
+  String get inst_calendar_subtitle => 'માસિક દૃશ્ય, અહેવાલો અને આંકડા';
+
+  @override
+  String get inst_calendar_desc =>
+      'કેલેન્ડર દૃશ્યમાં તમારો સંપૂર્ણ હાજરીનો ઇતિહાસ જુઓ. તમે તમારો માસિક સારાંશ જોઈ શકો છો, તમારા કુલ હાજર દિવસોને ટ્રૅક કરી શકો છો અને સમય જતાં તમારી સમયબદ્ધતાનું વિશ્લેષણ કરી શકો છો.';
+
+  @override
+  String get inst_colors => 'હાજરીના રંગો';
+
+  @override
+  String get inst_colors_subtitle => 'જાણો દરેક રંગનો અર્થ શું છે';
+
+  @override
+  String get inst_status_subtitle => 'તમારી સદસ્યતાની સ્થિતિ સમજો';
+
+  @override
+  String get inst_study_subtitle => 'તમારા ઉત્પાદક કલાકોને ટ્રૅક કરો';
+
+  @override
+  String get inst_header_title =>
+      'સ્માર્ટ રીતે એપ્લિકેશનનો ઉપયોગ કરવા માટેની તમારી સંપૂર્ણ માર્ગદર્શિકા.';
+
+  @override
+  String get inst_home_part1 =>
+      'હોમ સ્ક્રીન તમારી વર્તમાન લાઇબ્રેરી સ્થિતિ દર્શાવે છે. હાજરી સ્થિતિ વિજેટ તમને તમારી આજની હાજરીનું ઝડપી વિહંગાવલોકન આપે છે. ચેક-ઇન અને ચેક-આઉટ માટે ક્યૂઆર કોડ સ્કેન કરવા માટે ';
+
+  @override
+  String get inst_home_scan_btn => 'સ્કેન';
+
+  @override
+  String get inst_home_part2 => ' બટનનો ઉપયોગ કરો.';
+
+  @override
+  String get inst_qr_desc =>
+      'ક્યૂઆર હાજરી અમને તમારી હાજરીને સચોટ રીતે ચિહ્નિત કરવામાં મદદ કરે છે. નિર્ધારિત સમયની અંદર લાઇબ્રેરીના પ્રવેશદ્વાર પર પ્રદર્શિત ક્યૂઆર કોડને સ્કેન કરો.';
+
+  @override
+  String get inst_qr_timing => 'લાઇબ્રેરીનો સમય ';
+
+  @override
+  String get inst_qr_dynamic => '(પરિવર્તનશીલ)';
+
+  @override
+  String get inst_qr_start_time => 'પ્રારંભ સમય';
+
+  @override
+  String get inst_qr_allowed_time => 'અનુમત સમય';
+
+  @override
+  String get inst_qr_end_time => 'સમાપ્તિ સમય';
+
+  @override
+  String get inst_qr_rule1_title => 'પ્રવેશ કરતી વખતે ફક્ત એક જ વાર સ્કેન કરો.';
+
+  @override
+  String get inst_qr_rule1_desc => 'ડુપ્લિકેટ સ્કેનની મંજૂરી નથી.';
+
+  @override
+  String get inst_qr_rule2_title =>
+      'તમારે નિર્ધારિત સમયમાં સ્કેન કરવું આવશ્યક છે.';
+
+  @override
+  String get inst_qr_rule2_desc1 => 'તે પછી તમને ';
+
+  @override
+  String get inst_qr_rule2_desc2 => ' તરીકે ચિહ્નિત કરવામાં આવશે.';
+
+  @override
+  String get inst_qr_rule3_title =>
+      'જો તમે અનુમત સમય પછી મોડા આવો છો, તો લાઇબ્રેરી સ્ટાફનો સંપર્ક કરો.';
+
+  @override
+  String get inst_qr_rule3_desc1 =>
+      'જો પરવાનગી હોય તો સ્ટાફ તમને મેન્યુઅલી ચિહ્નિત કરી શકે છે. તમારી સ્થિતિ ';
+
+  @override
+  String get inst_qr_rule3_desc2 => ' તરીકે દેખાશે.';
+
+  @override
+  String get inst_qr_rule4_title =>
+      'ખાતરી કરો કે તમારું સ્થાન (લોકેશન) ચાલુ છે અને ઇન્ટરનેટ ઉપલબ્ધ છે.';
+
+  @override
+  String get inst_qr_how_to => 'સ્કેન કેવી રીતે કરવું?';
+
+  @override
+  String get inst_qr_step1_1 => 'ટેપ કરો ';
+
+  @override
+  String get inst_qr_step1_2 => ' બટન પર.';
+
+  @override
+  String get inst_qr_step2 => 'કેમેરાની પરવાનગી આપો.';
+
+  @override
+  String get inst_qr_step3 => 'કેમેરાને ક્યૂઆર કોડ તરફ પોઇન્ટ કરો.';
+
+  @override
+  String get inst_qr_step4 => 'સફળતા સંદેશની રાહ જુઓ.';
+
+  @override
+  String get inst_qr_step5 => 'તમારી હાજરી નોંધવામાં આવશે.';
+
+  @override
+  String get inst_color_present_title => 'હાજર';
+
+  @override
+  String get inst_color_present_desc =>
+      'તમને સમયસર હાજર ચિહ્નિત કરવામાં આવ્યા હતા.';
+
+  @override
+  String get inst_color_late_title => 'મોડા';
+
+  @override
+  String get inst_color_late_desc => 'તમે અનુમત આગમન સમય પછી સ્કેન કર્યું.';
+
+  @override
+  String get inst_color_absent_title => 'ગેરહાજર';
+
+  @override
+  String get inst_color_absent_desc =>
+      'તમે હાજર ન હતા અથવા તમારો ક્યૂઆર સ્કેન કરવામાં નિષ્ફળ રહ્યા.';
+
+  @override
+  String get inst_color_holiday_title => 'રજા';
+
+  @override
+  String get inst_color_holiday_desc => 'લાઇબ્રેરી રજાના કારણે બંધ હતી.';
+
+  @override
+  String get inst_color_pending_title => 'પેન્ડિંગ';
+
+  @override
+  String get inst_color_pending_desc =>
+      'તમારી હાજરીની સ્થિતિ સમીક્ષા માટે બાકી છે.';
+
+  @override
+  String get inst_status_live_title => 'લાઇવ';
+
+  @override
+  String get inst_status_live_desc =>
+      'તમારી પાસે સક્રિય સદસ્યતા છે અને તમે તમામ સુવિધાઓનો ઉપયોગ કરી શકો છો.';
+
+  @override
+  String get inst_status_pending_title => 'પેન્ડિંગ';
+
+  @override
+  String get inst_status_pending_desc =>
+      'તમારી સદસ્યતા ચુકવણીની સ્ટાફ દ્વારા સમીક્ષા કરવામાં આવી રહી છે.';
+
+  @override
+  String get inst_status_suspended_title => 'સસ્પેન્ડ';
+
+  @override
+  String get inst_status_suspended_desc =>
+      'તમારું ખાતું એડમિન દ્વારા અસ્થાયી રૂપે અક્ષમ કરવામાં આવ્યું છે.';
+
+  @override
+  String get inst_status_expired_title => 'સમાપ્ત';
+
+  @override
+  String get inst_status_expired_desc =>
+      'તમારી સદસ્યતા સમાપ્ત થઈ ગઈ છે. કૃપા કરીને સુવિધાઓને ઍક્સેસ કરવા માટે નવીકરણ કરો.';
+
+  @override
+  String get inst_study_desc_main =>
+      'સ્ટડી એરિયા તમને સુંદર એનાલિટિક્સ સાથે તમારા ઉત્પાદક અભ્યાસ કલાકોને કેન્દ્રિત કરવા અને ટ્રૅક કરવામાં મદદ કરે છે.';
+
+  @override
+  String get inst_study_start_title => 'સત્ર પ્રારંભ કરો';
+
+  @override
+  String get inst_study_start_1 => 'શરૂ કરવા માટે ';
+
+  @override
+  String get inst_study_start_btn => 'નવું સત્ર શરૂ કરો';
+
+  @override
+  String get inst_study_start_2 => ' પર ટેપ કરો.';
+
+  @override
+  String get inst_study_pause_title => 'થોભાવો / ફરી શરૂ કરો';
+
+  @override
+  String get inst_study_pause_desc =>
+      'તમે કોઈપણ સમયે થોભાવી શકો છો અને ફરી શરૂ કરી શકો છો.';
+
+  @override
+  String get inst_study_break_title => 'વિરામનો સમય';
+
+  @override
+  String get inst_study_break_desc =>
+      'ટૂંકા વિરામ લો. એપ્લિકેશન બ્રેક ટાઇમ ગણશે નહીં.';
+
+  @override
+  String get inst_study_end_title => 'સત્ર સમાપ્ત કરો';
+
+  @override
+  String get inst_study_end_1 => 'તમારું સત્ર સમાપ્ત કરવા માટે ';
+
+  @override
+  String get inst_study_end_btn => 'છોડો';
+
+  @override
+  String get inst_study_end_2 => ' પર ટેપ કરો.';
+
+  @override
+  String get inst_study_analytics_title => 'એનાલિટિક્સ';
+
+  @override
+  String get inst_study_analytics_desc =>
+      'દૈનિક, સાપ્તાહિક અને માસિક અભ્યાસ વિશ્લેષણ જુઓ.';
+
+  @override
+  String get inst_study_streak_title => 'ફોકસ સ્ટ્રીક';
+
+  @override
+  String get inst_study_streak_desc =>
+      'તમારી સ્ટ્રીક જાળવી રાખો અને તમારો ફોકસ સમય વધારો.';
+
+  @override
+  String get inst_tips => 'ટિપ્સ';
+
+  @override
+  String get inst_tip1 => 'તમારા ફોનને વિચલિત થતી વસ્તુઓથી દૂર રાખો.';
+
+  @override
+  String get inst_tip2 => 'તમારી આંખોને આરામ આપવા માટે વિરામ સમયનો ઉપયોગ કરો.';
+
+  @override
+  String get inst_tip3 => 'સુસંગતતા એ સફળતાની ચાવી છે.';
+
+  @override
+  String get inst_welcome_to => 'સ્વાગત છે';
+
+  @override
+  String get inst_shresht_library => 'શ્રેષ્ઠ લાઇબ્રેરીમાં';
 }

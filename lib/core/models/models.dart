@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:shreshtlibrary/core/network/token_store.dart';
 import 'package:shreshtlibrary/core/config/app_config.dart';
 
@@ -37,7 +38,7 @@ bool boolean(Object? value, [bool fallback = false]) {
   return {'true', '1', 'yes', 'on'}.contains(value.toString().toLowerCase());
 }
 
-class AuthUser {
+class AuthUser extends Equatable {
   const AuthUser({
     required this.id,
     required this.username,
@@ -53,6 +54,9 @@ class AuthUser {
   final String mobile;
   final String role;
   final bool isActive;
+
+  @override
+  List<Object?> get props => [id, username, email, mobile, role, isActive];
 
   factory AuthUser.fromJson(JsonMap json) {
     return AuthUser(
@@ -85,7 +89,7 @@ class LoginResult {
   }
 }
 
-class StudentProfile {
+class StudentProfile extends Equatable {
   const StudentProfile({
     required this.username,
     required this.firstName,
@@ -114,6 +118,21 @@ class StudentProfile {
 
   String get fullName =>
       [firstName, lastName].where((part) => part.trim().isNotEmpty).join(' ');
+
+  @override
+  List<Object?> get props => [
+        username,
+        firstName,
+        lastName,
+        email,
+        mobile,
+        goal,
+        dob,
+        caste,
+        address,
+        profilePhoto,
+        parentMobile,
+      ];
 
   factory StudentProfile.fromJson(JsonMap json) {
     return StudentProfile(
@@ -145,7 +164,7 @@ class StudentProfile {
   }..removeWhere((_, value) => value == null);
 }
 
-class StudentDashboard {
+class StudentDashboard extends Equatable {
   const StudentDashboard({
     required this.studentId,
     required this.fullName,
@@ -189,6 +208,30 @@ class StudentDashboard {
   final String? attendanceTime;
   final bool allowQrScan;
   final Map<String, dynamic>? cacheVersions;
+
+  @override
+  List<Object?> get props => [
+        studentId,
+        fullName,
+        membershipPlan,
+        membershipDaysLeft,
+        isPremium,
+        membershipStatus,
+        restrictedFeatures,
+        expiryDialogTitle,
+        expiryDialogMessage,
+        assignedSeat,
+        assignedSeatFloor,
+        markedAttendanceToday,
+        isHoliday,
+        holidayTitle,
+        holidayDescription,
+        razorpayKey,
+        attendanceStatus,
+        attendanceTime,
+        allowQrScan,
+        cacheVersions,
+      ];
 
   factory StudentDashboard.fromJson(JsonMap json) {
     final expiryDialog = json['expiry_dialog'] as JsonMap?;
@@ -236,7 +279,7 @@ class DashboardFeatures {
   bool get allowLibraryInfo => !_restrictedFeatures.contains('library_info');
 }
 
-class StudentIdCard {
+class StudentIdCard extends Equatable {
   const StudentIdCard({
     required this.studentId,
     required this.fullName,
@@ -256,6 +299,18 @@ class StudentIdCard {
   final String qrData;
   final String? dob;
   final String? photoUrl;
+
+  @override
+  List<Object?> get props => [
+        studentId,
+        fullName,
+        mobile,
+        email,
+        goal,
+        qrData,
+        dob,
+        photoUrl,
+      ];
 
   factory StudentIdCard.fromJson(JsonMap json) {
     return StudentIdCard(
@@ -342,7 +397,7 @@ class QRCodeRecord {
   );
 }
 
-class AttendanceRecord {
+class AttendanceRecord extends Equatable {
   const AttendanceRecord({
     required this.id,
     required this.studentName,
@@ -368,6 +423,21 @@ class AttendanceRecord {
   final bool isManual;
   final bool isPresent;
   final String? method;
+
+  @override
+  List<Object?> get props => [
+        id,
+        studentName,
+        date,
+        timeIn,
+        timeOut,
+        lateMark,
+        underTime,
+        totalHours,
+        isManual,
+        isPresent,
+        method,
+      ];
 
   factory AttendanceRecord.fromJson(JsonMap json) => AttendanceRecord(
     id: integer(json['id']),
@@ -533,7 +603,7 @@ class SeatAssignment {
   );
 }
 
-class StudentNotification {
+class StudentNotification extends Equatable {
   const StudentNotification({
     required this.id,
     required this.title,
@@ -567,6 +637,25 @@ class StudentNotification {
   final List<String> images;
   final String? displayMode;
   final String type;
+
+  @override
+  List<Object?> get props => [
+        id,
+        title,
+        body,
+        isRead,
+        sentAt,
+        subtitle,
+        description,
+        linkUrl,
+        linkButtonText,
+        eventDate,
+        layout,
+        backgroundImage,
+        images,
+        displayMode,
+        type,
+      ];
 
   factory StudentNotification.fromJson(JsonMap json) {
     String rawBody = text(json['body']);
@@ -759,7 +848,7 @@ class LibraryInfo {
   );
 }
 
-class Facility {
+class Facility extends Equatable {
   const Facility({
     required this.id,
     required this.name,
@@ -774,6 +863,9 @@ class Facility {
   final String? image;
   final String? iconKey;
 
+  @override
+  List<Object?> get props => [id, name, description, image, iconKey];
+
   factory Facility.fromJson(JsonMap json) => Facility(
     id: integer(json['id']),
     name: text(json['name']),
@@ -783,7 +875,7 @@ class Facility {
   );
 }
 
-class Achiever {
+class Achiever extends Equatable {
   const Achiever({
     required this.id,
     required this.name,
@@ -800,6 +892,9 @@ class Achiever {
   final String? goal;
   final String? photo;
 
+  @override
+  List<Object?> get props => [id, name, achievement, year, goal, photo];
+
   factory Achiever.fromJson(JsonMap json) => Achiever(
     id: integer(json['id']),
     name: text(json['name']),
@@ -810,7 +905,7 @@ class Achiever {
   );
 }
 
-class ReviewRecord {
+class ReviewRecord extends Equatable {
   const ReviewRecord({
     required this.id,
     required this.studentName,
@@ -826,6 +921,16 @@ class ReviewRecord {
   final String comment;
   final String? createdAt;
   final bool? isApproved;
+
+  @override
+  List<Object?> get props => [
+        id,
+        studentName,
+        rating,
+        comment,
+        createdAt,
+        isApproved,
+      ];
 
   factory ReviewRecord.fromJson(JsonMap json) => ReviewRecord(
     id: integer(json['id']),
@@ -849,7 +954,7 @@ class ReviewSummary {
   );
 }
 
-class HomeSlider {
+class HomeSlider extends Equatable {
   const HomeSlider({
     required this.id,
     required this.title,
@@ -863,6 +968,9 @@ class HomeSlider {
   final String subtitle;
   final String? image;
   final String linkUrl;
+
+  @override
+  List<Object?> get props => [id, title, subtitle, image, linkUrl];
 
   factory HomeSlider.fromJson(JsonMap json) => HomeSlider(
     id: integer(json['id']),
@@ -915,7 +1023,7 @@ class LeaderboardEntry {
   );
 }
 
-class GalleryImage {
+class GalleryImage extends Equatable {
   const GalleryImage({
     required this.id,
     required this.imageUrl,
@@ -930,6 +1038,9 @@ class GalleryImage {
   final int order;
   final String? createdAt;
 
+  @override
+  List<Object?> get props => [id, imageUrl, caption, order, createdAt];
+
   factory GalleryImage.fromJson(JsonMap json) {
     final parsedUrl = resolveImageUrl(json['image_url']) ?? '';
     return GalleryImage(
@@ -942,7 +1053,7 @@ class GalleryImage {
   }
 }
 
-class StudySession {
+class StudySession extends Equatable {
   const StudySession({
     required this.id,
     required this.studentId,
@@ -958,6 +1069,16 @@ class StudySession {
   final String? endTime;
   final bool isActive;
   final int durationMinutes;
+
+  @override
+  List<Object?> get props => [
+        id,
+        studentId,
+        startTime,
+        endTime,
+        isActive,
+        durationMinutes,
+      ];
 
   factory StudySession.fromJson(JsonMap json) => StudySession(
     id: integer(json['id']),

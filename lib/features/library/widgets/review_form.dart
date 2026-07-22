@@ -36,7 +36,7 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
       ref.invalidate(reviewSummaryProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.review_submitted);
+        AppSnackbar.show(context, message: l10n.review_submitted, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -45,7 +45,7 @@ class _ReviewFormState extends ConsumerState<ReviewForm> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }

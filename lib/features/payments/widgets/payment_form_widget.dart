@@ -50,17 +50,14 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
   void _handlePaymentError(PaymentFailureResponse response) {
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
-      showSnack(context, l10n.payment_failed(response.message ?? ''));
+      AppSnackbar.show(context, message: l10n.payment_failed(response.message ?? ''), type: AppSnackbarType.error);
     }
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
-      showSnack(
-        context,
-        l10n.payment_external_wallet(response.walletName ?? ''),
-      );
+      AppSnackbar.show(context, message: l10n.payment_external_wallet(response.walletName ?? ''), type: AppSnackbarType.info);
     }
   }
 
@@ -69,7 +66,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
     final rzpKey = dashboard?.razorpayKey;
     if (rzpKey == null || rzpKey.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
-      showSnack(context, l10n.payment_unavailable);
+      AppSnackbar.show(context, message: l10n.payment_unavailable, type: AppSnackbarType.error);
       return;
     }
 
@@ -85,7 +82,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.payment_razorpay_error);
+        AppSnackbar.show(context, message: l10n.payment_razorpay_error, type: AppSnackbarType.error);
       }
     }
   }
@@ -93,7 +90,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
   Future<void> _pay() async {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedPlan == null) {
-      showSnack(context, l10n.payment_select_plan);
+      AppSnackbar.show(context, message: l10n.payment_select_plan, type: AppSnackbarType.info);
       return;
     }
     setState(() {
@@ -118,7 +115,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
           );
       if (mounted) {
         _transaction.clear();
-        showSnack(context, l10n.payment_submitted);
+        AppSnackbar.show(context, message: l10n.payment_submitted, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -127,7 +124,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     } finally {
       if (mounted) setState(() => _busy = false);

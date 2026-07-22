@@ -1,0 +1,8 @@
+# Template key.properties file for signing Android Release Builds
+# Create a copy of this file named "key.properties" in the android/ directory.
+# NEVER commit "key.properties" or your ".jks" keystore file to version control.
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=../upload-keystore.jks

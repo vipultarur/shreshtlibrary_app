@@ -224,6 +224,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_good_morning => 'Good Morning';
 
   @override
+  String get home_good_afternoon => 'Good Afternoon';
+
+  @override
+  String get home_good_evening => 'Good Evening';
+
+  @override
   String get home_holiday => 'Holiday';
 
   @override
@@ -937,4 +943,375 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btn_retry => 'Retry';
+
+  @override
+  String get settings_title => 'Settings';
+
+  @override
+  String get settings_general => 'General';
+
+  @override
+  String get settings_theme => 'Theme';
+
+  @override
+  String get settings_information => 'Information';
+
+  @override
+  String get settings_privacy_policy => 'Privacy Policy';
+
+  @override
+  String get settings_instructions => 'Instructions';
+
+  @override
+  String get settings_developer_info => 'Developer Info';
+
+  @override
+  String get settings_app_version => 'App Version';
+
+  @override
+  String get settings_logout => 'Logout';
+
+  @override
+  String get settings_logout_confirm => 'Are you sure you want to logout?';
+
+  @override
+  String get settings_logout_cancel => 'Cancel';
+
+  @override
+  String get settings_logout_yes => 'Logout';
+
+  @override
+  String get dev_info_title => 'Developer Info';
+
+  @override
+  String get dev_info_app_by => 'App developed by';
+
+  @override
+  String get dev_info_name => 'Hitesh Patel';
+
+  @override
+  String get dev_info_role => 'Lead Developer & Maintainer';
+
+  @override
+  String get dev_info_contact => 'Contact: developer@shreshtlibrary.com';
+
+  @override
+  String get privacy_policy_title => 'Privacy Policy';
+
+  @override
+  String get privacy_policy_intro =>
+      'Your privacy is important to us. This privacy policy explains how Shresht Library collects, uses, and protects your personal data.';
+
+  @override
+  String get privacy_data_collection => 'Data Collection';
+
+  @override
+  String get privacy_data_collection_desc =>
+      'We collect information such as your name, mobile number, email, and study goals to provide and improve our library services.';
+
+  @override
+  String get privacy_data_usage => 'Data Usage';
+
+  @override
+  String get privacy_data_usage_desc =>
+      'The collected data is used for user authentication, managing attendance, study session tracking, and communicating library updates.';
+
+  @override
+  String get privacy_data_security => 'Data Security';
+
+  @override
+  String get privacy_data_security_desc =>
+      'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, or disclosure.';
+
+  @override
+  String get privacy_contact => 'Contact Us';
+
+  @override
+  String get privacy_contact_desc =>
+      'If you have any questions about this Privacy Policy, please contact our support team.';
+
+  @override
+  String get inst_title => 'Instructions';
+
+  @override
+  String get inst_home => 'Home Screen';
+
+  @override
+  String get inst_home_desc =>
+      'The home screen shows your current library status. The Attendance Status Widget gives you a quick overview of your today\'s attendance. Use the \'Scan\' button to scan the QR code for Check-in and Check-out.';
+
+  @override
+  String get inst_attendance => 'Attendance & QR';
+
+  @override
+  String get inst_attendance_desc =>
+      '• QR Scan: Scan the QR code displayed at the library desk. The system records your Check-in/Check-out times based on the allowed scanning window.\n• Late Marks: If you check in after the allowed time, it will be marked as late.\n• History: Swipe horizontally on the calendar to change months. Colors indicate Present (Green), Absent (Red), or Holiday (Gray).';
+
+  @override
+  String get inst_study => 'Study Area';
+
+  @override
+  String get inst_study_desc =>
+      '• Study Session: Once checked in, you can start a study session to track your productive hours.\n• Anti-distraction: If you move your phone or switch apps, the tracker will pause. Stay focused to earn more hours.\n• Analytics: View your study analytics by swiping or tapping on tabs for daily, weekly, and monthly statistics.';
+
+  @override
+  String get inst_status => 'Student Status';
+
+  @override
+  String get inst_status_desc =>
+      '• Live: You have an active membership and can use all features.\n• Pending: Your membership payment is under review by staff.\n• Suspended: Your account has been temporarily disabled by the admin.\n• Expired: Your membership has ended. Please renew to access features.';
+
+  @override
+  String get inst_leaderboard => 'Leaderboard';
+
+  @override
+  String get inst_leaderboard_desc =>
+      'The leaderboard ranks students based on their total focused study hours. Study consistently without distractions to climb the ranks!';
+
+  @override
+  String get inst_home_subtitle => 'Your dashboard overview';
+
+  @override
+  String get inst_attendance_subtitle => 'How to check in and out';
+
+  @override
+  String get inst_calendar => 'Attendance';
+
+  @override
+  String get inst_calendar_subtitle => 'Monthly view, reports and statistics';
+
+  @override
+  String get inst_calendar_desc =>
+      'View your complete attendance history in the calendar view. You can see your monthly summary, track your total present days, and analyze your punctuality over time.';
+
+  @override
+  String get inst_colors => 'Attendance Colors';
+
+  @override
+  String get inst_colors_subtitle => 'Know what each color means';
+
+  @override
+  String get inst_status_subtitle => 'Understand your membership state';
+
+  @override
+  String get inst_study_subtitle => 'Track your productive hours';
+
+  @override
+  String get inst_header_title =>
+      'Your complete guide to using the app smartly.';
+
+  @override
+  String get inst_home_part1 =>
+      'The home screen shows your current library status. The Attendance Status Widget gives you a quick overview of your today\'s attendance. Use the ';
+
+  @override
+  String get inst_home_scan_btn => 'Scan';
+
+  @override
+  String get inst_home_part2 =>
+      ' button to scan the QR code for Check-in and Check-out.';
+
+  @override
+  String get inst_qr_desc =>
+      'QR attendance helps us mark your presence accurately. Scan the QR code displayed at the library entrance within the allowed time.';
+
+  @override
+  String get inst_qr_timing => 'Library Timing ';
+
+  @override
+  String get inst_qr_dynamic => '(Dynamic)';
+
+  @override
+  String get inst_qr_start_time => 'Start Time';
+
+  @override
+  String get inst_qr_allowed_time => 'Allowed Time';
+
+  @override
+  String get inst_qr_end_time => 'End Time';
+
+  @override
+  String get inst_qr_rule1_title => 'Scan only once when you enter.';
+
+  @override
+  String get inst_qr_rule1_desc => 'Duplicate scans are not allowed.';
+
+  @override
+  String get inst_qr_rule2_title => 'You must scan within the allowed time.';
+
+  @override
+  String get inst_qr_rule2_desc1 => 'After that you will be marked as ';
+
+  @override
+  String get inst_qr_rule2_desc2 => '.';
+
+  @override
+  String get inst_qr_rule3_title =>
+      'If you come late after the allowed time, contact library staff.';
+
+  @override
+  String get inst_qr_rule3_desc1 =>
+      'Staff can mark you manually if permitted. Your status will show as ';
+
+  @override
+  String get inst_qr_rule3_desc2 => '.';
+
+  @override
+  String get inst_qr_rule4_title =>
+      'Make sure your location is ON and internet is available.';
+
+  @override
+  String get inst_qr_how_to => 'How to Scan?';
+
+  @override
+  String get inst_qr_step1_1 => 'Tap on ';
+
+  @override
+  String get inst_qr_step1_2 => ' button.';
+
+  @override
+  String get inst_qr_step2 => 'Allow camera permission.';
+
+  @override
+  String get inst_qr_step3 => 'Point camera to the QR code.';
+
+  @override
+  String get inst_qr_step4 => 'Wait for success message.';
+
+  @override
+  String get inst_qr_step5 => 'Your attendance will be recorded.';
+
+  @override
+  String get inst_color_present_title => 'Present';
+
+  @override
+  String get inst_color_present_desc => 'You were marked present on time.';
+
+  @override
+  String get inst_color_late_title => 'Late';
+
+  @override
+  String get inst_color_late_desc =>
+      'You scanned after the allowed arrival time.';
+
+  @override
+  String get inst_color_absent_title => 'Absent';
+
+  @override
+  String get inst_color_absent_desc =>
+      'You did not attend or failed to scan your QR.';
+
+  @override
+  String get inst_color_holiday_title => 'Holiday';
+
+  @override
+  String get inst_color_holiday_desc => 'The library was closed for a holiday.';
+
+  @override
+  String get inst_color_pending_title => 'Pending';
+
+  @override
+  String get inst_color_pending_desc =>
+      'Your attendance status is pending review.';
+
+  @override
+  String get inst_status_live_title => 'Live';
+
+  @override
+  String get inst_status_live_desc =>
+      'You have an active membership and can use all features.';
+
+  @override
+  String get inst_status_pending_title => 'Pending';
+
+  @override
+  String get inst_status_pending_desc =>
+      'Your membership payment is under review by staff.';
+
+  @override
+  String get inst_status_suspended_title => 'Suspended';
+
+  @override
+  String get inst_status_suspended_desc =>
+      'Your account has been temporarily disabled by the admin.';
+
+  @override
+  String get inst_status_expired_title => 'Expired';
+
+  @override
+  String get inst_status_expired_desc =>
+      'Your membership has ended. Please renew to access features.';
+
+  @override
+  String get inst_study_desc_main =>
+      'Study Area helps you focus and track your productive study hours with beautiful analytics.';
+
+  @override
+  String get inst_study_start_title => 'Start Session';
+
+  @override
+  String get inst_study_start_1 => 'Tap on ';
+
+  @override
+  String get inst_study_start_btn => 'Start New Session';
+
+  @override
+  String get inst_study_start_2 => ' to begin.';
+
+  @override
+  String get inst_study_pause_title => 'Pause / Resume';
+
+  @override
+  String get inst_study_pause_desc => 'You can pause and resume anytime.';
+
+  @override
+  String get inst_study_break_title => 'Break Time';
+
+  @override
+  String get inst_study_break_desc =>
+      'Take short breaks. App will not count break time.';
+
+  @override
+  String get inst_study_end_title => 'End Session';
+
+  @override
+  String get inst_study_end_1 => 'Tap ';
+
+  @override
+  String get inst_study_end_btn => 'Quit';
+
+  @override
+  String get inst_study_end_2 => ' to end your session.';
+
+  @override
+  String get inst_study_analytics_title => 'Analytics';
+
+  @override
+  String get inst_study_analytics_desc =>
+      'View daily, weekly and monthly study analytics.';
+
+  @override
+  String get inst_study_streak_title => 'Focus Streak';
+
+  @override
+  String get inst_study_streak_desc =>
+      'Maintain your streak and increase your focus time.';
+
+  @override
+  String get inst_tips => 'Tips';
+
+  @override
+  String get inst_tip1 => 'Keep your phone away from distractions.';
+
+  @override
+  String get inst_tip2 => 'Use break time to relax your eyes.';
+
+  @override
+  String get inst_tip3 => 'Consistency is the key to success.';
+
+  @override
+  String get inst_welcome_to => 'Welcome to';
+
+  @override
+  String get inst_shresht_library => 'Shresht Library';
 }

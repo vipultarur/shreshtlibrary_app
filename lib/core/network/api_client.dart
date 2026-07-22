@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 import 'package:dio/dio.dart';
 
@@ -7,6 +8,16 @@ import 'package:shreshtlibrary/core/network/token_store.dart';
 
 typedef JsonMap = Map<String, dynamic>;
 typedef JsonParser<T> = T Function(Object? data);
+
+class _ParseArgs<T> {
+  const _ParseArgs(this.rows, this.parser);
+  final List<JsonMap> rows;
+  final T Function(JsonMap json) parser;
+}
+
+List<T> _parseList<T>(_ParseArgs<T> args) {
+  return args.rows.map(args.parser).toList();
+}
 
 class ApiClient {
   ApiClient({required this.baseUrl, required this.tokenStore, Dio? dio})
@@ -81,13 +92,27 @@ class ApiClient {
     return parser(payload);
   }
 
-  List<T> unwrapList<T>(
+  Future<List<T>> unwrapList<T>(
     Response<dynamic> response,
     T Function(JsonMap json) parser,
-  ) {
-    return unwrap<List<T>>(response, (data) {
-      final rows = data is List ? data : const <Object?>[];
-      return rows.whereType<JsonMap>().map(parser).toList();
+  ) async {
+    return unwrap<Future<List<T>>>(response, (data) async {
+      List<dynamic> rows = [];
+      if (data is List) {
+        rows = data;
+      } else if (data is JsonMap) {
+        if (data.containsKey('data') && data['data'] is List) {
+          rows = data['data'] as List<dynamic>;
+        } else if (data.containsKey('results') && data['results'] is List) {
+          rows = data['results'] as List<dynamic>;
+        }
+      }
+      final validRows = rows.whereType<JsonMap>().toList();
+      if (validRows.length > 50) {
+        // PERF: moved off main thread
+        return await compute(_parseList<T>, _ParseArgs<T>(validRows, parser));
+      }
+      return validRows.map(parser).toList();
     });
   }
 

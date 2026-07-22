@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import 'package:shreshtlibrary/core/theme/app_dimensions.dart';
+import 'package:shreshtlibrary/common/widgets/app_image.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/features/home/widgets/home_slider.dart';
 
@@ -37,7 +38,7 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
         return Column(
           children: [
             Container(
-              margin: const EdgeInsets.only(left: 20, right: 20),
+              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
               height: 140,
               child: CarouselSlider.builder(
                 options: CarouselOptions(
@@ -57,64 +58,69 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                   Widget slideContent = Container(
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(24),
-                      image: slider.image != null && slider.image!.isNotEmpty
-                          ? DecorationImage(
-                              image: CachedNetworkImageProvider(
-                                slider.image!,
-                                errorListener: (_) {},
-                              ),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
+                      borderRadius: AppDimensions.borderRadiusXl,
                     ),
-                    padding: const EdgeInsets.all(20),
-                    alignment: Alignment.bottomLeft,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    clipBehavior: Clip.hardEdge,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
+                        if (slider.image != null && slider.image!.isNotEmpty)
+                          AppImage(
+                            urlOrPath: slider.image!,
+                            type: AppImageType.network,
+                            fit: BoxFit.cover,
+                          ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.85,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            slider.title.isEmpty ? 'title' : slider.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.85,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            slider.subtitle.isEmpty
-                                ? 'sub title'
-                                : slider.subtitle,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
+                          padding: AppDimensions.paddingAllLg,
+                          alignment: Alignment.bottomLeft,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.spacingSm,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.85,
+                                  ),
+                                  borderRadius: AppDimensions.borderRadiusMd,
+                                ),
+                                child: Text(
+                                  slider.title.isEmpty ? 'title' : slider.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: AppDimensions.spacingXs),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.spacingSm,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.85,
+                                  ),
+                                  borderRadius: AppDimensions.borderRadiusMd,
+                                ),
+                                child: Text(
+                                  slider.subtitle.isEmpty
+                                      ? 'sub title'
+                                      : slider.subtitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -136,12 +142,12 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                 },
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs, vertical: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: AppDimensions.borderRadiusXl,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -158,7 +164,7 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                     height: 6,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppDimensions.borderRadiusXs,
                     ),
                   );
                 }),
@@ -173,10 +179,11 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
         height: 180,
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: AppDimensions.borderRadiusXl,
         ),
       ),
       error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
+

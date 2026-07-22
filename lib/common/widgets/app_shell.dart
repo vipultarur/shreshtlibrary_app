@@ -3,6 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
+import 'package:shreshtlibrary/features/attendance/attendance_screen.dart';
+import 'package:shreshtlibrary/features/home/widgets/home_slider.dart';
+import 'package:shreshtlibrary/features/library/library_screen.dart';
+import 'package:shreshtlibrary/features/profile/profile_screen.dart';
+import 'package:shreshtlibrary/features/home/widgets/digital_id_card.dart';
+import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/theme/app_colors.dart';
 
@@ -32,8 +39,33 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      ref.invalidate(dashboardProvider);
+      _refreshAllFreshData();
     }
+  }
+
+  Future<void> _refreshAllFreshData() async {
+    try {
+      final cache = ref.read(localCacheServiceProvider);
+      await cache.clearCache('dashboard');
+      await cache.invalidatePattern('attendanceLogs');
+      await cache.clearCache('profile');
+      await cache.clearCache('idCard');
+      await cache.clearCache('studySessionHistory');
+      await cache.clearCache('home_sliders');
+      await cache.clearCache('facilities');
+      await cache.clearCache('achievers');
+      await cache.clearCache('gallery_images');
+    } catch (_) {}
+
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(attendanceLogsProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(idCardProvider);
+    ref.invalidate(studyHistoryProvider);
+    ref.invalidate(homeSlidersProvider);
+    ref.invalidate(facilitiesProvider);
+    ref.invalidate(achieversProvider);
+    ref.invalidate(galleryImagesProvider);
   }
 
   void _onTap(int index) {

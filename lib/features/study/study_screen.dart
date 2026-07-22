@@ -10,6 +10,7 @@ import 'package:shreshtlibrary/features/attendance/attendance_screen.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/common/widgets/premium_buy_container.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
@@ -84,7 +85,14 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
   }
 
   Future<void> _onRefresh() async {
+    // Clear local Hive cache entries so network always fetches fresh data
+    final cache = ref.read(localCacheServiceProvider);
+    await cache.clearCache('studySessionHistory');
+    await cache.clearCache('leaderboard_month');
+    await cache.clearCache('leaderboard_week');
+    await cache.clearCache('dashboard');
     ref.invalidate(studyHistoryProvider);
+    ref.invalidate(dashboardProvider);
   }
 
   @override
@@ -786,9 +794,12 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
       ),
     );
 
-    final isCheckedIn =
-        todayLog != null && todayLog.isPresent && todayLog.timeIn != null;
-    final isCheckedOut = todayLog != null && todayLog.timeOut != null;
+    final isCheckedIn = todayLog != null &&
+        (todayLog.isPresent || todayLog.lateMark || todayLog.timeIn != null);
+    final isCheckedOut = todayLog != null &&
+        todayLog.timeOut != null &&
+        todayLog.timeOut!.isNotEmpty &&
+        todayLog.timeOut != '00:00:00';
     final canStartSession = isCheckedIn && !isCheckedOut;
 
     if (!canStartSession &&
@@ -1283,6 +1294,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isActive = session.isActive;
 
     DateTime? startTime;
     try {
@@ -1311,10 +1323,15 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
+              color: isActive
+                  ? Colors.orange.withValues(alpha: 0.1)
+                  : Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(Icons.check_circle, color: Colors.green),
+            child: Icon(
+              isActive ? Icons.play_arrow_rounded : Icons.check_circle,
+              color: isActive ? Colors.orange : Colors.green,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1341,15 +1358,15 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                durationStr,
+                isActive ? 'Ongoing' : durationStr,
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: theme.textTheme.bodyLarge?.color,
+                  fontSize: isActive ? 15 : 18,
+                  color: isActive ? Colors.orange : theme.textTheme.bodyLarge?.color,
                 ),
               ),
               Text(
-                l10n.study_history_studied,
+                isActive ? 'Active Now' : l10n.study_history_studied,
                 style: const TextStyle(color: Colors.grey, fontSize: 11),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:shreshtlibrary/core/config/app_config.dart';
@@ -41,14 +42,10 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   @override
   AsyncValue<StudentDashboard> build() {
     final cache = ref.read(localCacheServiceProvider);
-    final cachedData = cache.getCache(
-      'dashboard',
-      maxAge: const Duration(minutes: 5),
-    );
+    // Ignore maxAge for initial load to ensure fast startup (stale-while-revalidate)
+    final cachedData = cache.getCache('dashboard');
 
     if (cachedData != null && cachedData is Map<String, dynamic>) {
-      // Return cached data immediately for instant load,
-      // but always refresh in background to ensure data is fresh.
       Future.microtask(() => _fetch());
       return AsyncData(StudentDashboard.fromJson(cachedData));
     }
@@ -58,9 +55,29 @@ class DashboardNotifier extends Notifier<AsyncValue<StudentDashboard>> {
   }
 
   Future<void> _fetch() async {
+    StudentDashboard? dashboard;
+    int retryCount = 0;
+    while (true) {
+      try {
+        dashboard = await ref.read(studentApiProvider).dashboard();
+        break;
+      } catch (e, st) {
+        retryCount++;
+        if (retryCount >= 2) {
+          if (!state.hasValue) {
+            state = AsyncError(e, st);
+          } else {
+            // If we already have stale data, don't transition to error state
+            // Just log the error and keep showing the cached data
+            debugPrint('Failed to refresh dashboard data: $e');
+          }
+          return;
+        }
+        await Future<void>.delayed(Duration(seconds: 1 * retryCount));
+      }
+    }
+
     try {
-      final dashboard = await ref.watch(studentApiProvider).dashboard();
-      
       final cache = ref.read(localCacheServiceProvider);
       if (dashboard.cacheVersions != null) {
         final localVersions = cache.getCacheVersions();

@@ -21,7 +21,7 @@ class NotificationCard extends ConsumerWidget {
       await ref.read(studentApiProvider).markNotificationRead(item.id);
       ref.invalidate(notificationsProvider);
     } on ApiFailure catch (failure) {
-      if (context.mounted) showSnack(context, failure.message);
+      if (context.mounted) AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
     }
   }
 
@@ -117,21 +117,45 @@ class NotificationCard extends ConsumerWidget {
           : Colors.purple.shade50;
     }
 
-    return InkWell(
-      onTap: () {
-        if (isUnread) _markRead(context, ref);
-        context.push('/notifications/${item.id}', extra: item);
-      },
-      child: Container(
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
         color: isUnread
             ? (isDark
-                  ? Colors.white10
-                  : Colors.blue.shade50.withValues(alpha: 0.3))
-            : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.blue.shade50.withValues(alpha: 0.5))
+            : (isDark ? theme.colorScheme.surface : Colors.white),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isUnread
+              ? (isDark
+                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                  : Colors.blue.shade200)
+              : theme.dividerColor.withValues(alpha: isDark ? 0.1 : 0.5),
+          width: isUnread ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          if (!isUnread)
+            BoxShadow(
+              color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            if (isUnread) _markRead(context, ref);
+            context.push('/notifications/${item.id}', extra: item);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // Unread Dot
             SizedBox(
               width: 16,
@@ -208,11 +232,13 @@ class NotificationCard extends ConsumerWidget {
                       color: isDark ? Colors.white38 : Colors.black38,
                       fontWeight: FontWeight.w500,
                     ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

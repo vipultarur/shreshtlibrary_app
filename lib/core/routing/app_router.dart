@@ -33,6 +33,10 @@ import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
 import 'package:shreshtlibrary/common/widgets/placeholder_screen.dart';
 import 'package:shreshtlibrary/common/widgets/subscription_expired_screen.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
+import 'package:shreshtlibrary/features/settings/settings_screen.dart';
+import 'package:shreshtlibrary/features/settings/privacy_policy_screen.dart';
+import 'package:shreshtlibrary/features/settings/instructions_screen.dart';
+import 'package:shreshtlibrary/features/settings/developer_screen.dart';
 
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
@@ -411,7 +415,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const PlaceholderScreen(title: 'Settings'),
+        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: '/contact',
@@ -427,8 +431,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/privacy-policy',
-        builder: (context, state) =>
-            const PlaceholderScreen(title: 'Privacy Policy'),
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/instructions',
+        builder: (context, state) => const InstructionsScreen(),
+      ),
+      GoRoute(
+        path: '/developer',
+        builder: (context, state) => const DeveloperScreen(),
       ),
       GoRoute(
         path: '/terms-conditions',

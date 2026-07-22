@@ -121,7 +121,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
       ref.invalidate(profileProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.profile_updated);
+        AppSnackbar.show(context, message: l10n.profile_updated, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -130,7 +130,7 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     } finally {
       if (mounted) setState(() => _saveBusy = false);
@@ -166,12 +166,12 @@ class _ProfileEditorState extends ConsumerState<ProfileEditor> {
         });
         ref.invalidate(profileProvider);
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.profile_photo_updated);
+        AppSnackbar.show(context, message: l10n.profile_photo_updated, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
         setState(() => _localPhoto = null); // rollback local preview on error
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     } finally {
       if (mounted) setState(() => _photoBusy = false);

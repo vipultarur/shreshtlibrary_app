@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 
@@ -76,6 +77,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
+                // Clear all local Hive caches to force fresh server fetch
+                final cache = ref.read(localCacheServiceProvider);
+                await cache.clearCache('dashboard');
+                await cache.clearCache('home_sliders');
+                await cache.clearCache('facilities');
+                await cache.clearCache('achievers');
+                await cache.clearCache('achievers_featured');
+                await cache.clearCache('gallery_images');
                 ref.invalidate(dashboardProvider);
                 ref.invalidate(homeSlidersProvider);
                 ref.invalidate(facilitiesProvider);

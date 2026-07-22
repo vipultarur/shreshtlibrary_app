@@ -186,9 +186,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final msg = nonField is List
           ? nonField.first.toString()
           : nonField.toString();
-      showSnack(context, msg);
+      AppSnackbar.show(context, message: msg, type: AppSnackbarType.info);
     } else if (errors.isEmpty) {
-      showSnack(context, auth.error ?? defaultMsg);
+      AppSnackbar.show(context, message: auth.error ?? defaultMsg, type: AppSnackbarType.error);
     } else {
       // Don't show snack for field errors, as they are shown below the text fields
     }
@@ -230,7 +230,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             }
           });
         });
-        showSnack(context, l10n.register_snack_otp_success);
+        AppSnackbar.show(context, message: l10n.register_snack_otp_success, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (e) {
       if (mounted) {
@@ -242,7 +242,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 _clientErrors['mobile'] = msg is List ? msg[0] : msg.toString(),
           );
         } else {
-          showSnack(context, e.message);
+          AppSnackbar.show(context, message: e.message, type: AppSnackbarType.error);
         }
       }
     } finally {
@@ -279,7 +279,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _otpVerified = true;
           _resendTimer?.cancel();
         });
-        showSnack(context, l10n.register_snack_mobile_verified);
+        AppSnackbar.show(context, message: l10n.register_snack_mobile_verified, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (e) {
       if (mounted) {
@@ -404,7 +404,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _clientErrors.containsKey('mobile') ||
               _clientErrors.containsKey('otp'))) {
         setState(() => _step = 1);
-        showSnack(context, l10n.register_snack_fix_step1);
+        AppSnackbar.show(context, message: l10n.register_snack_fix_step1, type: AppSnackbarType.info);
       }
       firstErrorFocus?.requestFocus();
       return;
@@ -428,7 +428,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
-      showSnack(context, l10n.register_snack_success);
+      AppSnackbar.show(context, message: l10n.register_snack_success, type: AppSnackbarType.success);
       final state = GoRouterState.of(context);
       final redirectTo = state.uri.queryParameters['redirect_to'];
       if (redirectTo != null && redirectTo.isNotEmpty) {
@@ -453,7 +453,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _otpSent = false;
           }
         });
-        showSnack(context, l10n.register_snack_fix_step1);
+        AppSnackbar.show(context, message: l10n.register_snack_fix_step1, type: AppSnackbarType.info);
       } else {
         _handleError(auth, 'Registration failed.');
       }
@@ -786,13 +786,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 if (hasError) {
                   setState(() {});
-                  showSnack(context, l10n.register_snack_fill_step1);
+                  AppSnackbar.show(context, message: l10n.register_snack_fill_step1, type: AppSnackbarType.info);
                   firstErrorFocus?.requestFocus();
                   return;
                 }
 
                 if (_requireOtp && !_otpVerified) {
-                  showSnack(context, l10n.register_snack_verify_mobile);
+                  AppSnackbar.show(context, message: l10n.register_snack_verify_mobile, type: AppSnackbarType.info);
                   return;
                 }
                 setState(() => _step = 2);

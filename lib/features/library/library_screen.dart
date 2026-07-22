@@ -1,9 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/theme/app_dimensions.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/library/widgets/achiever_carousel.dart';
 import 'package:shreshtlibrary/features/library/widgets/review_form.dart';
@@ -57,29 +58,27 @@ class LibraryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (info.featureImage != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: info.featureImage!,
-                        height: 160,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
+                    AppImage(
+                      urlOrPath: info.featureImage!,
+                      height: 160,
+                      width: double.infinity,
+                      borderRadius: AppDimensions.borderRadiusSm,
                     ),
                   if (info.logoSquare != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingMd,
+                        bottom: AppDimensions.spacingSm,
+                      ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundImage: CachedNetworkImageProvider(
-                              info.logoSquare!,
-                              errorListener: (err) =>
-                                  debugPrint('Image error: $err'),
-                            ),
+                          AppImage(
+                            urlOrPath: info.logoSquare!,
+                            width: 48,
+                            height: 48,
+                            borderRadius: AppDimensions.borderRadiusRound,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppDimensions.spacingMd),
                           Expanded(
                             child: Text(
                               info.name,
@@ -94,7 +93,10 @@ class LibraryScreen extends ConsumerWidget {
                     ),
                   if (info.logoSquare == null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      padding: const EdgeInsets.only(
+                        top: AppDimensions.spacingMd,
+                        bottom: AppDimensions.spacingSm,
+                      ),
                       child: Text(
                         info.name,
                         style: const TextStyle(
@@ -105,12 +107,12 @@ class LibraryScreen extends ConsumerWidget {
                     ),
                   if (info.tagline != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
                       child: Text(info.tagline!),
                     ),
                   if (info.description != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
                       child: Text(info.description!),
                     ),
                   if (info.address != null)
@@ -411,7 +413,7 @@ class LibraryScreen extends ConsumerWidget {
                   : AchieverCarousel(rows),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           SectionCard(
             title: l10n.library_gallery,
             child: AsyncPane(
@@ -423,16 +425,13 @@ class LibraryScreen extends ConsumerWidget {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: rows.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        separatorBuilder: (_, _) => const SizedBox(width: AppDimensions.spacingSm),
                         itemBuilder: (context, index) {
                           final image = rows[index];
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: image.imageUrl,
-                              width: 200,
-                              fit: BoxFit.cover,
-                            ),
+                          return AppImage(
+                            urlOrPath: image.imageUrl,
+                            width: 200,
+                            borderRadius: AppDimensions.borderRadiusSm,
                           );
                         },
                       ),

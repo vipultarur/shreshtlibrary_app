@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:shreshtlibrary/core/theme/app_dimensions.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
@@ -86,7 +85,7 @@ class DigitalIdCardWidget extends ConsumerWidget {
         children: [
           // Top section: Image + Name Pill
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: AppDimensions.paddingAllMd,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.bottomCenter,
@@ -103,17 +102,16 @@ class DigitalIdCardWidget extends ConsumerWidget {
                   clipBehavior: Clip.antiAlias,
                   child:
                       (idCard.photoUrl != null && idCard.photoUrl!.isNotEmpty)
-                      ? Image.network(
-                          idCard.photoUrl!,
+                      ? AppImage(
+                          urlOrPath: idCard.photoUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.network(
-                                'https://ui-avatars.com/api/?name=${Uri.encodeComponent(idCard.fullName)}&background=random&size=200',
-                                fit: BoxFit.cover,
-                              ),
+                          errorWidget: AppImage(
+                            urlOrPath: 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(idCard.fullName)}&background=random&size=200',
+                            fit: BoxFit.cover,
+                          ),
                         )
-                      : Image.network(
-                          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(idCard.fullName)}&background=random&size=200',
+                      : AppImage(
+                          urlOrPath: 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(idCard.fullName)}&background=random&size=200',
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -151,11 +149,11 @@ class DigitalIdCardWidget extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppDimensions.spacingLg),
 
           // Bottom section: Info and QR
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            padding: const EdgeInsets.fromLTRB(AppDimensions.spacingMd, AppDimensions.spacingSm, AppDimensions.spacingMd, AppDimensions.spacingLg),
             child: SizedBox(
               height: 220,
               child: Row(
@@ -164,7 +162,7 @@ class DigitalIdCardWidget extends ConsumerWidget {
                   // Left Info Box
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: AppDimensions.paddingAllMd,
                       decoration: BoxDecoration(
                         color: isDark
                             ? theme.colorScheme.surfaceContainerHighest
@@ -194,12 +192,12 @@ class DigitalIdCardWidget extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppDimensions.spacingMd),
 
                   // Right QR Box
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: AppDimensions.paddingAllMd,
                       decoration: BoxDecoration(
                         color: isDark
                             ? theme.colorScheme.surfaceContainerHighest

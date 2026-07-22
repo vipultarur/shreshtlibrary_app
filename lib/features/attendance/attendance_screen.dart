@@ -11,10 +11,25 @@ import 'package:shreshtlibrary/features/attendance/widgets/stat_card.dart';
 import 'package:shreshtlibrary/features/study/providers/study_session_provider.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/theme/app_colors.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
+
+class FocusedMonthNotifier extends Notifier<DateTime> {
+  @override
+  DateTime build() => DateTime.now();
+  void update(DateTime newDate) => state = newDate;
+}
+
+final focusedMonthProvider = NotifierProvider.autoDispose<FocusedMonthNotifier, DateTime>(
+  FocusedMonthNotifier.new,
+);
 
 final attendanceLogsProvider =
     StreamProvider.autoDispose<List<AttendanceRecord>>((ref) {
-      return ref.watch(studentApiProvider).attendanceLogsStream();
+      final focusedMonth = ref.watch(focusedMonthProvider);
+      return ref.watch(studentApiProvider).attendanceLogsStream(
+        year: focusedMonth.year,
+        month: focusedMonth.month,
+      );
     });
 
 final holidaysProvider = StreamProvider.autoDispose<List<HolidayRecord>>((ref) {
@@ -32,6 +47,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay = DateTime.now();
   bool _isCheckingOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(focusedMonthProvider.notifier).update(_focusedDay);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +86,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               ),
             );
 
-            final isCheckedIn =
-                todayLog != null &&
-                todayLog.isPresent &&
-                todayLog.timeIn != null;
-            final isCheckedOut = todayLog != null && todayLog.timeOut != null;
+            final isCheckedIn = todayLog != null &&
+                (todayLog.isPresent || todayLog.lateMark || todayLog.timeIn != null);
+            final isCheckedOut = todayLog != null &&
+                todayLog.timeOut != null &&
+                todayLog.timeOut!.isNotEmpty &&
+                todayLog.timeOut != '00:00:00';
 
             return Row(
               mainAxisSize: MainAxisSize.min,
@@ -144,6 +168,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                   await ref
                                       .read(studentApiProvider)
                                       .checkoutAttendance();
+                                  
+                                  // Clear the local cache for the current month so it re-fetches
+                                  final focused = ref.read(focusedMonthProvider);
+                                  await ref.read(localCacheServiceProvider).clearCache('attendanceLogs_${focused.year}_${focused.month}');
                                   ref.invalidate(attendanceLogsProvider);
 
                                   // Stop active study session if running
@@ -161,18 +189,18 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                   }
 
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          l10n.attendance_checkout_success,
-                                        ),
-                                      ),
+                                    AppSnackbar.show(
+                                      context,
+                                      message: l10n.attendance_checkout_success,
+                                      type: AppSnackbarType.success,
                                     );
                                   }
                                 } catch (e) {
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
+                                    AppSnackbar.show(
+                                      context,
+                                      message: e.toString(),
+                                      type: AppSnackbarType.error,
                                     );
                                   }
                                 } finally {
@@ -226,7 +254,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
+                // Clear local Hive cache so the stream always fetches fresh data
+                final cache = ref.read(localCacheServiceProvider);
+                await cache.invalidatePattern('attendanceLogs');
+                await cache.clearCache('holidays');
+                await cache.clearCache('dashboard');
                 ref.invalidate(attendanceLogsProvider);
+                ref.invalidate(holidaysProvider);
+                ref.invalidate(dashboardProvider);
               },
               child: AsyncPane(
                 value: ref.watch(attendanceLogsProvider),
@@ -337,22 +372,20 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                             dailyStudyM,
                           ),
                         ),
-                        if (selectedHoliday == null) ...[
-                          const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: _buildMonthlyStudyCard(
-                              monthlyStudyH,
-                              monthlyStudyM,
-                            ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildMonthlyStudyCard(
+                            monthlyStudyH,
+                            monthlyStudyM,
                           ),
-                          const SizedBox(height: 12),
-                          _buildStatsGrid(
-                            daysPresent,
-                            daysAbsent,
-                            totalLateMarks,
-                          ),
-                        ],
+                        ),
+                        const SizedBox(height: 12),
+                        _buildStatsGrid(
+                          daysPresent,
+                          daysAbsent,
+                          totalLateMarks,
+                        ),
                       ],
                     ),
                   );
@@ -392,7 +425,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           });
         },
         onPageChanged: (focusedDay) {
-          _focusedDay = focusedDay;
+          setState(() {
+            _focusedDay = focusedDay;
+          });
+          ref.read(focusedMonthProvider.notifier).update(focusedDay);
         },
         headerStyle: HeaderStyle(
           formatButtonVisible: false,
@@ -672,7 +708,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
     if (holiday != null) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -699,14 +735,14 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               color: theme.brightness == Brightness.dark
                   ? Colors.purple.shade200
                   : Colors.purple,
-              size: 56,
+              size: 36,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               holiday.title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: theme.brightness == Brightness.dark
                     ? Colors.purple.shade100
@@ -715,12 +751,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             ),
             if (holiday.description != null &&
                 holiday.description!.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 holiday.description!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: theme.brightness == Brightness.dark
                       ? Colors.purple.shade200
@@ -728,6 +764,54 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                 ),
               ),
             ],
+          ],
+        ),
+      );
+    }
+
+    if (log != null && !log.isPresent && log.method != 'PENDING') {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: theme.brightness == Brightness.dark
+                ? [
+                    Colors.red.shade900.withValues(alpha: 0.5),
+                    Colors.red.shade800.withValues(alpha: 0.5),
+                  ]
+                : [Colors.red.shade50, Colors.red.shade100],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.red.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.cancel,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.red.shade200
+                  : Colors.red,
+              size: 36,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Absent',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.red.shade100
+                    : Colors.red.shade900,
+              ),
+            ),
           ],
         ),
       );

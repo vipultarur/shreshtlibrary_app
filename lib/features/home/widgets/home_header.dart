@@ -5,10 +5,12 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/theme/app_colors.dart';
+import 'package:shreshtlibrary/core/theme/app_dimensions.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
-import 'package:shreshtlibrary/features/library/library_screen.dart'; // for libraryInfoProvider
-import 'package:shreshtlibrary/features/notifications/notifications_screen.dart'; // for notificationsProvider
+import 'package:shreshtlibrary/features/library/library_screen.dart';
+import 'package:shreshtlibrary/features/notifications/notifications_screen.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
+import 'package:shreshtlibrary/common/widgets/app_image.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -23,7 +25,7 @@ class HomeHeader extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: AppDimensions.spacingMd),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -31,28 +33,31 @@ class HomeHeader extends ConsumerWidget {
             child: Row(
               children: [
                 Container(
-                  width: 45,
-                  height: 45,
+                  width: AppDimensions.iconXl,
+                  height: AppDimensions.iconXl,
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkSurface : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: AppDimensions.borderRadiusRound,
                   ),
                   clipBehavior: Clip.hardEdge,
                   child: logoUrl != null
-                      ? Image.network(
-                          logoUrl,
+                      ? AppImage(
+                          urlOrPath: logoUrl,
+                          type: AppImageType.network,
                           fit: BoxFit.cover,
-                          errorBuilder: (c, e, s) => Image.asset(
-                            'assets/images/nlogo.png',
+                          errorWidget: const AppImage(
+                            urlOrPath: 'assets/images/nlogo.png',
+                            type: AppImageType.asset,
                             fit: BoxFit.cover,
                           ),
                         )
-                      : Image.asset(
-                          'assets/images/nlogo.png',
+                      : const AppImage(
+                          urlOrPath: 'assets/images/nlogo.png',
+                          type: AppImageType.asset,
                           fit: BoxFit.cover,
                         ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,15 +67,11 @@ class HomeHeader extends ConsumerWidget {
                         l10n.app_title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 22,
+                        style: theme.textTheme.displayMedium?.copyWith(
                           fontWeight: FontWeight.w900,
-                          color: isDark
-                              ? AppColors.darkPrimaryText
-                              : theme.textTheme.bodyLarge?.color,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       GestureDetector(
                         onTap: () {
                           launchUrlString(
@@ -83,16 +84,15 @@ class HomeHeader extends ConsumerWidget {
                           children: [
                             Text(
                               "Website",
-                              style: TextStyle(
+                              style: theme.textTheme.labelSmall?.copyWith(
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: AppDimensions.spacingXs),
                             Icon(
                               Icons.open_in_new,
-                              size: 14,
+                              size: AppDimensions.iconSm,
                               color: theme.colorScheme.primary,
                             ),
                           ],
@@ -104,15 +104,15 @@ class HomeHeader extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Row(
             children: [
               Container(
-                width: 45,
-                height: 45,
+                width: AppDimensions.iconXl,
+                height: AppDimensions.iconXl,
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkSurface : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: AppDimensions.borderRadiusRound,
                 ),
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -151,7 +151,7 @@ class HomeHeader extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.red.shade600,
+                              color: theme.colorScheme.error,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: isDark

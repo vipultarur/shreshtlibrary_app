@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await _storage.delete(key: 'remembered_password');
       }
 
-      showSnack(context, l10n.login_success);
+      AppSnackbar.show(context, message: l10n.login_success, type: AppSnackbarType.success);
       final state = GoRouterState.of(context);
       final redirectTo = state.uri.queryParameters['redirect_to'];
       if (redirectTo != null && redirectTo.isNotEmpty) {

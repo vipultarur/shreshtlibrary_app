@@ -405,14 +405,21 @@ class PaymentsScreen extends ConsumerWidget {
                   ],
                 );
               }
-
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  activePlanWidget,
-                  const SectionCard(
-                    title: 'Available Plans',
-                    child: AvailablePlansWidget(),
-                  ),
+                  if (activeMemberships.isNotEmpty)
+                    activePlanWidget
+                  else
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SectionCard(
+                          title: 'Available Plans',
+                          child: AvailablePlansWidget(),
+                        ),
+                      ],
+                    ),
                 ],
               );
             },
@@ -559,14 +566,10 @@ class PaymentsScreen extends ConsumerWidget {
                                         );
                                       } else {
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(
+                                          AppSnackbar.show(
                                             context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Could not download receipt',
-                                              ),
-                                            ),
+                                            message: 'Could not download receipt',
+                                            type: AppSnackbarType.error,
                                           );
                                         }
                                       }

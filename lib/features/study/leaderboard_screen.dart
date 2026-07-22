@@ -55,7 +55,21 @@ class LeaderboardScreen extends ConsumerWidget {
                         return Column(
                           children: [
                             if (top3.isNotEmpty) _buildPodium(top3, theme),
-                            const SizedBox(height: 20),
+                            if (rest.isNotEmpty) ...[
+                              const SizedBox(height: 20),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'All Rankings',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: theme.textTheme.bodyLarge?.color,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
                             ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -73,9 +87,6 @@ class LeaderboardScreen extends ConsumerWidget {
                                     ),
                                   );
                                 } catch (_) {}
-
-                                final isDark =
-                                    theme.brightness == Brightness.dark;
 
                                 return Container(
                                   padding: const EdgeInsets.all(16),
@@ -221,7 +232,7 @@ class LeaderboardScreen extends ConsumerWidget {
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Text(
-                                                    entry.levelInfo.title,
+                                                    'Lvl ${entry.levelInfo.level} • ${entry.levelInfo.title}',
                                                     style: TextStyle(
                                                       color: badgeColor,
                                                       fontSize: 11,
@@ -377,18 +388,33 @@ class LeaderboardScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            entry.hoursFormatted,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
+          child: Column(
+            children: [
+              Text(
+                entry.hoursFormatted,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Lvl ${entry.levelInfo.level} • ${entry.levelInfo.title}',
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),

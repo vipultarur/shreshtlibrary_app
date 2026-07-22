@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
 enum StudySessionStatus { idle, starting, active, stopping, error }
 
@@ -163,6 +164,7 @@ class StudySessionNotifier extends Notifier<StudySessionState> {
       );
 
       await ref.read(studySessionServiceProvider).startService();
+      ref.invalidate(studyHistoryProvider);
     } on ApiFailure catch (e) {
       String msg = 'Failed to start session. Please try again.';
       if (e.code == 'LIBRARY_SUBSCRIPTION_EXPIRED' || e.message.toLowerCase().contains('subscription has expired')) {

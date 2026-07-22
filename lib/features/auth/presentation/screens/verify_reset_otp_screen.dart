@@ -77,12 +77,12 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
       if (mounted) {
         setState(() => _resending = false);
         _startOtpTimer();
-        showSnack(context, 'New OTP sent to ${widget.identifier}');
+        AppSnackbar.show(context, message: 'New OTP sent to ${widget.identifier}', type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
         setState(() => _resending = false);
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }
@@ -133,7 +133,7 @@ class _VerifyResetOtpScreenState extends ConsumerState<VerifyResetOtpScreen> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }

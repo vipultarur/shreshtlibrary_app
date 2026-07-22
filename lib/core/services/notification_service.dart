@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../firebase_options.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
@@ -46,7 +47,23 @@ String _addIconToTitle(String title, String body, String type) {
 // message arrives. It creates a local notification manually.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('notifications_enabled') ?? true;
+    if (!enabled) {
+      debugPrint('[FCM] Notifications are disabled in settings. Skipping background notification.');
+      return;
+    }
+  } catch (e) {
+    debugPrint('[FCM] Error checking notification settings in background: $e');
+  }
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  if (message.notification != null) {
+    debugPrint('[FCM] System notification present in FCM payload. Handled natively by Android OS.');
+    return;
+  }
 
   final plugin = FlutterLocalNotificationsPlugin();
   const androidSettings = AndroidInitializationSettings('ic_stat_nlogo_v4');
@@ -393,10 +410,20 @@ class NotificationService {
           );
 
       // ── FOREGROUND handler ───────────────────────────────────────────────
-      // When app is OPEN and a push arrives, handle it strictly via the GlobalOverlayService
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         debugPrint('[FCM] ✅ Foreground message received: ${message.messageId}');
         debugPrint('[FCM] Data: ${message.data}');
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final enabled = prefs.getBool('notifications_enabled') ?? true;
+          if (!enabled) {
+            debugPrint('[FCM] Notifications are disabled in settings. Skipping foreground notification.');
+            return;
+          }
+        } catch (e) {
+          debugPrint('[FCM] Error checking notification settings in foreground: $e');
+        }
 
         _foregroundMessageController.add(message);
         await showSystemNotification(message);
@@ -464,6 +491,17 @@ class NotificationService {
     String channelId = 'default_notifications',
     String channelName = 'General Notifications',
   }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final enabled = prefs.getBool('notifications_enabled') ?? true;
+      if (!enabled) {
+        debugPrint('[FCM] Notifications are disabled in settings. Skipping showing local notification.');
+        return;
+      }
+    } catch (e) {
+      debugPrint('[FCM] Error checking notification settings in showNotification: $e');
+    }
+
     final int id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
     await flutterLocalNotificationsPlugin.show(
       id: id,
@@ -494,7 +532,6 @@ class NotificationService {
     final body = message.notification?.body ?? message.data['body'] ?? '';
     final type = message.data['type'] ?? 'GENERAL';
     title = _addIconToTitle(title, body, type);
-    final payload = message.data['link_url'] ?? '';
 
     String channelId = 'default_notifications';
     String channelName = 'General Notifications';

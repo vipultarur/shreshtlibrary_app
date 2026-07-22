@@ -104,7 +104,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() {
           _requesting = false;
         });
-        showSnack(context, 'OTP sent! Check your email.');
+        AppSnackbar.show(context, message: 'OTP sent! Check your email.', type: AppSnackbarType.success);
         context.go(
           '/verify-reset-otp?identifier=${Uri.encodeComponent(identifier)}',
         );
@@ -117,7 +117,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }

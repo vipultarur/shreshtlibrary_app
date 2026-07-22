@@ -35,8 +35,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigateToNext() async {
-    // Show splash for at least 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
     // Wait until auth is no longer loading

@@ -64,7 +64,7 @@ class AuthController extends Notifier<AuthState> {
   void _startPolling() {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(
-      const Duration(seconds: 15),
+      const Duration(minutes: 5), // Increased from 15 seconds to reduce API calls
       (_) => _pollStatus(),
     );
   }
@@ -90,11 +90,8 @@ class AuthController extends Notifier<AuthState> {
       }
 
       if (state.isAuthenticated) {
-        final dashboard = await _api.dashboard();
-        ref.read(dashboardProvider.notifier).updateData(dashboard);
-
-        // If suspended, we might want to sign out or just let restricted features screen handle it.
-        // Actually, RestrictedFeatureScreen handles SUSPENDED.
+        // Trigger a background refresh of the dashboard
+        ref.invalidate(dashboardProvider);
       }
     } catch (_) {
       // Ignore network errors during polling
@@ -119,8 +116,10 @@ class AuthController extends Notifier<AuthState> {
     }
 
     _startPolling();
-    // Do an immediate poll in the background to check maintenance
-    _pollStatus();
+    
+    // We don't call _pollStatus() here anymore because the UI (e.g. HomeScreen)
+    // will watch dashboardProvider and trigger a fetch automatically.
+    // This prevents redundant API calls on startup.
   }
 
   void _registerFcmToken() async {

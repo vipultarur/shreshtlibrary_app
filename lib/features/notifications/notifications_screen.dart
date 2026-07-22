@@ -22,6 +22,7 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   final Set<int> _dismissedIds = {};
+  int _limit = 16;
 
   Future<void> _markAllRead(BuildContext context) async {
     try {
@@ -29,12 +30,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ref.invalidate(notificationsProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.noti_all_marked_read);
+        AppSnackbar.show(context, message: l10n.noti_all_marked_read, type: AppSnackbarType.success);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.noti_failed_mark);
+        AppSnackbar.show(context, message: l10n.noti_failed_mark, type: AppSnackbarType.error);
       }
     }
   }
@@ -45,12 +46,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ref.invalidate(notificationsProvider);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.noti_all_cleared);
+        AppSnackbar.show(context, message: l10n.noti_all_cleared, type: AppSnackbarType.success);
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.noti_failed_clear);
+        AppSnackbar.show(context, message: l10n.noti_failed_clear, type: AppSnackbarType.error);
       }
     }
   }
@@ -66,10 +67,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     final l10n = AppLocalizations.of(context)!;
 
-    return PageScaffold(
-      title: l10n.noti_title,
-      onRefresh: () async => ref.invalidate(notificationsProvider),
-      actions: [
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification scrollInfo) {
+        if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+          // Add 10 more items when scrolled near bottom
+          setState(() {
+            _limit += 10;
+          });
+        }
+        return false;
+      },
+      child: PageScaffold(
+        title: l10n.noti_title,
+        onRefresh: () async => ref.invalidate(notificationsProvider),
+        actions: [
         PopupMenuButton<String>(
           onSelected: (value) {
             if (value == 'read_all') _markAllRead(context);
@@ -96,6 +107,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               final visibleRows = rows
                   .where((item) => !_dismissedIds.contains(item.id))
                   .toList();
+                  
+              final paginatedRows = visibleRows.take(_limit).toList();
 
               return visibleRows.isEmpty
                   ? EmptyStateWidget(
@@ -104,10 +117,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       subtitle: "You're all caught up!",
                     )
                   : Column(
-                      children: visibleRows.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final item = entry.value;
-                        return FadeInSlide(
+                      children: [
+                        ...paginatedRows.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final item = entry.value;
+                          return FadeInSlide(
                           delay: Duration(milliseconds: 50 * index),
                           child: Dismissible(
                             key: ValueKey(item.id),
@@ -115,8 +129,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             background: Container(
                               alignment: Alignment.centerRight,
                               margin: const EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 16,
+                                vertical: 6,
                               ),
                               padding: const EdgeInsets.only(right: 24),
                               decoration: BoxDecoration(
@@ -125,7 +138,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                         Brightness.dark
                                     ? Colors.red.shade900.withValues(alpha: 0.3)
                                     : Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Icon(
                                 Icons.delete_outline_rounded,
@@ -146,18 +159,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                   setState(() {
                                     _dismissedIds.remove(item.id);
                                   });
-                                  showSnack(context, l10n.noti_failed_delete);
+                                  AppSnackbar.show(context, message: l10n.noti_failed_delete, type: AppSnackbarType.error);
                                 }
                               }
                             },
                             child: NotificationCard(item),
                           ),
                         );
-                      }).toList(),
+                      }),
+                      if (paginatedRows.length < visibleRows.length)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ],
                     );
             },
           ),
         ],
+      ),
       ),
     );
   }

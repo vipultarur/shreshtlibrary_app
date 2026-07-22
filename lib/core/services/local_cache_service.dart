@@ -127,6 +127,18 @@ class LocalCacheService {
     await _box.delete('cache_$key');
   }
 
+  Future<void> invalidatePattern(String pattern) async {
+    final keysToDelete = _box.keys.where((key) {
+      if (key is String) {
+        // Cache keys are stored as 'cache_$key', so we check if the original key starts with pattern
+        return key.startsWith('cache_$pattern');
+      }
+      return false;
+    }).toList();
+    
+    await _box.deleteAll(keysToDelete);
+  }
+
   // Adding specific methods for the explicit data models requested by user
 
   Future<void> saveLibraryInfo(LibraryInfo info) async {

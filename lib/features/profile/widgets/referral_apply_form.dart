@@ -29,7 +29,7 @@ class _ReferralApplyFormState extends ConsumerState<ReferralApplyForm> {
       await ref.read(studentApiProvider).applyReferral(_code.text.trim());
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        showSnack(context, l10n.referral_code_valid);
+        AppSnackbar.show(context, message: l10n.referral_code_valid, type: AppSnackbarType.success);
       }
     } on ApiFailure catch (failure) {
       if (mounted) {
@@ -38,7 +38,7 @@ class _ReferralApplyFormState extends ConsumerState<ReferralApplyForm> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }

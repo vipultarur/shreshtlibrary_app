@@ -17,28 +17,47 @@ class StudentApi {
     Map<String, dynamic>? query,
     Duration? maxAge,
   }) async* {
-    final cached = _cache.getCache(cacheKey, maxAge: maxAge);
-    bool hasValidCache = false;
-    if (cached != null) {
+    final staleCache = _cache.getCache(cacheKey);
+
+    bool hasYielded = false;
+    if (staleCache != null) {
       try {
-        yield parser(cached as JsonMap);
-        hasValidCache = true;
+        yield parser(staleCache as JsonMap);
+        hasYielded = true;
       } catch (_) {}
     }
 
-    if (hasValidCache && maxAge != null) {
-      return; // Skip network call if valid cache exists and maxAge is enforced
+    // Always fetch from network to get latest data (stale-while-revalidate)
+    // Only skip if maxAge is set AND cache is still fresh AND we already showed data
+    final validCache = maxAge != null ? _cache.getCache(cacheKey, maxAge: maxAge) : null;
+    if (hasYielded && validCache != null && maxAge != null) {
+      return; // Cache is still fresh, skip network call
+    }
+
+    Response<dynamic>? response;
+    int retryCount = 0;
+    while (true) {
+      try {
+        response = await _client.get<dynamic>(path, query: query);
+        break;
+      } catch (_) {
+        retryCount++;
+        if (retryCount >= 2) {
+          if (!hasYielded) rethrow;
+          return;
+        }
+        await Future<void>.delayed(Duration(seconds: 1 * retryCount));
+      }
     }
 
     try {
-      final response = await _client.get<dynamic>(path, query: query);
       yield _client.unwrap<T>(response, (data) {
         final json = data as JsonMap? ?? const {};
         _cache.saveCache(cacheKey, json);
         return parser(json);
       });
     } catch (_) {
-      if (cached == null) rethrow;
+      if (!hasYielded) rethrow;
     }
   }
 
@@ -49,28 +68,49 @@ class StudentApi {
     Map<String, dynamic>? query,
     Duration? maxAge,
   }) async* {
-    final cached = _cache.getCache(cacheKey, maxAge: maxAge);
-    bool hasValidCache = false;
-    if (cached != null && cached is List) {
+    final staleCache = _cache.getCache(cacheKey);
+
+    bool hasYielded = false;
+    if (staleCache != null && staleCache is List) {
       try {
-        yield cached.whereType<JsonMap>().map(parser).toList();
-        hasValidCache = true;
+        yield staleCache.whereType<JsonMap>().map(parser).toList();
+        hasYielded = true;
       } catch (_) {}
     }
 
-    if (hasValidCache && maxAge != null) {
-      return; // Skip network call if valid cache exists and maxAge is enforced
+    // Always fetch from network to get latest data (stale-while-revalidate)
+    // Only skip if maxAge is set AND cache is still fresh AND we already showed data
+    final validCache = maxAge != null ? _cache.getCache(cacheKey, maxAge: maxAge) : null;
+    if (hasYielded && validCache != null && maxAge != null) {
+      return; // Cache is still fresh, skip network call
+    }
+
+    Response<dynamic>? response;
+    int retryCount = 0;
+    while (true) {
+      try {
+        response = await _client.get<dynamic>(path, query: query);
+        break;
+      } catch (_) {
+        retryCount++;
+        if (retryCount >= 2) {
+          if (!hasYielded) rethrow;
+          return;
+        }
+        await Future<void>.delayed(Duration(seconds: 1 * retryCount));
+      }
     }
 
     try {
-      final response = await _client.get<dynamic>(path, query: query);
-      yield _client.unwrap<List<T>>(response, (data) {
-        final rows = data is List ? data : const <Object?>[];
-        _cache.saveCache(cacheKey, rows);
-        return rows.whereType<JsonMap>().map(parser).toList();
-      });
+      final payload = response.data;
+      if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+        _cache.saveCache(cacheKey, payload['data']);
+      } else if (payload is List) {
+        _cache.saveCache(cacheKey, payload);
+      }
+      yield await _client.unwrapList<T>(response, parser);
     } catch (_) {
-      if (cached == null) rethrow;
+      if (!hasYielded) rethrow;
     }
   }
 
@@ -221,6 +261,8 @@ class StudentApi {
       '/student/profile/update',
       data: profile.toUpdateJson(),
     );
+    await _cache.clearCache('profile');
+    await _cache.clearCache('dashboard');
     return _client.unwrap(
       response,
       (data) => StudentProfile.fromJson(data as JsonMap? ?? const {}),
@@ -235,6 +277,9 @@ class StudentApi {
       '/student/profile/photo',
       data: form,
     );
+    await _cache.clearCache('profile');
+    await _cache.clearCache('idCard');
+    await _cache.clearCache('dashboard');
     return _client.unwrap(response, (data) {
       final json = data as JsonMap? ?? const {};
       return optionalText(json['photo_url']);
@@ -262,6 +307,8 @@ class StudentApi {
       '/student/referral/apply',
       data: {'code': code},
     );
+    await _cache.clearCache('referral');
+    await _cache.clearCache('referralHistory');
     _client.unwrap(response, (_) => null);
   }
 
@@ -283,19 +330,26 @@ class StudentApi {
       '/attendance/scan',
       data: {'qr_hash': value},
     );
+    await _cache.invalidatePattern('attendanceLogs');
+    await _cache.clearCache('dashboard');
     return _client.unwrap(
       response,
       (data) => AttendanceRecord.fromJson(data as JsonMap? ?? const {}),
     );
   }
 
-  Future<List<AttendanceRecord>> attendanceLogs() async {
-    final response = await _client.get<dynamic>('/attendance/logs');
+  Future<List<AttendanceRecord>> attendanceLogs({int? year, int? month}) async {
+    final query = <String, dynamic>{};
+    if (year != null) query['year'] = year;
+    if (month != null) query['month'] = month;
+    final response = await _client.get<dynamic>('/attendance/logs', query: query);
     return _client.unwrapList(response, AttendanceRecord.fromJson);
   }
 
   Future<void> checkoutAttendance() async {
     final response = await _client.post<dynamic>('/attendance/checkout');
+    await _cache.invalidatePattern('attendanceLogs');
+    await _cache.clearCache('dashboard');
     _client.unwrap(response, (_) => null);
   }
 
@@ -332,6 +386,8 @@ class StudentApi {
         'transaction_id': transactionId,
       },
     );
+    await _cache.clearCache('paymentHistory');
+    await _cache.clearCache('dashboard');
     return _client.unwrap(
       response,
       (data) => PaymentRecord.fromJson(data as JsonMap? ?? const {}),
@@ -350,6 +406,7 @@ class StudentApi {
 
   Future<StudySession> startStudySession() async {
     final response = await _client.post<dynamic>('/study/session/start');
+    await _cache.clearCache('studySessionHistory');
     return _client.unwrap(
       response,
       (data) => StudySession.fromJson(data as JsonMap? ?? const {}),
@@ -367,6 +424,7 @@ class StudentApi {
         'paused_minutes': pausedMinutes,
       },
     );
+    await _cache.clearCache('studySessionHistory');
     _client.unwrap(response, (_) => null);
   }
 
@@ -409,19 +467,18 @@ class StudentApi {
 
     try {
       final response = await _client.get<dynamic>('/notifications/list');
-      yield _client.unwrap(response, (data) {
-        List<dynamic> rows = [];
-        if (data is Map<String, dynamic> && data.containsKey('data')) {
-          rows = data['data'] as List<dynamic>? ?? <dynamic>[];
-        } else if (data is List) {
-          rows = data;
+      final payload = response.data;
+      if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+        final innerData = payload['data'];
+        if (innerData is Map<String, dynamic> && innerData.containsKey('data')) {
+          _cache.saveNotifications(innerData['data'] as List<dynamic>? ?? <dynamic>[]);
+        } else if (innerData is List) {
+          _cache.saveNotifications(innerData);
         }
-        _cache.saveNotifications(rows);
-        return rows
-            .whereType<Map<String, dynamic>>()
-            .map(StudentNotification.fromJson)
-            .toList();
-      });
+      } else if (payload is List) {
+        _cache.saveNotifications(payload);
+      }
+      yield await _client.unwrapList(response, StudentNotification.fromJson);
     } catch (_) {
       if (cached.isEmpty) rethrow;
     }
@@ -430,23 +487,18 @@ class StudentApi {
   Future<List<StudentNotification>> notifications() async {
     try {
       final response = await _client.get<dynamic>('/notifications/list');
-      return _client.unwrap(response, (data) {
-        // The API returns paginated data: { data: [...], count, total_pages }
-        List<dynamic> rows = [];
-        if (data is Map<String, dynamic> && data.containsKey('data')) {
-          rows = data['data'] as List<dynamic>? ?? <dynamic>[];
-        } else if (data is List) {
-          rows = data;
+      final payload = response.data;
+      if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+        final innerData = payload['data'];
+        if (innerData is Map<String, dynamic> && innerData.containsKey('data')) {
+          _cache.saveNotifications(innerData['data'] as List<dynamic>? ?? <dynamic>[]);
+        } else if (innerData is List) {
+          _cache.saveNotifications(innerData);
         }
-
-        // Cache raw JSON
-        _cache.saveNotifications(rows);
-
-        return rows
-            .whereType<Map<String, dynamic>>()
-            .map(StudentNotification.fromJson)
-            .toList();
-      });
+      } else if (payload is List) {
+        _cache.saveNotifications(payload);
+      }
+      return await _client.unwrapList(response, StudentNotification.fromJson);
     } catch (_) {
       // Fallback to local cache
       final cached = _cache.getNotifications();
@@ -505,11 +557,13 @@ class StudentApi {
 
   Future<List<Facility>> facilities() async {
     final response = await _client.get<dynamic>('/library/facilities');
-    return _client.unwrap<List<Facility>>(response, (data) {
-      final rows = data is List ? data : const <Object?>[];
-      _cache.saveCache('facilities', rows);
-      return rows.whereType<JsonMap>().map(Facility.fromJson).toList();
-    });
+    final payload = response.data;
+    if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+      _cache.saveCache('facilities', payload['data']);
+    } else if (payload is List) {
+      _cache.saveCache('facilities', payload);
+    }
+    return await _client.unwrapList(response, Facility.fromJson);
   }
 
   Stream<List<Facility>> facilitiesStream() async* {
@@ -538,11 +592,14 @@ class StudentApi {
       '/library/achievers',
       query: featured ? {'featured': 'true'} : null,
     );
-    return _client.unwrap<List<Achiever>>(response, (data) {
-      final rows = data is List ? data : const <Object?>[];
-      _cache.saveCache(featured ? 'achievers_featured' : 'achievers', rows);
-      return rows.whereType<JsonMap>().map(Achiever.fromJson).toList();
-    });
+    final payload = response.data;
+    final cacheKey = featured ? 'achievers_featured' : 'achievers';
+    if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+      _cache.saveCache(cacheKey, payload['data']);
+    } else if (payload is List) {
+      _cache.saveCache(cacheKey, payload);
+    }
+    return await _client.unwrapList(response, Achiever.fromJson);
   }
 
   Stream<List<Achiever>> achieversStream({bool featured = false}) async* {
@@ -608,11 +665,13 @@ class StudentApi {
 
   Future<List<GalleryImage>> galleryImages() async {
     final response = await _client.get<dynamic>('/library/gallery');
-    return _client.unwrap<List<GalleryImage>>(response, (data) {
-      final rows = data is List ? data : const <Object?>[];
-      _cache.saveCache('gallery_images', rows);
-      return rows.whereType<JsonMap>().map(GalleryImage.fromJson).toList();
-    });
+    final payload = response.data;
+    if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+      _cache.saveCache('gallery_images', payload['data']);
+    } else if (payload is List) {
+      _cache.saveCache('gallery_images', payload);
+    }
+    return await _client.unwrapList(response, GalleryImage.fromJson);
   }
 
   Stream<List<GalleryImage>> galleryImagesStream() async* {
@@ -644,6 +703,8 @@ class StudentApi {
       '/library/reviews/submit',
       data: {'rating': rating, 'comment': comment},
     );
+    await _cache.clearCache('my_review');
+    await _cache.clearCache('review_summary');
     return _client.unwrap(
       response,
       (data) => ReviewRecord.fromJson(data as JsonMap? ?? const {}),
@@ -686,11 +747,13 @@ class StudentApi {
 
   Future<List<HomeSlider>> sliders() async {
     final response = await _client.get<dynamic>('/sliders');
-    return _client.unwrap<List<HomeSlider>>(response, (data) {
-      final rows = data is List ? data : const <Object?>[];
-      _cache.saveCache('home_sliders', rows);
-      return rows.whereType<JsonMap>().map(HomeSlider.fromJson).toList();
-    });
+    final payload = response.data;
+    if (payload is Map<String, dynamic> && payload.containsKey('data')) {
+      _cache.saveCache('home_sliders', payload['data']);
+    } else if (payload is List) {
+      _cache.saveCache('home_sliders', payload);
+    }
+    return await _client.unwrapList(response, HomeSlider.fromJson);
   }
 
   Stream<List<HomeSlider>> slidersStream() async* {
@@ -718,12 +781,14 @@ class StudentApi {
     '/student/profile',
     'profile',
     (json) => StudentProfile.fromJson(json),
+    maxAge: const Duration(hours: 2),
   );
 
   Stream<StudentIdCard> idCardStream() => _streamItem(
     '/student/id-card',
     'idCard',
     (json) => StudentIdCard.fromJson(json),
+    maxAge: const Duration(hours: 24),
   );
 
   Stream<ReferralCode> referralCodeStream() => _streamItem(
@@ -744,8 +809,22 @@ class StudentApi {
     yield await todayQr();
   }
 
-  Stream<List<AttendanceRecord>> attendanceLogsStream() async* {
-    yield await attendanceLogs();
+  Stream<List<AttendanceRecord>> attendanceLogsStream({int? year, int? month}) {
+    String cacheKey = 'attendanceLogs';
+    if (year != null && month != null) cacheKey = 'attendanceLogs_${year}_$month';
+    
+    final query = <String, dynamic>{};
+    if (year != null) query['year'] = year;
+    if (month != null) query['month'] = month;
+
+    // No maxAge: always fetch fresh data from network after showing cache instantly
+    // This ensures admin-updated attendance status is always reflected
+    return _streamList(
+      '/attendance/logs',
+      cacheKey,
+      AttendanceRecord.fromJson,
+      query: query.isNotEmpty ? query : null,
+    );
   }
 
   Stream<List<HolidayRecord>> holidaysStream() => _streamList(
@@ -766,12 +845,14 @@ class StudentApi {
     '/memberships/history',
     'memberships',
     MembershipRecord.fromJson,
+    maxAge: const Duration(hours: 2),
   );
 
   Stream<List<PaymentRecord>> paymentHistoryStream() => _streamList(
     '/payments/history',
     'paymentHistory',
     PaymentRecord.fromJson,
+    maxAge: const Duration(hours: 2),
   );
 
   Stream<List<Seat>> seatsStream() async* {

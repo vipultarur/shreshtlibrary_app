@@ -30,7 +30,7 @@ class HomeGreetingStatus extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.home_good_morning,
+                _getGreetingMessage(l10n),
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
@@ -282,5 +282,15 @@ class HomeGreetingStatus extends ConsumerWidget {
         error: (err, stack) => Text(l10n.home_failed_load_user),
       ),
     );
+  }
+  String _getGreetingMessage(AppLocalizations l10n) {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return l10n.home_good_morning;
+    } else if (hour < 17) {
+      return l10n.home_good_afternoon;
+    } else {
+      return l10n.home_good_evening;
+    }
   }
 }

@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,14 +6,17 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/locale_provider.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
+import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/common/widgets/widgets.dart';
 import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'package:shreshtlibrary/features/profile/widgets/profile_editor.dart';
 import 'package:shreshtlibrary/features/auth/presentation/screens/language_selection_screen.dart';
 import 'package:shreshtlibrary/features/home/widgets/digital_id_card.dart';
 import 'package:shreshtlibrary/common/widgets/restricted_feature_screen.dart';
+import 'package:shreshtlibrary/features/profile/widgets/settings_tile.dart';
 import 'package:shreshtlibrary/features/profile/widgets/referral_apply_form.dart';
 import 'package:shreshtlibrary/common/widgets/status_badge.dart';
+import 'package:shreshtlibrary/core/theme/app_dimensions.dart';
 import 'package:shreshtlibrary/core/theme/theme_provider.dart';
 import 'package:shreshtlibrary/core/errors/api_failure.dart';
 
@@ -303,9 +305,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: CommonAppBar(
         title: l10n.profile_title,
         rightIcon: Padding(
-          padding: const EdgeInsets.only(right: 16.0),
+          padding: const EdgeInsets.only(right: AppDimensions.spacingMd),
           child: InkWell(
-            onTap: () => ref.read(authControllerProvider.notifier).logout(),
+            onTap: () => context.push('/settings'),
             child: Container(
               width: 45,
               height: 45,
@@ -313,9 +315,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
-                Icons.logout,
-                color: Colors.redAccent,
+              child: Icon(
+                Icons.settings_outlined,
+                color: theme.colorScheme.primary,
                 size: 20,
               ),
             ),
@@ -324,14 +326,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          // Clear local Hive cache to force fresh server fetch
+          final cache = ref.read(localCacheServiceProvider);
+          await cache.clearCache('profile');
+          await cache.clearCache('idCard');
+          await cache.clearCache('referral');
+          await cache.clearCache('referralHistory');
+          await cache.clearCache('dashboard');
           ref.invalidate(profileProvider);
           ref.invalidate(idCardProvider);
           ref.invalidate(referralProvider);
           ref.invalidate(referralHistoryProvider);
+          ref.invalidate(dashboardProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+          padding: const EdgeInsets.fromLTRB(20, AppDimensions.spacingMd, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -377,31 +387,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             context.push('/payments');
                           }
                         },
-                      ),
-                      SettingsTile(
-                        icon: Icons.notifications_none,
-                        title: l10n.profile_tile_notifications,
-                        trailing: Switch(
-                          value: _notificationsEnabled,
-                          onChanged: (val) {
-                            if (isNotificationsRestricted && dash != null) {
-                              showRestrictionDialog(context, dash);
-                            } else {
-                              setState(() => _notificationsEnabled = val);
-                            }
-                          },
-                          activeThumbColor: theme.colorScheme.primary,
-                        ),
-                        onTap: () {
-                          if (isNotificationsRestricted && dash != null) {
-                            showRestrictionDialog(context, dash);
-                          } else {
-                            setState(
-                              () => _notificationsEnabled =
-                                  !_notificationsEnabled,
-                            );
-                          }
-                        },
                         showDivider: false,
                       ),
                     ],
@@ -411,67 +396,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               const SectionTitle('App Experience'),
               const ReviewSectionWidget(),
-
-              SectionTitle(l10n.profile_settings),
-              SectionCard(
-                children: [
-                  SettingsTile(
-                    icon: Icons.brightness_6_outlined,
-                    title: 'App Theme',
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _getThemeName(themeMode),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Colors.grey.shade400,
-                        ),
-                      ],
+              const SizedBox(height: 24),
+              
+              // Compact Developer Card
+              InkWell(
+                onTap: () => context.push('/developer'),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withOpacity(0.3),
+                      width: 1,
                     ),
-                    onTap: () => _showThemePicker(context),
                   ),
-                  SettingsTile(
-                    icon: Icons.language,
-                    title: l10n.profile_language,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _getLanguageName(locale.languageCode),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Colors.grey.shade400,
+                        child: Icon(Icons.code, color: theme.colorScheme.primary, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.dev_info_title,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            Text(
+                              l10n.dev_info_app_by + ' ' + l10n.dev_info_name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    onTap: () => _showLanguagePicker(context),
+                      ),
+                      Icon(Icons.chevron_right, color: isDark ? Colors.white54 : Colors.black54),
+                    ],
                   ),
-                  SettingsTile(
-                    icon: Icons.logout,
-                    title: l10n.profile_tile_logout,
-                    onTap: () =>
-                        ref.read(authControllerProvider.notifier).logout(),
-                    iconColor: Colors.redAccent,
-                    textColor: Colors.redAccent,
-                    showDivider: false,
-                  ),
-                ],
+                ),
               ),
+
             ],
           ),
         ),
@@ -505,8 +480,8 @@ class ProfileSummaryCard extends ConsumerWidget {
       value: ref.watch(profileProvider),
       builder: (profile) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: 12),
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: BorderRadius.circular(32),
@@ -532,10 +507,8 @@ class ProfileSummaryCard extends ConsumerWidget {
                       profile.profilePhoto != null &&
                           profile.profilePhoto!.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(
+                          image: NetworkImage(
                             profile.profilePhoto!,
-                            errorListener: (err) =>
-                                debugPrint('Image error: $err'),
                           ),
                           fit: BoxFit.cover,
                         )
@@ -547,7 +520,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                     ? const Icon(Icons.person, color: Colors.white, size: 32)
                     : null,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,7 +555,7 @@ class ProfileSummaryCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: AppDimensions.spacingMd,
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
@@ -625,7 +598,7 @@ class SectionTitle extends StatelessWidget {
         theme.textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
     return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 12, top: 24),
+      padding: const EdgeInsets.only(left: AppDimensions.spacingSm, bottom: 12, top: AppDimensions.spacingLg),
       child: Text(
         title,
         style: TextStyle(
@@ -664,88 +637,6 @@ class SectionCard extends StatelessWidget {
   }
 }
 
-class SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final bool showDivider;
-  final Color? iconColor;
-  final Color? textColor;
-
-  const SettingsTile({
-    super.key,
-    required this.icon,
-    required this.title,
-    this.trailing,
-    this.onTap,
-    this.showDivider = true,
-    this.iconColor,
-    this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final defaultTextColor =
-        theme.textTheme.bodyLarge?.color ??
-        (isDark ? Colors.white : Colors.black87);
-    final iconBgColor = theme.scaffoldBackgroundColor;
-    final dividerColor = theme.dividerColor;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconBgColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: iconColor ?? defaultTextColor,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: textColor ?? defaultTextColor,
-                    ),
-                  ),
-                ),
-                if (trailing != null)
-                  trailing!
-                else
-                  Icon(
-                    Icons.chevron_right,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-              ],
-            ),
-          ),
-          if (showDivider)
-            Padding(
-              padding: const EdgeInsets.only(left: 60, right: 16),
-              child: Divider(height: 1, color: dividerColor),
-            ),
-        ],
-      ),
-    );
-  }
-}
 
 // Sub-screens for Account Navigation
 
@@ -801,11 +692,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     if (_oldPassword.text.isEmpty ||
         _newPassword.text.isEmpty ||
         _confirmPassword.text.isEmpty) {
-      showSnack(context, 'Please fill all fields');
+      AppSnackbar.show(context, message: 'Please fill all fields', type: AppSnackbarType.error);
       return;
     }
     if (_newPassword.text != _confirmPassword.text) {
-      showSnack(context, 'New password and confirm password do not match');
+      AppSnackbar.show(context, message: 'New password and confirm password do not match', type: AppSnackbarType.error);
       return;
     }
     setState(() => _busy = true);
@@ -818,11 +709,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             confirmPassword: _confirmPassword.text,
           );
       if (mounted) {
-        showSnack(context, 'Password changed successfully');
+        AppSnackbar.show(context, message: 'Password changed successfully', type: AppSnackbarType.success);
         context.pop();
       }
     } on ApiFailure catch (e) {
-      if (mounted) showSnack(context, e.message);
+      if (mounted) AppSnackbar.show(context, message: e.message, type: AppSnackbarType.error);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1234,14 +1125,18 @@ class _ReviewSectionWidgetState extends ConsumerState<ReviewSectionWidget> {
             );
         ref.invalidate(myReviewProvider);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Review submitted successfully!')),
+          AppSnackbar.show(
+            context, 
+            message: 'Review submitted successfully!',
+            type: AppSnackbarType.success,
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to submit review')),
+          AppSnackbar.show(
+            context,
+            message: 'Failed to submit review',
+            type: AppSnackbarType.error,
           );
         }
       }

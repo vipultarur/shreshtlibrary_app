@@ -74,7 +74,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           .resetPassword(widget.identifier, widget.token, password);
       if (mounted) {
         setState(() => _requesting = false);
-        showSnack(context, 'Password reset successfully! Please login.');
+        AppSnackbar.show(context, message: 'Password reset successfully! Please login.', type: AppSnackbarType.success);
         context.go('/login');
       }
     } on ApiFailure catch (failure) {
@@ -85,7 +85,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             _fieldErrors = failure.errors as Map<String, dynamic>;
           });
         }
-        showSnack(context, failure.message);
+        AppSnackbar.show(context, message: failure.message, type: AppSnackbarType.error);
       }
     }
   }

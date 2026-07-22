@@ -520,6 +520,18 @@ abstract class AppLocalizations {
   /// **'Good Morning'**
   String get home_good_morning;
 
+  /// No description provided for @home_good_afternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Afternoon'**
+  String get home_good_afternoon;
+
+  /// No description provided for @home_good_evening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Evening'**
+  String get home_good_evening;
+
   /// No description provided for @home_holiday.
   ///
   /// In en, this message translates to:
@@ -1851,6 +1863,690 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get btn_retry;
+
+  /// No description provided for @settings_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings_title;
+
+  /// No description provided for @settings_general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settings_general;
+
+  /// No description provided for @settings_theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settings_theme;
+
+  /// No description provided for @settings_information.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get settings_information;
+
+  /// No description provided for @settings_privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settings_privacy_policy;
+
+  /// No description provided for @settings_instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get settings_instructions;
+
+  /// No description provided for @settings_developer_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Info'**
+  String get settings_developer_info;
+
+  /// No description provided for @settings_app_version.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get settings_app_version;
+
+  /// No description provided for @settings_logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get settings_logout;
+
+  /// No description provided for @settings_logout_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get settings_logout_confirm;
+
+  /// No description provided for @settings_logout_cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settings_logout_cancel;
+
+  /// No description provided for @settings_logout_yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get settings_logout_yes;
+
+  /// No description provided for @dev_info_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Info'**
+  String get dev_info_title;
+
+  /// No description provided for @dev_info_app_by.
+  ///
+  /// In en, this message translates to:
+  /// **'App developed by'**
+  String get dev_info_app_by;
+
+  /// No description provided for @dev_info_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Hitesh Patel'**
+  String get dev_info_name;
+
+  /// No description provided for @dev_info_role.
+  ///
+  /// In en, this message translates to:
+  /// **'Lead Developer & Maintainer'**
+  String get dev_info_role;
+
+  /// No description provided for @dev_info_contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact: developer@shreshtlibrary.com'**
+  String get dev_info_contact;
+
+  /// No description provided for @privacy_policy_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacy_policy_title;
+
+  /// No description provided for @privacy_policy_intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Your privacy is important to us. This privacy policy explains how Shresht Library collects, uses, and protects your personal data.'**
+  String get privacy_policy_intro;
+
+  /// No description provided for @privacy_data_collection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Collection'**
+  String get privacy_data_collection;
+
+  /// No description provided for @privacy_data_collection_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'We collect information such as your name, mobile number, email, and study goals to provide and improve our library services.'**
+  String get privacy_data_collection_desc;
+
+  /// No description provided for @privacy_data_usage.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Usage'**
+  String get privacy_data_usage;
+
+  /// No description provided for @privacy_data_usage_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The collected data is used for user authentication, managing attendance, study session tracking, and communicating library updates.'**
+  String get privacy_data_usage_desc;
+
+  /// No description provided for @privacy_data_security.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Security'**
+  String get privacy_data_security;
+
+  /// No description provided for @privacy_data_security_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'We implement appropriate security measures to protect your personal information against unauthorized access, alteration, or disclosure.'**
+  String get privacy_data_security_desc;
+
+  /// No description provided for @privacy_contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get privacy_contact;
+
+  /// No description provided for @privacy_contact_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'If you have any questions about this Privacy Policy, please contact our support team.'**
+  String get privacy_contact_desc;
+
+  /// No description provided for @inst_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get inst_title;
+
+  /// No description provided for @inst_home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Screen'**
+  String get inst_home;
+
+  /// No description provided for @inst_home_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The home screen shows your current library status. The Attendance Status Widget gives you a quick overview of your today\'s attendance. Use the \'Scan\' button to scan the QR code for Check-in and Check-out.'**
+  String get inst_home_desc;
+
+  /// No description provided for @inst_attendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance & QR'**
+  String get inst_attendance;
+
+  /// No description provided for @inst_attendance_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'• QR Scan: Scan the QR code displayed at the library desk. The system records your Check-in/Check-out times based on the allowed scanning window.\n• Late Marks: If you check in after the allowed time, it will be marked as late.\n• History: Swipe horizontally on the calendar to change months. Colors indicate Present (Green), Absent (Red), or Holiday (Gray).'**
+  String get inst_attendance_desc;
+
+  /// No description provided for @inst_study.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Area'**
+  String get inst_study;
+
+  /// No description provided for @inst_study_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'• Study Session: Once checked in, you can start a study session to track your productive hours.\n• Anti-distraction: If you move your phone or switch apps, the tracker will pause. Stay focused to earn more hours.\n• Analytics: View your study analytics by swiping or tapping on tabs for daily, weekly, and monthly statistics.'**
+  String get inst_study_desc;
+
+  /// No description provided for @inst_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Status'**
+  String get inst_status;
+
+  /// No description provided for @inst_status_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'• Live: You have an active membership and can use all features.\n• Pending: Your membership payment is under review by staff.\n• Suspended: Your account has been temporarily disabled by the admin.\n• Expired: Your membership has ended. Please renew to access features.'**
+  String get inst_status_desc;
+
+  /// No description provided for @inst_leaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get inst_leaderboard;
+
+  /// No description provided for @inst_leaderboard_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The leaderboard ranks students based on their total focused study hours. Study consistently without distractions to climb the ranks!'**
+  String get inst_leaderboard_desc;
+
+  /// No description provided for @inst_home_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your dashboard overview'**
+  String get inst_home_subtitle;
+
+  /// No description provided for @inst_attendance_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to check in and out'**
+  String get inst_attendance_subtitle;
+
+  /// No description provided for @inst_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get inst_calendar;
+
+  /// No description provided for @inst_calendar_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly view, reports and statistics'**
+  String get inst_calendar_subtitle;
+
+  /// No description provided for @inst_calendar_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'View your complete attendance history in the calendar view. You can see your monthly summary, track your total present days, and analyze your punctuality over time.'**
+  String get inst_calendar_desc;
+
+  /// No description provided for @inst_colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Colors'**
+  String get inst_colors;
+
+  /// No description provided for @inst_colors_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Know what each color means'**
+  String get inst_colors_subtitle;
+
+  /// No description provided for @inst_status_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Understand your membership state'**
+  String get inst_status_subtitle;
+
+  /// No description provided for @inst_study_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your productive hours'**
+  String get inst_study_subtitle;
+
+  /// No description provided for @inst_header_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your complete guide to using the app smartly.'**
+  String get inst_header_title;
+
+  /// No description provided for @inst_home_part1.
+  ///
+  /// In en, this message translates to:
+  /// **'The home screen shows your current library status. The Attendance Status Widget gives you a quick overview of your today\'s attendance. Use the '**
+  String get inst_home_part1;
+
+  /// No description provided for @inst_home_scan_btn.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get inst_home_scan_btn;
+
+  /// No description provided for @inst_home_part2.
+  ///
+  /// In en, this message translates to:
+  /// **' button to scan the QR code for Check-in and Check-out.'**
+  String get inst_home_part2;
+
+  /// No description provided for @inst_qr_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'QR attendance helps us mark your presence accurately. Scan the QR code displayed at the library entrance within the allowed time.'**
+  String get inst_qr_desc;
+
+  /// No description provided for @inst_qr_timing.
+  ///
+  /// In en, this message translates to:
+  /// **'Library Timing '**
+  String get inst_qr_timing;
+
+  /// No description provided for @inst_qr_dynamic.
+  ///
+  /// In en, this message translates to:
+  /// **'(Dynamic)'**
+  String get inst_qr_dynamic;
+
+  /// No description provided for @inst_qr_start_time.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Time'**
+  String get inst_qr_start_time;
+
+  /// No description provided for @inst_qr_allowed_time.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed Time'**
+  String get inst_qr_allowed_time;
+
+  /// No description provided for @inst_qr_end_time.
+  ///
+  /// In en, this message translates to:
+  /// **'End Time'**
+  String get inst_qr_end_time;
+
+  /// No description provided for @inst_qr_rule1_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan only once when you enter.'**
+  String get inst_qr_rule1_title;
+
+  /// No description provided for @inst_qr_rule1_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate scans are not allowed.'**
+  String get inst_qr_rule1_desc;
+
+  /// No description provided for @inst_qr_rule2_title.
+  ///
+  /// In en, this message translates to:
+  /// **'You must scan within the allowed time.'**
+  String get inst_qr_rule2_title;
+
+  /// No description provided for @inst_qr_rule2_desc1.
+  ///
+  /// In en, this message translates to:
+  /// **'After that you will be marked as '**
+  String get inst_qr_rule2_desc1;
+
+  /// No description provided for @inst_qr_rule2_desc2.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get inst_qr_rule2_desc2;
+
+  /// No description provided for @inst_qr_rule3_title.
+  ///
+  /// In en, this message translates to:
+  /// **'If you come late after the allowed time, contact library staff.'**
+  String get inst_qr_rule3_title;
+
+  /// No description provided for @inst_qr_rule3_desc1.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff can mark you manually if permitted. Your status will show as '**
+  String get inst_qr_rule3_desc1;
+
+  /// No description provided for @inst_qr_rule3_desc2.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get inst_qr_rule3_desc2;
+
+  /// No description provided for @inst_qr_rule4_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure your location is ON and internet is available.'**
+  String get inst_qr_rule4_title;
+
+  /// No description provided for @inst_qr_how_to.
+  ///
+  /// In en, this message translates to:
+  /// **'How to Scan?'**
+  String get inst_qr_how_to;
+
+  /// No description provided for @inst_qr_step1_1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on '**
+  String get inst_qr_step1_1;
+
+  /// No description provided for @inst_qr_step1_2.
+  ///
+  /// In en, this message translates to:
+  /// **' button.'**
+  String get inst_qr_step1_2;
+
+  /// No description provided for @inst_qr_step2.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow camera permission.'**
+  String get inst_qr_step2;
+
+  /// No description provided for @inst_qr_step3.
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera to the QR code.'**
+  String get inst_qr_step3;
+
+  /// No description provided for @inst_qr_step4.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for success message.'**
+  String get inst_qr_step4;
+
+  /// No description provided for @inst_qr_step5.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attendance will be recorded.'**
+  String get inst_qr_step5;
+
+  /// No description provided for @inst_color_present_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get inst_color_present_title;
+
+  /// No description provided for @inst_color_present_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You were marked present on time.'**
+  String get inst_color_present_desc;
+
+  /// No description provided for @inst_color_late_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get inst_color_late_title;
+
+  /// No description provided for @inst_color_late_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You scanned after the allowed arrival time.'**
+  String get inst_color_late_desc;
+
+  /// No description provided for @inst_color_absent_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get inst_color_absent_title;
+
+  /// No description provided for @inst_color_absent_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You did not attend or failed to scan your QR.'**
+  String get inst_color_absent_desc;
+
+  /// No description provided for @inst_color_holiday_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get inst_color_holiday_title;
+
+  /// No description provided for @inst_color_holiday_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The library was closed for a holiday.'**
+  String get inst_color_holiday_desc;
+
+  /// No description provided for @inst_color_pending_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get inst_color_pending_title;
+
+  /// No description provided for @inst_color_pending_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attendance status is pending review.'**
+  String get inst_color_pending_desc;
+
+  /// No description provided for @inst_status_live_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get inst_status_live_title;
+
+  /// No description provided for @inst_status_live_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have an active membership and can use all features.'**
+  String get inst_status_live_desc;
+
+  /// No description provided for @inst_status_pending_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get inst_status_pending_title;
+
+  /// No description provided for @inst_status_pending_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your membership payment is under review by staff.'**
+  String get inst_status_pending_desc;
+
+  /// No description provided for @inst_status_suspended_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get inst_status_suspended_title;
+
+  /// No description provided for @inst_status_suspended_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been temporarily disabled by the admin.'**
+  String get inst_status_suspended_desc;
+
+  /// No description provided for @inst_status_expired_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get inst_status_expired_title;
+
+  /// No description provided for @inst_status_expired_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your membership has ended. Please renew to access features.'**
+  String get inst_status_expired_desc;
+
+  /// No description provided for @inst_study_desc_main.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Area helps you focus and track your productive study hours with beautiful analytics.'**
+  String get inst_study_desc_main;
+
+  /// No description provided for @inst_study_start_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Session'**
+  String get inst_study_start_title;
+
+  /// No description provided for @inst_study_start_1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on '**
+  String get inst_study_start_1;
+
+  /// No description provided for @inst_study_start_btn.
+  ///
+  /// In en, this message translates to:
+  /// **'Start New Session'**
+  String get inst_study_start_btn;
+
+  /// No description provided for @inst_study_start_2.
+  ///
+  /// In en, this message translates to:
+  /// **' to begin.'**
+  String get inst_study_start_2;
+
+  /// No description provided for @inst_study_pause_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause / Resume'**
+  String get inst_study_pause_title;
+
+  /// No description provided for @inst_study_pause_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You can pause and resume anytime.'**
+  String get inst_study_pause_desc;
+
+  /// No description provided for @inst_study_break_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Break Time'**
+  String get inst_study_break_title;
+
+  /// No description provided for @inst_study_break_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Take short breaks. App will not count break time.'**
+  String get inst_study_break_desc;
+
+  /// No description provided for @inst_study_end_title.
+  ///
+  /// In en, this message translates to:
+  /// **'End Session'**
+  String get inst_study_end_title;
+
+  /// No description provided for @inst_study_end_1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap '**
+  String get inst_study_end_1;
+
+  /// No description provided for @inst_study_end_btn.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get inst_study_end_btn;
+
+  /// No description provided for @inst_study_end_2.
+  ///
+  /// In en, this message translates to:
+  /// **' to end your session.'**
+  String get inst_study_end_2;
+
+  /// No description provided for @inst_study_analytics_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get inst_study_analytics_title;
+
+  /// No description provided for @inst_study_analytics_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'View daily, weekly and monthly study analytics.'**
+  String get inst_study_analytics_desc;
+
+  /// No description provided for @inst_study_streak_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus Streak'**
+  String get inst_study_streak_title;
+
+  /// No description provided for @inst_study_streak_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain your streak and increase your focus time.'**
+  String get inst_study_streak_desc;
+
+  /// No description provided for @inst_tips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get inst_tips;
+
+  /// No description provided for @inst_tip1.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your phone away from distractions.'**
+  String get inst_tip1;
+
+  /// No description provided for @inst_tip2.
+  ///
+  /// In en, this message translates to:
+  /// **'Use break time to relax your eyes.'**
+  String get inst_tip2;
+
+  /// No description provided for @inst_tip3.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency is the key to success.'**
+  String get inst_tip3;
+
+  /// No description provided for @inst_welcome_to.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to'**
+  String get inst_welcome_to;
+
+  /// No description provided for @inst_shresht_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Shresht Library'**
+  String get inst_shresht_library;
 }
 
 class _AppLocalizationsDelegate
