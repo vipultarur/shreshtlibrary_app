@@ -71,58 +71,112 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                             fit: BoxFit.cover,
                           ),
                         Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.15),
+                                Colors.black.withValues(alpha: 0.65),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
                           padding: AppDimensions.paddingAllLg,
                           alignment: Alignment.bottomLeft,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.spacingSm,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.85,
+                              if (slider.title.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.spacingSm,
+                                    vertical: 2,
                                   ),
-                                  borderRadius: AppDimensions.borderRadiusMd,
-                                ),
-                                child: Text(
-                                  slider.title.isEmpty ? 'title' : slider.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                    borderRadius: AppDimensions.borderRadiusMd,
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: AppDimensions.spacingXs),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimensions.spacingSm,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.85,
-                                  ),
-                                  borderRadius: AppDimensions.borderRadiusMd,
-                                ),
-                                child: Text(
-                                  slider.subtitle.isEmpty
-                                      ? 'sub title'
-                                      : slider.subtitle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12,
+                                  child: Text(
+                                    slider.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
+                              if (slider.subtitle.isNotEmpty) ...[
+                                const SizedBox(height: AppDimensions.spacingXs),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppDimensions.spacingSm,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                    borderRadius: AppDimensions.borderRadiusMd,
+                                  ),
+                                  child: Text(
+                                    slider.subtitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
+                        if (slider.linkUrl.isNotEmpty)
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                    'Website',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.open_in_new,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   );

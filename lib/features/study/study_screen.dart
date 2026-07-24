@@ -1127,37 +1127,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _isCheckingOut ? null : _handleCheckout,
-                    icon: _isCheckingOut
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Icon(Icons.logout, color: theme.colorScheme.primary),
-                    label: Text(
-                      _isCheckingOut
-                          ? l10n.attendance_wait
-                          : l10n.attendance_check_out,
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: theme.colorScheme.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
+                
               ],
             ),
           ],
