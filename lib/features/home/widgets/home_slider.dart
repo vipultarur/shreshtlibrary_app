@@ -102,17 +102,19 @@ class _SliderCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      slider.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    if (slider.title.trim().isNotEmpty)
+                      Text(
+                        slider.title,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (slider.subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                    if (slider.subtitle.trim().isNotEmpty) ...[
+                      if (slider.title.trim().isNotEmpty)
+                        const SizedBox(height: 4),
                       Text(
                         slider.subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
