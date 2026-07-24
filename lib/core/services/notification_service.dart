@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../firebase_options.dart';
+import 'local_cache_service.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   final cache = ref.read(localCacheServiceProvider);
@@ -18,29 +19,41 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 
 // ─── Notification Icons Helper ────────────────────────────────────────────────
 String _addIconToTitle(String title, String body, String type) {
-  final lowerTitle = title.toLowerCase();
+  final trimmedTitle = title.trim();
+  // Check if title already starts with an emoji or symbol icon
+  final RegExp emojiRegex = RegExp(r'^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]', unicode: true);
+  if (emojiRegex.hasMatch(trimmedTitle)) {
+    return trimmedTitle;
+  }
+
+  final lowerTitle = trimmedTitle.toLowerCase();
   final lowerBody = body.toLowerCase();
 
-  if (lowerTitle.contains('absent') || lowerBody.contains('absent')) {
-    return '❌ $title';
+  if (lowerTitle.contains('leaderboard') ||
+      lowerTitle.contains('reward') ||
+      lowerTitle.contains('rank') ||
+      lowerTitle.contains('trophy')) {
+    return '🏆 $trimmedTitle';
+  } else if (lowerTitle.contains('absent') || lowerBody.contains('absent')) {
+    return '❌ $trimmedTitle';
   } else if (lowerTitle.contains('alert') ||
       lowerBody.contains('alert') ||
       lowerTitle.contains('warning')) {
-    return '🚨 $title';
+    return '🚨 $trimmedTitle';
   } else if (lowerTitle.contains('present') || lowerBody.contains('present')) {
-    return '✅ $title';
+    return '✅ $trimmedTitle';
   } else if (type.toUpperCase() == 'ATTENDANCE') {
-    return '📅 $title';
+    return '📅 $trimmedTitle';
   } else if (type.toUpperCase() == 'BILLING' ||
       type.toUpperCase() == 'EXPIRY') {
-    return '💰 $title';
+    return '💰 $trimmedTitle';
   } else if (type.toUpperCase() == 'ACCOUNT') {
-    return '👤 $title';
+    return '👤 $trimmedTitle';
   } else if (lowerTitle.contains('success')) {
-    return '✅ $title';
+    return '✅ $trimmedTitle';
   }
 
-  return '🔔 $title';
+  return '🔔 $trimmedTitle';
 }
 
 // ─── Background handler (top-level, @pragma required) ────────────────────────
@@ -294,8 +307,6 @@ void notificationTapBackground(NotificationResponse notificationResponse) {
   final id = notificationResponse.actionId ?? notificationResponse.payload;
   if (id != null) _actionStreamController.add(id);
 }
-
-import 'local_cache_service.dart';
 
 // ─── NotificationService ──────────────────────────────────────────────────────
 class NotificationService {

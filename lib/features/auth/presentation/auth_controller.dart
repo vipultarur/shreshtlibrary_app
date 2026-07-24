@@ -179,6 +179,15 @@ class AuthController extends Notifier<AuthState> {
     String password,
   ) => _api.resetPassword(identifier, token, password);
 
+  Future<void> handleUnauthenticated([String? message]) async {
+    _stopPolling();
+    try {
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (_) {}
+    await ref.read(tokenStoreProvider).clear();
+    state = AuthState.signedOut(message ?? 'Session expired. Please log in again.');
+  }
+
   Future<void> logout() async {
     try {
       await _api.logout();

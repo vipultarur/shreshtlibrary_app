@@ -77,7 +77,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
             final todayLog = logsOpt?.firstWhere(
               (l) => l.date == todayStr,
-              orElse: () => AttendanceRecord(
+              orElse: () => const AttendanceRecord(
                 id: 0,
                 studentName: '',
                 date: '',
@@ -86,17 +86,39 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               ),
             );
 
-            final isCheckedIn = todayLog != null &&
-                (todayLog.isPresent || todayLog.lateMark || todayLog.timeIn != null);
+            final isHoliday = dash?.isHoliday == true || dash?.attendanceStatus == 'Holiday';
+
+            final isPresentOrLateFromDash = dash?.attendanceStatus == 'Present' ||
+                dash?.attendanceStatus == 'Arrived Late' ||
+                (dash?.markedAttendanceToday == true);
+
+            final isPresentOrLateFromLogs = todayLog != null &&
+                todayLog.id != 0 &&
+                (todayLog.isPresent || todayLog.lateMark);
+
+            final isAbsentFromLogs = todayLog != null &&
+                todayLog.id != 0 &&
+                !todayLog.isPresent &&
+                !todayLog.lateMark;
+
+            final isAbsent = !isHoliday &&
+                (dash?.attendanceStatus == 'Absent' || isAbsentFromLogs);
+
+            final isPresentOrLate = !isHoliday &&
+                !isAbsent &&
+                (isPresentOrLateFromDash || isPresentOrLateFromLogs);
+
             final isCheckedOut = todayLog != null &&
                 todayLog.timeOut != null &&
                 todayLog.timeOut!.isNotEmpty &&
                 todayLog.timeOut != '00:00:00';
 
+            final showCheckoutButton = isPresentOrLate && !isCheckedOut;
+
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (dash?.isHoliday == true)
+                if (isHoliday)
                   Container(
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(
@@ -142,7 +164,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                     ),
                   )
                 else ...[
-                  if (isCheckedIn && !isCheckedOut)
+                  if (showCheckoutButton)
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ElevatedButton.icon(

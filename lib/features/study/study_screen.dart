@@ -12,6 +12,7 @@ import 'package:shreshtlibrary/core/l10n/app_localizations.dart';
 import 'package:shreshtlibrary/core/services/providers.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/common/widgets/premium_buy_container.dart';
+import 'package:shreshtlibrary/common/widgets/widgets.dart';
 
 class StudyScreen extends ConsumerStatefulWidget {
   const StudyScreen({super.key});
@@ -26,6 +27,52 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
   DateTime _selectedHistoryDate = DateTime.now();
   String _chartViewMode = 'Week'; // 'Week' or 'Month'
   final PageController _pageController = PageController(initialPage: 10000);
+  bool _isCheckingOut = false;
+
+  Future<void> _handleCheckout() async {
+    if (_isCheckingOut) return;
+    setState(() {
+      _isCheckingOut = true;
+    });
+    try {
+      await ref.read(studentApiProvider).checkoutAttendance();
+      final cache = ref.read(localCacheServiceProvider);
+      await cache.invalidatePattern('attendanceLogs');
+      await cache.clearCache('dashboard');
+      ref.invalidate(attendanceLogsProvider);
+      ref.invalidate(dashboardProvider);
+
+      final studyNotifier = ref.read(studySessionProvider.notifier);
+      final studyState = ref.read(studySessionProvider);
+      if (studyState.status == StudySessionStatus.active ||
+          studyState.status == StudySessionStatus.starting) {
+        await studyNotifier.stopSession();
+      }
+
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        AppSnackbar.show(
+          context,
+          message: l10n.attendance_checkout_success,
+          type: AppSnackbarType.success,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackbar.show(
+          context,
+          message: e.toString(),
+          type: AppSnackbarType.error,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingOut = false;
+        });
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -179,6 +226,50 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
 
   Widget _buildHeader(bool isDark, ThemeData theme) {
     final l10n = AppLocalizations.of(context)!;
+    final dash = ref.watch(dashboardProvider).value;
+    final logsAsync = ref.watch(attendanceLogsProvider);
+    final logsOpt = logsAsync.value;
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayLog = logsOpt?.firstWhere(
+      (l) => l.date == todayStr,
+      orElse: () => AttendanceRecord(
+        id: 0,
+        studentName: '',
+        date: '',
+        isPresent: false,
+        isManual: false,
+      ),
+    );
+
+    final isHoliday = dash?.isHoliday == true || dash?.attendanceStatus == 'Holiday';
+
+    final isPresentOrLateFromDash = dash?.attendanceStatus == 'Present' ||
+        dash?.attendanceStatus == 'Arrived Late' ||
+        (dash?.markedAttendanceToday == true);
+
+    final isPresentOrLateFromLogs = todayLog != null &&
+        todayLog.id != 0 &&
+        (todayLog.isPresent || todayLog.lateMark);
+
+    final isAbsentFromLogs = todayLog != null &&
+        todayLog.id != 0 &&
+        !todayLog.isPresent &&
+        !todayLog.lateMark;
+
+    final isAbsent = !isHoliday &&
+        (dash?.attendanceStatus == 'Absent' || isAbsentFromLogs);
+
+    final isPresentOrLate = !isHoliday &&
+        !isAbsent &&
+        (isPresentOrLateFromDash || isPresentOrLateFromLogs);
+
+    final isCheckedOut = todayLog != null &&
+        todayLog.timeOut != null &&
+        todayLog.timeOut!.isNotEmpty &&
+        todayLog.timeOut != '00:00:00';
+
+    final showCheckoutButton = isPresentOrLate && !isCheckedOut;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -192,6 +283,38 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
               color: theme.textTheme.bodyLarge?.color,
             ),
           ),
+          if (showCheckoutButton)
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                minimumSize: const Size(0, 36),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              onPressed: _isCheckingOut ? null : _handleCheckout,
+              icon: _isCheckingOut
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.logout, size: 18),
+              label: Text(
+                _isCheckingOut
+                    ? l10n.attendance_wait
+                    : l10n.attendance_check_out,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
         ],
       ),
     );
@@ -794,17 +917,63 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
       ),
     );
 
-    final isCheckedIn = todayLog != null &&
-        (todayLog.isPresent || todayLog.lateMark || todayLog.timeIn != null);
+    final isHoliday = dash?.isHoliday == true || dash?.attendanceStatus == 'Holiday';
+
+    final isPresentOrLateFromDash = dash?.attendanceStatus == 'Present' ||
+        dash?.attendanceStatus == 'Arrived Late' ||
+        (dash?.markedAttendanceToday == true);
+
+    final isPresentOrLateFromLogs = todayLog != null &&
+        todayLog.id != 0 &&
+        (todayLog.isPresent || todayLog.lateMark);
+
+    final isAbsentFromLogs = todayLog != null &&
+        todayLog.id != 0 &&
+        !todayLog.isPresent &&
+        !todayLog.lateMark;
+
+    final isAbsent = !isHoliday &&
+        (dash?.attendanceStatus == 'Absent' || isAbsentFromLogs);
+
+    final isPresentOrLate = !isHoliday &&
+        !isAbsent &&
+        (isPresentOrLateFromDash || isPresentOrLateFromLogs);
+
     final isCheckedOut = todayLog != null &&
         todayLog.timeOut != null &&
         todayLog.timeOut!.isNotEmpty &&
         todayLog.timeOut != '00:00:00';
-    final canStartSession = isCheckedIn && !isCheckedOut;
+
+    final canStartSession = isPresentOrLate && !isCheckedOut;
 
     if (!canStartSession &&
         state.status != StudySessionStatus.active &&
         state.status != StudySessionStatus.starting) {
+      IconData iconData = Icons.location_off;
+      String title = l10n.study_not_checked_in;
+      String desc = l10n.study_not_checked_in_desc;
+      Color iconColor = Colors.grey;
+
+      if (isHoliday) {
+        iconData = Icons.celebration;
+        iconColor = Colors.purple;
+        title = dash?.holidayTitle ?? 'Library Holiday';
+        desc = dash?.holidayDescription ??
+            'Today is a holiday. Study sessions cannot be started on holidays.';
+      } else if (isAbsent) {
+        iconData = Icons.person_off;
+        iconColor = Colors.red;
+        title = 'Marked Absent Today';
+        desc =
+            'Your attendance was marked as absent for today. Study sessions cannot be started.';
+      } else if (isCheckedOut) {
+        iconData = Icons.check_circle_outline;
+        iconColor = Colors.green;
+        title = 'Checked Out For Today';
+        desc =
+            'You have already checked out for today.';
+      }
+
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(20),
@@ -826,18 +995,19 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
+                color: iconColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.location_off,
+              child: Icon(
+                iconData,
                 size: 48,
-                color: Colors.grey,
+                color: iconColor,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              l10n.study_not_checked_in,
+              title,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
@@ -846,7 +1016,7 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.study_not_checked_in_desc,
+              desc,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.grey, height: 1.5),
             ),
@@ -930,31 +1100,65 @@ class _StudyScreenState extends ConsumerState<StudyScreen>
               ),
             ],
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await notifier.startSession();
-                  if (context.mounted) {
-                    ref.invalidate(studyHistoryProvider);
-                  }
-                },
-                icon: const Icon(Icons.play_arrow, color: Colors.white),
-                label: Text(
-                  l10n.study_start_btn,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await notifier.startSession();
+                      if (context.mounted) {
+                        ref.invalidate(studyHistoryProvider);
+                      }
+                    },
+                    icon: const Icon(Icons.play_arrow, color: Colors.white),
+                    label: Text(
+                      l10n.study_start_btn,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isCheckingOut ? null : _handleCheckout,
+                    icon: _isCheckingOut
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Icon(Icons.logout, color: theme.colorScheme.primary),
+                    label: Text(
+                      _isCheckingOut
+                          ? l10n.attendance_wait
+                          : l10n.attendance_check_out,
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: theme.colorScheme.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

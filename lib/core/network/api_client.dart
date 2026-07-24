@@ -20,18 +20,28 @@ List<T> _parseList<T>(_ParseArgs<T> args) {
 }
 
 class ApiClient {
-  ApiClient({required this.baseUrl, required this.tokenStore, Dio? dio})
-    : dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: baseUrl,
-              connectTimeout: const Duration(seconds: 15),
-              receiveTimeout: const Duration(seconds: 20),
-              headers: {'Content-Type': 'application/json'},
-            ),
-          ) {
-    _refreshDio = Dio(BaseOptions(baseUrl: baseUrl));
+  ApiClient({
+    required this.baseUrl,
+    required this.tokenStore,
+    this.onUnauthenticated,
+    Dio? dio,
+  }) : dio =
+            dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: baseUrl,
+                connectTimeout: const Duration(seconds: 8),
+                receiveTimeout: const Duration(seconds: 12),
+                headers: {'Content-Type': 'application/json'},
+              ),
+            ) {
+    _refreshDio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 8),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
     this.dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: _addAuthHeader,
@@ -52,6 +62,7 @@ class ApiClient {
 
   final String baseUrl;
   final TokenStore tokenStore;
+  final VoidCallback? onUnauthenticated;
   final Dio dio;
   late final Dio _refreshDio;
   Future<String?>? _refreshFuture;
@@ -143,6 +154,27 @@ class ApiClient {
     final isRefresh = request.path.contains('/auth/token/refresh');
     final alreadyRetried = request.extra['retried'] == true;
 
+    final isAnonymousPath = request.path.endsWith('/sliders') ||
+        request.path.contains('/library/facilities') ||
+        request.path.contains('/library/achievers') ||
+        request.path.contains('/library/gallery') ||
+        request.path.contains('/library/info') ||
+        request.path.contains('/library/reviews');
+
+    // If an anonymous endpoint failed due to an expired token, retry without Auth header
+    if (error.response?.statusCode == 401 && isAnonymousPath && !alreadyRetried) {
+      request.extra['retried'] = true;
+      request.headers.remove('Authorization');
+      try {
+        final response = await dio.fetch<dynamic>(request);
+        handler.resolve(response);
+        return;
+      } on DioException catch (retryError) {
+        handler.next(retryError);
+        return;
+      }
+    }
+
     if (error.response?.statusCode == 401 && !isRefresh && !alreadyRetried) {
       final nextAccess = await _refreshAccessToken();
       if (nextAccess != null) {
@@ -158,6 +190,7 @@ class ApiClient {
         }
       }
       await tokenStore.clear();
+      onUnauthenticated?.call();
     }
 
     handler.next(error);
@@ -166,6 +199,7 @@ class ApiClient {
   Future<String?> _refreshAccessToken() async {
     final tokens = await tokenStore.read();
     if (tokens == null || tokens.refresh.isEmpty) {
+      onUnauthenticated?.call();
       return null;
     }
 
@@ -183,6 +217,8 @@ class ApiClient {
             }
           }
           if (access == null || access.isEmpty) {
+            await tokenStore.clear();
+            onUnauthenticated?.call();
             return null;
           }
           await tokenStore.saveAccess(access);
@@ -190,6 +226,7 @@ class ApiClient {
         })
         .catchError((Object _) async {
           await tokenStore.clear();
+          onUnauthenticated?.call();
           return null;
         })
         .whenComplete(() {

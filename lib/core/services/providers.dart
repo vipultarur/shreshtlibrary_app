@@ -8,6 +8,7 @@ import 'package:shreshtlibrary/core/models/models.dart';
 import 'package:shreshtlibrary/core/services/local_cache_service.dart';
 import 'package:shreshtlibrary/core/services/notification_service.dart';
 import 'package:shreshtlibrary/core/services/study_session_service.dart';
+import 'package:shreshtlibrary/features/auth/presentation/auth_controller.dart';
 import 'student_api.dart';
 
 final tokenStoreProvider = Provider<TokenStore>(
@@ -18,6 +19,9 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final client = ApiClient(
     baseUrl: AppConfig.apiBaseUrl,
     tokenStore: ref.watch(tokenStoreProvider),
+    onUnauthenticated: () {
+      ref.read(authControllerProvider.notifier).handleUnauthenticated();
+    },
   );
   ref.onDispose(client.close);
   return client;
