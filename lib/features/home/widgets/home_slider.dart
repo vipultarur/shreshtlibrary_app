@@ -139,9 +139,9 @@ class _SliderCard extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Text(
                         'Website',
                         style: TextStyle(

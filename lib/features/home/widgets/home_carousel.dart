@@ -156,9 +156,9 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                                   ),
                                 ],
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Text(
                                     'Website',
                                     style: TextStyle(
