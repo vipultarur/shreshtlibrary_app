@@ -74,105 +74,106 @@ class _HomeCarouselState extends ConsumerState<HomeCarousel> {
                             type: AppImageType.network,
                             fit: BoxFit.cover,
                           ),
-                        if (hasTitle || hasSubtitle || hasLink)
-                          Container(
-                            padding: AppDimensions.paddingAllLg,
+                        if (hasTitle || hasSubtitle)
+                          Align(
                             alignment: Alignment.bottomLeft,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      if (hasTitle)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppDimensions.spacingSm,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.primary.withValues(
-                                              alpha: 0.85,
-                                            ),
-                                            borderRadius: AppDimensions.borderRadiusMd,
-                                          ),
-                                          child: Text(
-                                            slider.title,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: AppDimensions.spacingLg,
+                                bottom: AppDimensions.spacingLg,
+                                right: 90,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (hasTitle)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppDimensions.spacingSm,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withValues(
+                                          alpha: 0.85,
                                         ),
-                                      if (hasTitle && hasSubtitle)
-                                        const SizedBox(height: AppDimensions.spacingXs),
-                                      if (hasSubtitle)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppDimensions.spacingSm,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.primary.withValues(
-                                              alpha: 0.85,
-                                            ),
-                                            borderRadius: AppDimensions.borderRadiusMd,
-                                          ),
-                                          child: Text(
-                                            slider.subtitle,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                if (hasLink) ...[
-                                  const SizedBox(width: AppDimensions.spacingSm),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary.withValues(alpha: 0.9),
-                                      borderRadius: AppDimensions.borderRadiusLg,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Link',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        SizedBox(width: 4),
-                                        Icon(
-                                          Icons.open_in_new,
+                                        borderRadius: AppDimensions.borderRadiusMd,
+                                      ),
+                                      child: Text(
+                                        slider.title,
+                                        style: const TextStyle(
                                           color: Colors.white,
-                                          size: 14,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
                                         ),
-                                      ],
+                                      ),
                                     ),
+                                  if (hasTitle && hasSubtitle)
+                                    const SizedBox(height: AppDimensions.spacingXs),
+                                  if (hasSubtitle)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppDimensions.spacingSm,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withValues(
+                                          alpha: 0.85,
+                                        ),
+                                        borderRadius: AppDimensions.borderRadiusMd,
+                                      ),
+                                      child: Text(
+                                        slider.subtitle,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (hasLink)
+                          Positioned(
+                            right: 12,
+                            bottom: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: AppDimensions.borderRadiusLg,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
-                              ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'View Link',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.open_in_new,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                       ],
